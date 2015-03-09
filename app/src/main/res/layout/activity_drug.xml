@@ -1,0 +1,105 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="ca.umontreal.iro.guidedesmedicaments.DrugActivity">
+
+    <TextView
+        android:id="@+id/categories"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:text="categorie / sous-categorie"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <ImageView
+        android:id="@+id/drugIcon"
+        android:layout_width="92dp"
+        android:layout_height="92dp"
+        android:layout_below="@id/categories" />
+
+    <TextView
+        android:id="@+id/drugName"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/drugIcon"
+        android:layout_toRightOf="@id/drugIcon"
+        android:text="Aspirin"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:toRightOf="@id/drugIcon" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/drugName"
+        android:layout_below="@id/drugName"
+        android:text="anternate names\nalternate name 2\nalternate name 3" />
+
+    <TextView
+        android:id="@+id/maternityIndex"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/drugIcon"
+        android:text="Indice maternité" />
+
+    <TextView
+        android:id="@+id/administrationMethod"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@id/maternityIndex"
+        android:text="Méthode d'administration\n2ême méthode\n3ème méthode" />
+
+    <TextView
+        android:id="@+id/posologie"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/administrationMethod"
+        android:text="Posologie\nplus de posologie..." />
+
+    <TextView
+        android:id="@+id/drugDescription"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/posologie"
+        android:ellipsize="end"
+        android:maxLength="120"
+        android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." />
+
+    <TextView
+        android:id="@+id/labelCounterIndications"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/drugDescription"
+        android:labelFor="@id/counterIndications"
+        android:text="Contre-indications" />
+
+    <ListView
+        android:id="@+id/counterIndications"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/labelCounterIndications" />
+
+    <TextView
+        android:id="@+id/labelSimilarDrugs"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/counterIndications"
+        android:labelFor="@id/similarDrugs"
+        android:text="Médicaments similaires" />
+
+    <ListView
+        android:id="@+id/similarDrugs"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/labelSimilarDrugs" />
+
+</RelativeLayout>
