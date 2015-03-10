@@ -19,17 +19,17 @@
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <ImageView
-        android:id="@+id/drugIcon"
+        android:id="@+id/drug_icon"
         android:layout_width="92dp"
         android:layout_height="92dp"
         android:layout_below="@id/categories" />
 
     <TextView
-        android:id="@+id/drugName"
+        android:id="@+id/drug_name"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@id/drugIcon"
-        android:layout_toRightOf="@id/drugIcon"
+        android:layout_alignTop="@id/drug_icon"
+        android:layout_toRightOf="@id/drug_icon"
         android:text="Aspirin"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:toRightOf="@id/drugIcon" />
@@ -37,19 +37,19 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@id/drugName"
-        android:layout_below="@id/drugName"
+        android:layout_alignLeft="@id/drug_name"
+        android:layout_below="@id/drug_name"
         android:text="anternate names\nalternate name 2\nalternate name 3" />
 
     <TextView
         android:id="@+id/maternityIndex"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/drugIcon"
+        android:layout_below="@id/drug_icon"
         android:text="Indice maternité" />
 
     <TextView
-        android:id="@+id/administrationMethod"
+        android:id="@+id/administration_method"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
@@ -60,11 +60,11 @@
         android:id="@+id/posologie"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/administrationMethod"
+        android:layout_below="@id/administration_method"
         android:text="Posologie\nplus de posologie..." />
 
     <TextView
-        android:id="@+id/drugDescription"
+        android:id="@+id/drug_description"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/posologie"
@@ -73,33 +73,33 @@
         android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." />
 
     <TextView
-        android:id="@+id/labelCounterIndications"
+        android:id="@+id/label_counter_indicator"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/drugDescription"
-        android:labelFor="@id/counterIndications"
+        android:layout_below="@id/drug_description"
+        android:labelFor="@id/counter_indications"
         android:text="Contre-indications" />
 
     <ListView
-        android:id="@+id/counterIndications"
+        android:id="@+id/counter_indications"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/labelCounterIndications" />
+        android:layout_below="@id/label_counter_indicator" />
 
     <TextView
-        android:id="@+id/labelSimilarDrugs"
+        android:id="@+id/label_similar_drugs"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/counterIndications"
-        android:labelFor="@id/similarDrugs"
+        android:layout_below="@id/counter_indications"
+        android:labelFor="@id/similar_drugs"
         android:text="Médicaments similaires" />
 
     <ListView
-        android:id="@+id/similarDrugs"
+        android:id="@+id/similar_drugs"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@id/labelSimilarDrugs" />
+        android:layout_below="@id/label_similar_drugs" />
 
 </RelativeLayout>

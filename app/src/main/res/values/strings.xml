@@ -12,4 +12,5 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_medicament">MedicamentActivity</string>
+    <string name="title_activity_drugs">DrugsActivity</string>
 </resources>

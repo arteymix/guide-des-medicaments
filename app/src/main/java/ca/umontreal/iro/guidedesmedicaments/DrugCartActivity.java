@@ -10,16 +10,16 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
-
-public class Panier extends ActionBarActivity implements ActionBar.TabListener {
+/**
+ * Present drug carts, each containing a
+ */
+public class DrugCartActivity extends ActionBarActivity implements ActionBar.TabListener {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -39,8 +39,7 @@ public class Panier extends ActionBarActivity implements ActionBar.TabListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_panier);
-
+        setContentView(R.layout.activity_drug_cart);
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -49,7 +48,6 @@ public class Panier extends ActionBarActivity implements ActionBar.TabListener {
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-
     }
 
 
@@ -77,7 +75,6 @@ public class Panier extends ActionBarActivity implements ActionBar.TabListener {
 
     @Override
     public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-
     }
 
     @Override
@@ -157,7 +154,7 @@ public class Panier extends ActionBarActivity implements ActionBar.TabListener {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_panier, container, false);
+            View rootView = inflater.inflate(R.layout.item_drug_cart, container, false);
             return rootView;
         }
     }
