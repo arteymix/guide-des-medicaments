@@ -1,23 +1,28 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
-import java.util.Locale;
-
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 /**
- * Present drug carts, each containing a
+ * Present drug carts, each containing a list of drugs.
+ *
+ * The first page presents a summary of all drug carts and subsequent pages (swipe right) present
+ * each cart individually.
+ *
+ * @author Guillaume Poirier-Morency
+ * @author Patrice Dumontier-Houle
+ * @author Charles Deharnais
+ * @author Aldo Lamarre
  */
 public class DrugCartActivity extends ActionBarActivity implements ActionBar.TabListener {
 
@@ -59,21 +64,6 @@ public class DrugCartActivity extends ActionBarActivity implements ActionBar.Tab
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
     }
 
@@ -86,7 +76,6 @@ public class DrugCartActivity extends ActionBarActivity implements ActionBar.Tab
     public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
 
     }
-
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
@@ -113,16 +102,11 @@ public class DrugCartActivity extends ActionBarActivity implements ActionBar.Tab
 
         @Override
         public CharSequence getPageTitle(int position) {
-            Locale l = Locale.getDefault();
-            switch (position) {
-                case 0:
-                    return getString(R.string.title_section1).toUpperCase(l);
-                case 1:
-                    return getString(R.string.title_section2).toUpperCase(l);
-                case 2:
-                    return getString(R.string.title_section3).toUpperCase(l);
+            if (position == 0) {
+                return getString(R.string.title_drug_cart_summary).toUpperCase();
             }
-            return null;
+
+            return "Panier " + position + 2;
         }
     }
 

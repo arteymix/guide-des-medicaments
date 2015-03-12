@@ -10,10 +10,14 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
+import org.apache.http.HttpConnection;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestFactory;
+import org.apache.http.HttpServerConnection;
+import org.apache.http.client.HttpClient;
 import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.impl.DefaultHttpClientConnection;
 import org.apache.http.message.BasicHttpRequest;
 import org.apache.http.protocol.HttpRequestExecutor;
 
@@ -24,6 +28,11 @@ import java.util.Map;
 
 /**
  * Present information about a specific drug.
+ *
+ * @author Guillaume Poirier-Morency
+ * @author Patrice Dumontier-Houle
+ * @author Charles Deharnais
+ * @author Aldo Lamarre
  */
 public class DrugActivity extends ActionBarActivity {
 
@@ -54,18 +63,4 @@ public class DrugActivity extends ActionBarActivity {
         return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 }

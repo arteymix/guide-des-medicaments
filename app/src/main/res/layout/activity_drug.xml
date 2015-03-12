@@ -29,10 +29,11 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/drug_icon"
+        android:layout_toEndOf="@id/drug_icon"
         android:layout_toRightOf="@id/drug_icon"
         android:text="Aspirin"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:toRightOf="@id/drugIcon" />
+        />
 
     <TextView
         android:layout_width="wrap_content"
@@ -77,7 +78,6 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/drug_description"
-        android:labelFor="@id/counter_indications"
         android:text="Contre-indications" />
 
     <ListView
@@ -91,7 +91,6 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/counter_indications"
-        android:labelFor="@id/similar_drugs"
         android:text="Médicaments similaires" />
 
     <ListView
