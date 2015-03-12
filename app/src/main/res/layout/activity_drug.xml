@@ -15,7 +15,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:text="categorie / sous-categorie"
+        android:text="Salicylate"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <ImageView
@@ -32,15 +32,14 @@
         android:layout_toEndOf="@id/drug_icon"
         android:layout_toRightOf="@id/drug_icon"
         android:text="Aspirin"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        />
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@id/drug_name"
         android:layout_below="@id/drug_name"
-        android:text="anternate names\nalternate name 2\nalternate name 3" />
+        android:text="acetylsalicylic acid\n2-(acetoxy)benzoic acid\nalternate name 3" />
 
     <TextView
         android:id="@+id/maternityIndex"
@@ -71,27 +70,29 @@
         android:layout_below="@+id/posologie"
         android:ellipsize="end"
         android:maxLength="120"
-        android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." />
+        android:text="Aspirin (BAN, USAN), also known as acetylsalicylic acid (/əˌsiːtəlˌsælɨˈsɪlɨk/ ə-see-təl-sal-i-sil-ik) [ASA], is a salicylate drug, often used as an analgesic to relieve minor aches and pains, as an antipyretic to reduce fever, and as an anti-inflammatory medication.[2] Aspirin also has an antiplatelet effect by inhibiting the production of thromboxane, which under normal circumstances binds platelet molecules together to create a patch over damaged walls of blood vessels. Because the platelet patch can become too large and also block blood flow, locally and downstream, aspirin is also used long-term, at low doses, to help prevent heart attacks, strokes, and blood clot formation in people at high risk of developing blood clots.[3] Also, low doses of aspirin may be given immediately after a heart attack to reduce the risk of another heart attack or of the death of cardiac tissue.[4][5] Aspirin may be effective at preventing certain types of cancer, particularly colorectal cancer.[6][7][8] The main side effects of aspirin are gastrointestinal ulcers, stomach bleeding, and ringing in the ears, especially with higher doses. In children and adolescents, aspirin is not recommended for flu-like symptoms or viral illnesses, because of the risk of Reye's syndrome.[9] Aspirin is part of a group of medications called nonsteroidal anti-inflammatory drugs (NSAIDs), but differs from most other NSAIDs in the mechanism of action. Though it and others with similar structure, called the salicylates, have similar effects (antipyretic, anti-inflammatory, analgesic) to the other NSAIDs and inhibit the same enzyme cyclooxygenase (COX), aspirin does so in an irreversible manner and, unlike others, affects more the COX-1 variant than the COX-2 variant of the enzyme.[10] The active ingredient of aspirin was first discovered from the bark of the willow tree in 1763 by Edward Stone of Wadham College, University of Oxford. He had discovered salicylic acid, the active ingredient of aspirin.[11] Aspirin was first synthesized by Felix Hoffmann, a chemist with the German company Bayer in 1897.[12][13] Aspirin is one of the most widely used medications in the world, with an estimated 40,000 tonnes of it being consumed each year.[14] In countries where is a registered trademark owned by Bayer, the generic term is acetylsalicylic acid (ASA).[15] It is on the WHO Model List of Essential Medicines, the most important medications needed in a basic health system.[16]" />
 
     <TextView
         android:id="@+id/label_counter_indicator"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/drug_description"
-        android:text="Contre-indications" />
+        android:text="Contre-indications"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <ListView
         android:id="@+id/counter_indications"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/label_counter_indicator" />
 
     <TextView
         android:id="@+id/label_similar_drugs"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/counter_indications"
-        android:text="Médicaments similaires" />
+        android:text="Médicaments similaires"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <ListView
         android:id="@+id/similar_drugs"
