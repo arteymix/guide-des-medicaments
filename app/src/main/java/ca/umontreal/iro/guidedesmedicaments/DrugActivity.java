@@ -2,21 +2,30 @@ package ca.umontreal.iro.guidedesmedicaments;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.SimpleCursorAdapter;
 
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import ca.umontreal.iro.guidedesmedicaments.rxnav.RxNorm;
 
 /**
  * Present information about a specific drug.
@@ -36,6 +45,7 @@ public class DrugActivity extends ActionBarActivity {
         setContentView(R.layout.activity_drug);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
 
         findViewById(R.id.drug_description).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,7 +71,7 @@ public class DrugActivity extends ActionBarActivity {
         String[] stringIds = {"drug_name"};
         int[] intIds = {R.id.drug_name};
 
-        ListView similarDrugs = (ListView) findViewById(R.id.similar_drugs);
+        final ListView similarDrugs = (ListView) findViewById(R.id.similar_drugs);
         similarDrugs.setAdapter(new SimpleAdapter(this, data, R.layout.item_drug, stringIds, intIds));
 
         similarDrugs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -70,6 +80,35 @@ public class DrugActivity extends ActionBarActivity {
                 startActivity(new Intent(view.getContext(), DrugActivity.class));
             }
         });
+
+        final RxNorm api = new RxNorm(new DefaultHttpClient());
+
+        new AsyncTask<String, Integer, JSONArray>() {
+            @Override
+            protected JSONArray doInBackground(String... classTypes) {
+                try {
+                    return api.allClasses();
+                } catch (IOException ioe) {
+                    Log.e("", "", ioe);
+                    // shit?
+                } catch (JSONException je) {
+                    Log.e("", "", je);
+                    // damn...
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
+
+                // already handled though...
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(JSONArray result) {
+                String[] fromIds = {"className"};
+                int[] toIds = {R.id.drug_name};
+                similarDrugs.setAdapter(new SimpleCursorAdapter(DrugActivity.this, R.layout.item_drug, new JSONArrayCursor(result, "classId"), fromIds, toIds));
+            }
+        }.execute();
     }
 
     @Override
