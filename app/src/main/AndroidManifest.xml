@@ -16,6 +16,7 @@
             <meta-data
                 android:name="android.app.default_searchable"
                 android:value=".DrugsActivity" />
+
         </activity>
 
         <activity

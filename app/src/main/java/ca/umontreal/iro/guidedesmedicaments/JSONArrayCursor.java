@@ -6,30 +6,32 @@ import android.util.Log;
 import org.apache.commons.collections4.IteratorUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.List;
 
 /**
  * Cursor over a JSONArray of JSONObject.
+ * <p/>
+ * Allows simple integration of API data into {@link android.widget.Adapter}.
  *
  * @author Guillaume Poirier-Morency
  */
 public class JSONArrayCursor extends AbstractCursor {
 
     private final JSONArray data;
-    private final String idColumn;
 
     /**
      * @param data
-     * @param idColumn column in the dataset used as the "_id", it must be an integer
      */
-    public JSONArrayCursor(JSONArray data, String idColumn) {
+    public JSONArrayCursor(JSONArray data) {
         this.data = data;
-        this.idColumn = idColumn;
     }
 
     @Override
     public int getCount() {
+        if (data.length() > 10)
+            return 10;
         return data.length();
     }
 
@@ -37,18 +39,16 @@ public class JSONArrayCursor extends AbstractCursor {
     public String[] getColumnNames() {
         try {
             List<String> columnNames = IteratorUtils.toList(data.getJSONObject(mPos == -1 ? 0 : mPos).keys());
+
+            // some api already provide a "_id" column
+            if (!columnNames.contains("_id"))
+                columnNames.add(0, "_id");
+
             return columnNames.toArray(new String[columnNames.size()]);
         } catch (JSONException je) {
             Log.e("", je.getMessage(), je);
             return new String[0];
         }
-    }
-
-    @Override
-    public int getColumnIndex(String columnName) {
-        if (columnName.equals("_id"))
-            return super.getColumnIndex(idColumn);
-        return super.getColumnIndex(columnName);
     }
 
     @Override
@@ -84,6 +84,12 @@ public class JSONArrayCursor extends AbstractCursor {
     @Override
     public long getLong(int column) {
         try {
+            JSONObject obj = data.getJSONObject(mPos);
+
+            // use "_id" if it's provided in the data, otherwise {@link mPos}
+            if (column == getColumnIndex("_id"))
+                return obj.has("_id") ? obj.getLong("_id") : mPos;
+
             return data.getJSONObject(mPos).getLong(getColumnName(column));
         } catch (JSONException je) {
             Log.e("", "", je);

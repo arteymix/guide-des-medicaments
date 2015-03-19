@@ -1,14 +1,9 @@
-package ca.umontreal.iro.guidedesmedicaments.rxnav;
+package org.diro.rxnav;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -39,7 +34,7 @@ public class Interaction extends RxNav {
         String query = "rxcui=" + rxcui;
 
         if (sources.length > 0)
-            query += "&" + StringUtils.join(sources, " ");
+            query += "&sources=" + StringUtils.join(sources, " ");
 
         return get("interaction", URLEncoder.encode(query, "UTF-8"))
                 .getJSONObject("interactionTypeGroup")
@@ -63,7 +58,7 @@ public class Interaction extends RxNav {
         String query = "rxcui=" + StringUtils.join(rxcuis, " ");
 
         if (sources.length > 0)
-            query += "&" + StringUtils.join(sources, " ");
+            query += "&sources=" + StringUtils.join(sources, " ");
 
         return get("interaction", URLEncoder.encode(query, "UTF-8"))
                 .getJSONObject("fullInteractionTypeGroup")

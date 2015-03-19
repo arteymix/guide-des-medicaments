@@ -14,7 +14,10 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.SimpleCursorAdapter;
 
+import com.linearlistview.LinearListView;
+
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.diro.rxnav.RxClass;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -24,8 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import ca.umontreal.iro.guidedesmedicaments.rxnav.RxNorm;
 
 /**
  * Present information about a specific drug.
@@ -57,7 +58,7 @@ public class DrugActivity extends ActionBarActivity {
             }
         });
 
-        ListView counterIndications = (ListView) findViewById(R.id.counter_indications);
+        LinearListView counterIndications = (LinearListView) findViewById(R.id.counter_indications);
 
         counterIndications.setAdapter(new SimpleAdapter(this, new ArrayList<Map<String, String>>(), android.R.layout.simple_list_item_1, new String[0], new int[0]));
 
@@ -71,17 +72,19 @@ public class DrugActivity extends ActionBarActivity {
         String[] stringIds = {"drug_name"};
         int[] intIds = {R.id.drug_name};
 
-        final ListView similarDrugs = (ListView) findViewById(R.id.similar_drugs);
+        final LinearListView similarDrugs = (LinearListView) findViewById(R.id.similar_drugs);
         similarDrugs.setAdapter(new SimpleAdapter(this, data, R.layout.item_drug, stringIds, intIds));
 
-        similarDrugs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        similarDrugs.setOnItemClickListener(new LinearListView.OnItemClickListener() {
+
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(LinearListView linearListView, View view, int i, long l) {
                 startActivity(new Intent(view.getContext(), DrugActivity.class));
+
             }
         });
 
-        final RxNorm api = new RxNorm(new DefaultHttpClient());
+        final RxClass api = new RxClass(new DefaultHttpClient());
 
         new AsyncTask<String, Integer, JSONArray>() {
             @Override
@@ -106,7 +109,7 @@ public class DrugActivity extends ActionBarActivity {
             protected void onPostExecute(JSONArray result) {
                 String[] fromIds = {"className"};
                 int[] toIds = {R.id.drug_name};
-                similarDrugs.setAdapter(new SimpleCursorAdapter(DrugActivity.this, R.layout.item_drug, new JSONArrayCursor(result, "classId"), fromIds, toIds));
+                similarDrugs.setAdapter(new SimpleCursorAdapter(DrugActivity.this, R.layout.item_drug, new JSONArrayCursor(result), fromIds, toIds));
             }
         }.execute();
     }
