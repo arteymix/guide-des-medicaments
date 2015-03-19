@@ -9,18 +9,24 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="ca.umontreal.iro.guidedesmedicaments.MainActivity">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
     <SearchView
         android:id="@+id/search_drug"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:iconifiedByDefault="false"
-        android:queryHint="Rechercher un médicament" />
+        android:queryHint="Rechercher" />
 
     <Spinner
         android:id="@+id/search_spinners"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:entries="@array/types"
-        android:layout_below="@id/search_drug" />
+        android:layout_toRightOf="@id/search_drug"
+        android:layout_alignBaseline="@id/search_drug"
+        android:spinnerMode="dropdown" />
 
 </RelativeLayout>

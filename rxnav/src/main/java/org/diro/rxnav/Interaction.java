@@ -12,7 +12,6 @@ import java.net.URLEncoder;
 /**
  * The Interaction API is a web service for accessing drug-drug interactions. No license is needed
  * to use the Interaction API.
- * <p/>
  *
  * @author Guillaume Poirier-Morency
  */
