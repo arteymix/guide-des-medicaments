@@ -5,4 +5,9 @@
     <string name="title_activity_drugs">Médicaments</string>
     <string name="title_activity_drug">Médicament</string>
     <string name="title_drug_cart_summary">Paniers</string>
+    <string-array name="types">
+        <item>Médicament</item>
+        <item>Catégorie</item>
+        <item>Ingrédient</item>
+    </string-array>
 </resources>

@@ -6,4 +6,9 @@
     <string name="title_activity_drugs">Drugs</string>
     <string name="title_activity_drug">Drug</string>
     <string name="title_drug_cart_summary">Carts</string>
+    <string-array name="types">
+        <item>Drug</item>
+        <item>Category</item>
+        <item>Ingredient</item>
+    </string-array>
 </resources>
