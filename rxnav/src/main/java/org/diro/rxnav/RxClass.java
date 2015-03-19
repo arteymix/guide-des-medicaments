@@ -1,31 +1,26 @@
-package ca.umontreal.iro.guidedesmedicaments.rxnav;
+package org.diro.rxnav;
 
-import android.util.Log;
-
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 
 /**
+ * The RxClass API is a web service for accessing drug classes and drug members for a number of
+ * different drug class types. No license is needed to use the RxClass API.
  * <p/>
- * Pour optimiser les appels, l'api peut être instancié avec un HttpClient qui supporte la mise en
- * cache des réponses.
  *
  * @author Guillaume Poirier-Morency
  */
-public class RxNorm extends RxNav {
+public class RxClass extends RxNav {
 
-    public RxNorm(HttpClient client) {
+    public RxClass(HttpClient client) {
         super(client);
     }
 
@@ -41,12 +36,26 @@ public class RxNorm extends RxNav {
      *
      * @param classTypes
      * @return
-     * @throws IOException
-     * @throws JSONException
+     * @throws java.io.IOException
+     * @throws org.json.JSONException
      */
     public JSONArray allClasses(String... classTypes) throws IOException, JSONException, URISyntaxException {
         return get("allClasses", classTypes.length > 0 ? "classTypes=" + URLEncoder.encode(StringUtils.join(classTypes, " "), "UTF-8") : null)
                 .getJSONObject("rxclassMinConceptList")
                 .getJSONArray("rxclassMinConcept");
+    }
+
+    /**
+     * Get the spelling suggestions for a drug or class name.
+     *
+     * @param term the name of the drug or class.
+     * @param type type of name. Valid values are "DRUG" or "CLASS" for a drug name or class name,
+     *             respectively.
+     * @return
+     */
+    public JSONArray getSpellingSuggestions(String term, String type) throws IOException, JSONException, URISyntaxException {
+        return get("spellingsuggestions", URLEncoder.encode("term=" + term + "&type=" + type, "UTF-8"))
+                .getJSONObject("suggestionList")
+                .getJSONArray("suggestion");
     }
 }
