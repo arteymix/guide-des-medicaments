@@ -16,7 +16,10 @@
             <meta-data
                 android:name="android.app.default_searchable"
                 android:value=".DrugsActivity" />
-
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
         <activity
@@ -44,10 +47,19 @@
             <meta-data
                 android:name="android.app.default_searchable"
                 android:value=".DrugsActivity" />
+
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="rxnav.nlm.nih.gov"
+                    android:pathPrefix="/REST/rxcui/"
+                    android:scheme="http" />
             </intent-filter>
+
         </activity>
 
     </application>

@@ -27,11 +27,6 @@ import java.util.List;
  */
 public class RxNorm extends RxNav {
 
-    @Override
-    public JSONObject get(String path, List<? extends NameValuePair> query) throws JSONException, IOException {
-        return super.get("rxcui/" + path, query);
-    }
-
     /**
      * Determine if a property exists for a concept and (optionally) matches the specified property
      * value. Returns the RxCUI if the property name matches.
@@ -55,7 +50,7 @@ public class RxNorm extends RxNav {
         if (propValues.length > 0)
             query.add(new BasicNameValuePair("propValues", StringUtils.join(propValues, " ")));
 
-        return get(rxcui + "/filter", query)
+        return get("rxcui/" + rxcui + "/filter", query)
                 .getJSONObject("propConceptGroup")
                 .getJSONArray("propConcept");
     }
@@ -79,8 +74,72 @@ public class RxNorm extends RxNav {
         if (prop.length > 0)
             query.add(new BasicNameValuePair("prop", StringUtils.join(prop, " ")));
 
-        return get(rxcui + "/allProperties", query)
+        return get("rxcui/" + rxcui + "/allProperties", query)
                 .getJSONObject("propConceptGroup")
                 .getJSONArray("propConcept");
+    }
+
+    /**
+     * Get all the related RxNorm concepts for a given RxNorm identifier. This includes concepts of
+     * term types "IN", "MIN", "PIN", "BN", "SBD", "SBDC", "SBDF", "SBDG", "SCD", "SCDC", "SCDF",
+     * "SCDG", "DF", "DFG", "BPCK" and "GPCK". See default paths for the paths traveled to get
+     * concepts for each term type.
+     * <p/>
+     * http://rxnav.nlm.nih.gov/RxNormAPIs.html#uLink=RxNorm_REST_getAllRelatedInfo
+     *
+     * @param rxcui
+     * @return
+     * @throws IOException
+     * @throws JSONException
+     */
+    public JSONArray getAllRelatedInfo(int rxcui) throws IOException, JSONException {
+        return get("rxcui/" + rxcui + "/allrelated", null)
+                .getJSONObject("allRelatedGroup")
+                .getJSONArray("conceptGroup");
+    }
+
+    /**
+     * Get the drug products associated with a specified name. The name can be an ingredient, brand
+     * name, clinical dose form, branded dose form, clinical drug component, or branded drug
+     * component.
+     * <p/>
+     * http://rxnav.nlm.nih.gov/RxNormAPIs.html#uLink=RxNorm_REST_getDrugs
+     *
+     * @param rxcui
+     * @param name  an ingredient, brand, clinical dose form, branded dose form, clinical drug
+     *              component or branded drug component name
+     * @return
+     */
+    public JSONArray getDrugs(int rxcui, String name) throws IOException, JSONException {
+        return get("drugs", null)
+                .getJSONObject("drugGroup")
+                .getJSONArray("conceptGroup");
+    }
+
+    /**
+     * Get the related RxNorm identifiers of an RxNorm concept specified by one or more term types.
+     * See default paths for the paths traveled to get concepts for each term type.
+     *
+     * @param rxcui
+     * @param tty   a list of one or more RxNorm term types. This field is required. See the
+     *              /termtypes example for the valid term types.
+     * @return
+     */
+    public JSONArray getRelatedByType(int rxcui, String... tty) throws IOException, JSONException {
+        return get("rxcui/" + rxcui + "/allrelated", null)
+                .getJSONObject("relatedGroup")
+                .getJSONArray("conceptGroup");
+    }
+
+    /**
+     * Get the RxNorm concept properties.
+     *
+     * @param rxcui
+     * @return
+     * @throws IOException
+     * @throws JSONException
+     */
+    public JSONObject getRxConceptProperties(int rxcui) throws IOException, JSONException {
+        return get("rxcui/" + rxcui + "/properties", null).getJSONObject("properties");
     }
 }

@@ -1,5 +1,7 @@
 package org.diro.rxnav;
 
+import android.util.Log;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -84,17 +86,21 @@ public class RxNav {
      * {@link org.apache.http.client.HttpClient}.
      *
      * @param path  requested path prefixed by "/REST/" and suffixed by ".json"
-     * @param query HTTP query hopefully encoded by {@link java.net.URLEncoder}
+     * @param query HTTP query or null if you do not want a query at all
      * @return the requested resource that should be extracted to the meaningful data
      * @throws IOException   always expect some I/O failure
      * @throws JSONException should not happen unless the API returns a corrupted response
      */
     protected JSONObject get(String path, List<? extends NameValuePair> query) throws IOException, JSONException {
-        URL url = new URL(scheme, host, port, basePath + path + ".json?" + URLEncodedUtils.format(query, "UTF-8"));
+        URL url = new URL(scheme, host, port, basePath + path + ".json" + (query == null ? "" : "?" + URLEncodedUtils.format(query, "UTF-8")));
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-        return (JSONObject) new JSONTokener(connection.getResponseMessage()).nextValue();
+        try {
+            return (JSONObject) new JSONTokener(IOUtils.toString(connection.getInputStream())).nextValue();
+        } finally {
+            connection.disconnect();
+        }
     }
 
 }

@@ -1,11 +1,14 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.net.http.AndroidHttpClient;
 import android.net.http.HttpResponseCache;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.SearchView;
 import android.widget.SimpleCursorAdapter;
 
@@ -46,6 +49,13 @@ public class MainActivity extends ActionBarActivity {
 
         final RxClass api = new RxClass();
 
+        findViewById(R.id.action_demo).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://rxnav.nlm.nih.gov/REST/rxcui/131725")));
+            }
+        });
+
         sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -54,7 +64,6 @@ public class MainActivity extends ActionBarActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-
                 new AsyncTask<String, Integer, JSONArray>() {
                     @Override
                     protected JSONArray doInBackground(String... params) {

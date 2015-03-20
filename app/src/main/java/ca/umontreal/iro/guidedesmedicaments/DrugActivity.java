@@ -9,20 +9,18 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 
 import com.linearlistview.LinearListView;
 
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.diro.rxnav.RxClass;
+import org.diro.rxnav.RxNorm;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,61 +40,38 @@ public class DrugActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setTitle("Aspirin");
+        // /REST/rxuid/{rxuid}/...
+        int rxuid = Integer.parseInt(getIntent().getData().getPathSegments().get(2));
+
+        Log.d("", "displaying " + rxuid);
+
         setContentView(R.layout.activity_drug);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-
-        findViewById(R.id.drug_description).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new AlertDialog.Builder(v.getContext())
-                        .setTitle("Description")
-                        .setMessage("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum")
-                        .show();
-            }
-        });
-
-        LinearListView counterIndications = (LinearListView) findViewById(R.id.counter_indications);
-
-        counterIndications.setAdapter(new SimpleAdapter(this, new ArrayList<Map<String, String>>(), android.R.layout.simple_list_item_1, new String[0], new int[0]));
-
-        List<Map<String, String>> data = new ArrayList<>();
-        Map<String, String> entry = new HashMap<>();
-        entry.put("drug_name", "Aspirin");
-
-        for (int i = 0; i < 10; i++)
-            data.add(entry);
-
-        String[] stringIds = {"drug_name"};
-        int[] intIds = {R.id.drug_name};
-
+        final TextView drugName = (TextView) findViewById(R.id.drug_name);
+        final LinearListView counterIndications = (LinearListView) findViewById(R.id.counter_indications);
         final LinearListView similarDrugs = (LinearListView) findViewById(R.id.similar_drugs);
-        similarDrugs.setAdapter(new SimpleAdapter(this, data, R.layout.item_drug, stringIds, intIds));
 
         similarDrugs.setOnItemClickListener(new LinearListView.OnItemClickListener() {
-
             @Override
             public void onItemClick(LinearListView linearListView, View view, int i, long l) {
                 startActivity(new Intent(view.getContext(), DrugActivity.class));
-
             }
         });
 
-        final RxClass api = new RxClass();
+        final RxNorm api = new RxNorm();
 
-        new AsyncTask<String, Integer, JSONArray>() {
+        /**
+         * Récupère les données du concept affiché.
+         */
+        new AsyncTask<Integer, Integer, JSONObject>() {
             @Override
-            protected JSONArray doInBackground(String... classTypes) {
+            protected JSONObject doInBackground(Integer... rxcui) {
                 try {
-                    return api.allClasses();
+                    return api.getRxConceptProperties(rxcui[0]);
                 } catch (IOException ioe) {
-                    Log.e("", "", ioe);
-                    // shit?
+                    Log.e("", ioe.getMessage(), ioe);
                 } catch (JSONException je) {
-                    Log.e("", "", je);
-                    // damn...
+                    Log.e("", je.getMessage(), je);
                 }
 
                 // already handled though...
@@ -104,28 +79,65 @@ public class DrugActivity extends ActionBarActivity {
             }
 
             @Override
-            protected void onPostExecute(JSONArray result) {
-                String[] fromIds = {"className"};
-                int[] toIds = {R.id.drug_name};
-                similarDrugs.setAdapter(new SimpleCursorAdapter(DrugActivity.this, R.layout.item_drug, new JSONArrayCursor(result), fromIds, toIds));
+            protected void onPostExecute(JSONObject result) {
+                try {
+                    setTitle(result.getString("name"));
+                    drugName.setText(result.getString("name"));
+                } catch (JSONException jse) {
+                    Log.e("", jse.getMessage(), jse);
+                }
             }
-        }.execute();
+        }.execute(rxuid);
+
+        /*
+        new AsyncTask<Integer, Integer, JSONArray>() {
+
+            @Override
+            protected JSONArray doInBackground(Integer... params) {
+
+                try {
+                    api.getAllRelatedInfo(params[0]);
+                } catch (IOException ioe) {
+                    Log.e("", ioe.getMessage(), ioe);
+                } catch (JSONException je) {
+                    Log.e("", je.getMessage(), je);
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(JSONArray result) {
+                try {
+
+                    JSONArrayCursor jac = new JSONArrayCursor(result);
+                    similarDrugs.setAdapter(new SimpleCursorAdapter(DrugActivity.this, R.layout.item_drug, jac, new String[]{}, new int[]{}, 0x0));
+
+                } catch (JSONException jse) {
+                    Log.e("", jse.getMessage(), jse);
+                }
+            }
+        }.execute(rxuid);
+        */
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_medicament, menu);
+        getMenuInflater().inflate(R.menu.menu_drug, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_cart:
+                // add to cart!
+                startActivity(new Intent(this, DrugCartActivity.class));
             case R.id.action_search:
                 return onSearchRequested();
-
         }
+
         return super.onOptionsItemSelected(item);
     }
 

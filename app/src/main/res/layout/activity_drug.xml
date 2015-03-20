@@ -29,23 +29,18 @@
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <CheckBox
-            android:id="@+id/cart"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true" />
-
-        <CheckBox
             android:id="@+id/bookmark"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toLeftOf="@id/cart" />
-
+            android:layout_alignParentRight="true"
+            android:layout_alignBaseline="@id/drug_name"
+            style="@android:style/Widget.DeviceDefault.Light.CompoundButton.Star" />
 
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@id/drug_name"
-            android:layout_below="@id/drug_name"
+            android:layout_below="@id/bookmark"
             android:text="acetylsalicylic acid\n2-(acetoxy)benzoic acid\nalternate name 3" />
 
         <TextView
