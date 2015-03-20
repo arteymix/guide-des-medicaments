@@ -1,7 +1,9 @@
 package org.diro.rxnav;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,6 +11,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The RxNorm API is a web service for accessing the current RxNorm data set.
@@ -16,19 +20,15 @@ import java.net.URLEncoder;
  * With one exception, no license is needed to use the RxNorm API. This is because the data returned
  * from the API is from the RxNorm vocabulary, a non-proprietary vocabulary developed by the
  * National Library of Medicine.
- *
+ * <p/>
  * http://rxnav.nlm.nih.gov/RxNormAPIs.html
  *
  * @author Guillaume Poirier-Morency
  */
 public class RxNorm extends RxNav {
 
-    public RxNorm(HttpClient client) {
-        super(client);
-    }
-
     @Override
-    public JSONObject get(String path, String query) throws JSONException, IOException, URISyntaxException {
+    public JSONObject get(String path, List<? extends NameValuePair> query) throws JSONException, IOException {
         return super.get("rxcui/" + path, query);
     }
 
@@ -48,12 +48,14 @@ public class RxNorm extends RxNav {
      * @throws URISyntaxException
      */
     public JSONArray filterByProperty(int rxcui, String propName, String... propValues) throws IOException, JSONException, URISyntaxException {
-        String query = "propName=" + propName;
+        List<NameValuePair> query = new ArrayList<>();
+
+        query.add(new BasicNameValuePair("propName", propName));
 
         if (propValues.length > 0)
-            query += "&propValues=" + StringUtils.join(propValues, " ");
+            query.add(new BasicNameValuePair("propValues", StringUtils.join(propValues, " ")));
 
-        return get(rxcui + "/filter", URLEncoder.encode(query, "UTF-8"))
+        return get(rxcui + "/filter", query)
                 .getJSONObject("propConceptGroup")
                 .getJSONArray("propConcept");
     }
@@ -72,7 +74,12 @@ public class RxNorm extends RxNav {
      * @throws URISyntaxException
      */
     public JSONArray getAllProperties(int rxcui, String... prop) throws IOException, JSONException, URISyntaxException {
-        return get(rxcui + "/allProperties", URLEncoder.encode("prop=" + StringUtils.join(prop, " "), "UTF-8"))
+        List<NameValuePair> query = new ArrayList<>();
+
+        if (prop.length > 0)
+            query.add(new BasicNameValuePair("prop", StringUtils.join(prop, " ")));
+
+        return get(rxcui + "/allProperties", query)
                 .getJSONObject("propConceptGroup")
                 .getJSONArray("propConcept");
     }

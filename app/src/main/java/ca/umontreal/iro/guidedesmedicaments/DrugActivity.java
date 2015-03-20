@@ -84,7 +84,7 @@ public class DrugActivity extends ActionBarActivity {
             }
         });
 
-        final RxClass api = new RxClass(new DefaultHttpClient());
+        final RxClass api = new RxClass();
 
         new AsyncTask<String, Integer, JSONArray>() {
             @Override
@@ -97,8 +97,6 @@ public class DrugActivity extends ActionBarActivity {
                 } catch (JSONException je) {
                     Log.e("", "", je);
                     // damn...
-                } catch (URISyntaxException e) {
-                    e.printStackTrace();
                 }
 
                 // already handled though...

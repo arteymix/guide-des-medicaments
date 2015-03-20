@@ -17,15 +17,29 @@
             android:layout_width="92dp"
             android:layout_height="92dp" />
 
+
         <TextView
             android:id="@+id/drug_name"
-            android:layout_width="fill_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignTop="@id/drug_icon"
             android:layout_toEndOf="@id/drug_icon"
             android:layout_toRightOf="@id/drug_icon"
             android:text="Aspirin"
             android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <CheckBox
+            android:id="@+id/cart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true" />
+
+        <CheckBox
+            android:id="@+id/bookmark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/cart" />
+
 
         <TextView
             android:layout_width="fill_parent"

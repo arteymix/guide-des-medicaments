@@ -1,7 +1,9 @@
 package org.diro.rxnav;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,6 +12,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The RxClass API is a web service for accessing drug classes and drug members for a number of
@@ -20,12 +24,8 @@ import java.net.URLEncoder;
  */
 public class RxClass extends RxNav {
 
-    public RxClass(HttpClient client) {
-        super(client);
-    }
-
     @Override
-    public JSONObject get(String path, String query) throws JSONException, IOException, URISyntaxException {
+    public JSONObject get(String path, List<? extends NameValuePair> query) throws JSONException, IOException {
         return super.get("rxclass/" + path, query);
     }
 
@@ -39,8 +39,13 @@ public class RxClass extends RxNav {
      * @throws java.io.IOException
      * @throws org.json.JSONException
      */
-    public JSONArray allClasses(String... classTypes) throws IOException, JSONException, URISyntaxException {
-        return get("allClasses", classTypes.length > 0 ? "classTypes=" + URLEncoder.encode(StringUtils.join(classTypes, " "), "UTF-8") : null)
+    public JSONArray allClasses(String... classTypes) throws IOException, JSONException {
+        List<NameValuePair> query = new ArrayList<>();
+
+        if (classTypes.length > 0)
+            query.add(new BasicNameValuePair("classTypes", StringUtils.join(classTypes, " ")));
+
+        return get("allClasses", query)
                 .getJSONObject("rxclassMinConceptList")
                 .getJSONArray("rxclassMinConcept");
     }
@@ -53,8 +58,13 @@ public class RxClass extends RxNav {
      *             respectively.
      * @return
      */
-    public JSONArray getSpellingSuggestions(String term, String type) throws IOException, JSONException, URISyntaxException {
-        return get("spellingsuggestions", URLEncoder.encode("term=" + term + "&type=" + type, "UTF-8"))
+    public JSONArray getSpellingSuggestions(String term, String type) throws IOException, JSONException {
+        List<NameValuePair> query = new ArrayList<>();
+
+        query.add(new BasicNameValuePair("term", term));
+        query.add(new BasicNameValuePair("type", type));
+
+        return get("spellingsuggestions", query)
                 .getJSONObject("suggestionList")
                 .getJSONArray("suggestion");
     }

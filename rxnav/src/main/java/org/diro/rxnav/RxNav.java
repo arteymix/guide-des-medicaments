@@ -2,15 +2,20 @@ package org.diro.rxnav;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.List;
 
 /**
  * RxNav is a browser for several drug information sources, including RxNorm, RxTerms and NDF-RT.
@@ -33,13 +38,45 @@ import java.net.URISyntaxException;
  */
 public class RxNav {
 
-    private final HttpClient client;
+    /**
+     *
+     */
+    public final String scheme;
 
     /**
-     * @param client HTTP client used to perform requests
+     *
      */
-    public RxNav(HttpClient client) {
-        this.client = client;
+    public final String host;
+
+    /**
+     *
+     */
+    public final int port;
+
+    /**
+     *
+     */
+    public final String basePath;
+
+    /**
+     * @param host
+     * @param port
+     * @param basePath
+     */
+    public RxNav(String scheme, String host, int port, String basePath) {
+        this.scheme = scheme;
+        this.host = host;
+        this.port = port;
+        this.basePath = basePath;
+    }
+
+    /**
+     * Initialize RxNav to use the public API at http://rxnav.nlm.nih.gov
+     * <p/>
+     * It is recommended to use your own API
+     */
+    public RxNav() {
+        this("http", "rxnav.nlm.nih.gov", 80, "/REST/");
     }
 
     /**
@@ -49,18 +86,15 @@ public class RxNav {
      * @param path  requested path prefixed by "/REST/" and suffixed by ".json"
      * @param query HTTP query hopefully encoded by {@link java.net.URLEncoder}
      * @return the requested resource that should be extracted to the meaningful data
-     * @throws IOException        always expect some I/O failure
-     * @throws JSONException      should not happen unless the API returns a corrupted response
-     * @throws URISyntaxException if a silly path or query has been provided
+     * @throws IOException   always expect some I/O failure
+     * @throws JSONException should not happen unless the API returns a corrupted response
      */
-    protected JSONObject get(String path, String query) throws IOException, JSONException, URISyntaxException {
-        HttpResponse response = client.execute(new HttpGet(new URI("http", null, "rxnav.nlm.nih.gov", 80, "/REST/" + path + ".json", query, null)));
+    protected JSONObject get(String path, List<? extends NameValuePair> query) throws IOException, JSONException {
+        URL url = new URL(scheme, host, port, basePath + path + ".json?" + URLEncodedUtils.format(query, "UTF-8"));
 
-        // Recent JSON api support reading from InputStream, but we are kinda stuck dumping the
-        // whole InputStream into a String...
-        String body = IOUtils.toString(response.getEntity().getContent());
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-        return (JSONObject) new JSONTokener(body).nextValue();
+        return (JSONObject) new JSONTokener(connection.getResponseMessage()).nextValue();
     }
 
 }

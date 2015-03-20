@@ -30,8 +30,6 @@ public class JSONArrayCursor extends AbstractCursor {
 
     @Override
     public int getCount() {
-        if (data.length() > 10)
-            return 10;
         return data.length();
     }
 

@@ -9,6 +9,7 @@ import android.util.Log;
 import android.widget.SearchView;
 import android.widget.SimpleCursorAdapter;
 
+import org.apache.http.client.methods.HttpGet;
 import org.diro.rxnav.RxClass;
 import org.diro.rxnav.RxNorm;
 import org.json.JSONArray;
@@ -36,14 +37,14 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         try {
-            HttpResponseCache.install(new File(getCacheDir(), "http"), 10 * 1024 * 1024);// 10 MiB
+            HttpResponseCache.install(getCacheDir(), 10 * 1024 * 1024);// 10 MiB
         } catch (IOException ioe) {
             Log.i("", "could not install the HTTP response cache", ioe);
         }
 
         final SearchView sv = (SearchView) findViewById(R.id.search_drug);
 
-        final RxClass api = new RxClass(AndroidHttpClient.newInstance("", this));
+        final RxClass api = new RxClass();
 
         sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -64,8 +65,6 @@ public class MainActivity extends ActionBarActivity {
                             Log.e("", e.getMessage(), e);
                             e.printStackTrace();
                         } catch (JSONException e) {
-                            Log.e("", e.getMessage(), e);
-                        } catch (URISyntaxException e) {
                             Log.e("", e.getMessage(), e);
                         }
 

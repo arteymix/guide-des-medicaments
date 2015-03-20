@@ -1,13 +1,18 @@
 package org.diro.rxnav;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The Interaction API is a web service for accessing drug-drug interactions. No license is needed
@@ -17,8 +22,9 @@ import java.net.URLEncoder;
  */
 public class Interaction extends RxNav {
 
-    public Interaction(HttpClient client) {
-        super(client);
+    @Override
+    public JSONObject get(String path, List<? extends NameValuePair> query) throws JSONException, IOException {
+        return super.get("interaction/" + path, query);
     }
 
     /**
@@ -29,13 +35,15 @@ public class Interaction extends RxNav {
      * @throws IOException
      * @throws JSONException
      */
-    public JSONArray findDrugInteractions(int rxcui, String... sources) throws IOException, JSONException, URISyntaxException {
-        String query = "rxcui=" + rxcui;
+    public JSONArray findDrugInteractions(int rxcui, String... sources) throws IOException, JSONException {
+        List<NameValuePair> query = new ArrayList<>();
+
+        query.add(new BasicNameValuePair("rxcui", Integer.toString(rxcui)));
 
         if (sources.length > 0)
-            query += "&sources=" + StringUtils.join(sources, " ");
+            query.add(new BasicNameValuePair("propValues", StringUtils.join(sources, " ")));
 
-        return get("interaction", URLEncoder.encode(query, "UTF-8"))
+        return get("interaction", query)
                 .getJSONObject("interactionTypeGroup")
                 .getJSONArray("interactionType");
     }
@@ -51,15 +59,16 @@ public class Interaction extends RxNav {
      * @return
      * @throws IOException
      * @throws JSONException
-     * @throws URISyntaxException
      */
-    public JSONArray findInteractionsFromList(int[] rxcuis, String... sources) throws IOException, JSONException, URISyntaxException {
-        String query = "rxcui=" + StringUtils.join(rxcuis, " ");
+    public JSONArray findInteractionsFromList(int[] rxcuis, String... sources) throws IOException, JSONException {
+        List<NameValuePair> query = new ArrayList<>();
+
+        query.add(new BasicNameValuePair("rxcuis", StringUtils.join(rxcuis, " ")));
 
         if (sources.length > 0)
-            query += "&sources=" + StringUtils.join(sources, " ");
+            query.add(new BasicNameValuePair("propValues", StringUtils.join(sources, " ")));
 
-        return get("interaction", URLEncoder.encode(query, "UTF-8"))
+        return get("interaction", query)
                 .getJSONObject("fullInteractionTypeGroup")
                 .getJSONArray("fullInteractionType");
     }
