@@ -1,21 +1,30 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
+import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
+import org.diro.rxnav.Interaction;
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Present drug carts, each containing a list of drugs.
- *
+ * Present the drug cart and its content using a {@link android.support.v4.view.ViewPager}.
+ * <p/>
  * The first page presents a summary of all drug carts and subsequent pages (swipe right) present
  * each cart individually.
  *
@@ -24,122 +33,115 @@ import android.view.ViewGroup;
  * @author Charles Deharnais
  * @author Aldo Lamarre
  */
-public class DrugCartActivity extends ActionBarActivity implements ActionBar.TabListener {
-
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
-    SectionsPagerAdapter mSectionsPagerAdapter;
-
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
-    ViewPager mViewPager;
+public class DrugCartActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drug_cart);
 
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        final Set<String> rxcuids = getSharedPreferences("cart", Context.MODE_PRIVATE)
+                .getStringSet("rxcuids", new HashSet<String>());
+
+        Log.i("", "rxcuids dans le panier " + rxcuids);
+
+        final Interaction interaction = new Interaction();
+
+        new AsyncTask<String, Integer, JSONArray>() {
+
+            @Override
+            protected JSONArray doInBackground(String... rxcuids) {
+                try {
+                    return interaction.findInteractionsFromList(rxcuids, "DRUG");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(JSONArray interactions) {
+            }
+        }.execute(rxcuids.toArray(new String[rxcuids.size()]));
 
         // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-    }
+        final ViewPager pager = (ViewPager) findViewById(R.id.pager);
 
+        final FragmentPagerAdapter pa = new FragmentPagerAdapter(getSupportFragmentManager()) {
+
+            @Override
+            public android.support.v4.app.Fragment getItem(int position) {
+                if (position == 0)
+                    return new DrugInteractionFragment();
+                return new DrugFragment();
+            }
+
+            @Override
+            public int getCount() {
+                return 1 + getSharedPreferences("cart", Context.MODE_PRIVATE)
+                        .getStringSet("rxcuids", new HashSet<String>())
+                        .size();
+            }
+        };
+
+        pager.setAdapter(pa);
+
+        pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (position > 0) {
+
+                    TextView tv = (TextView) findViewById(R.id.drug_name);
+                    setTitle(tv.getText());
+                } else {
+                    setTitle("Panier");
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_panier, menu);
+        getMenuInflater().inflate(R.menu.menu_cart, menu);
         return true;
     }
 
-    @Override
-    public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-    }
-
-    @Override
-    public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-
-    }
-
-    @Override
-    public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-
-    }
-
     /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
+     * Fragment presenting interaction between a set of drugs.
+     *
+     * @author Guillaume Poirier-Morency
      */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
-
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
+    public static class DrugInteractionFragment extends android.support.v4.app.Fragment {
 
         @Override
-        public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
-        }
-
-        @Override
-        public int getCount() {
-            // Show 3 total pages.
-            return 3;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            if (position == 0) {
-                return getString(R.string.title_drug_cart_summary).toUpperCase();
-            }
-
-            return "Panier " + position + 2;
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            return inflater.inflate(R.layout.fragment_interaction, container, false);
         }
     }
 
     /**
-     * A placeholder fragment containing a simple view.
+     * Fragment presenting a drug.
+     *
+     * @author Guillaume Poirier-Morency
      */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        public PlaceholderFragment() {
-        }
+    public static class DrugFragment extends android.support.v4.app.Fragment {
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.item_drug_cart, container, false);
-            return rootView;
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            return inflater.inflate(R.layout.activity_drug, container, false);
         }
     }
 

@@ -16,7 +16,6 @@
         android:iconifiedByDefault="false"
         android:queryHint="Rechercher" />
 
-
     <Spinner
         android:id="@+id/search_spinners"
         android:layout_width="wrap_content"

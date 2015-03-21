@@ -42,7 +42,7 @@ public class RxNorm extends RxNav {
      * @throws JSONException
      * @throws URISyntaxException
      */
-    public JSONArray filterByProperty(int rxcui, String propName, String... propValues) throws IOException, JSONException, URISyntaxException {
+    public JSONArray filterByProperty(String rxcui, String propName, String... propValues) throws IOException, JSONException, URISyntaxException {
         List<NameValuePair> query = new ArrayList<>();
 
         query.add(new BasicNameValuePair("propName", propName));
@@ -68,7 +68,7 @@ public class RxNorm extends RxNav {
      * @throws JSONException
      * @throws URISyntaxException
      */
-    public JSONArray getAllProperties(int rxcui, String... prop) throws IOException, JSONException, URISyntaxException {
+    public JSONArray getAllProperties(String rxcui, String... prop) throws IOException, JSONException, URISyntaxException {
         List<NameValuePair> query = new ArrayList<>();
 
         if (prop.length > 0)
@@ -92,7 +92,7 @@ public class RxNorm extends RxNav {
      * @throws IOException
      * @throws JSONException
      */
-    public JSONArray getAllRelatedInfo(int rxcui) throws IOException, JSONException {
+    public JSONArray getAllRelatedInfo(String rxcui) throws IOException, JSONException {
         return get("rxcui/" + rxcui + "/allrelated", null)
                 .getJSONObject("allRelatedGroup")
                 .getJSONArray("conceptGroup");
@@ -110,7 +110,7 @@ public class RxNorm extends RxNav {
      *              component or branded drug component name
      * @return
      */
-    public JSONArray getDrugs(int rxcui, String name) throws IOException, JSONException {
+    public JSONArray getDrugs(String rxcui, String name) throws IOException, JSONException {
         return get("drugs", null)
                 .getJSONObject("drugGroup")
                 .getJSONArray("conceptGroup");
@@ -125,7 +125,7 @@ public class RxNorm extends RxNav {
      *              /termtypes example for the valid term types.
      * @return
      */
-    public JSONArray getRelatedByType(int rxcui, String... tty) throws IOException, JSONException {
+    public JSONArray getRelatedByType(String rxcui, String... tty) throws IOException, JSONException {
         return get("rxcui/" + rxcui + "/allrelated", null)
                 .getJSONObject("relatedGroup")
                 .getJSONArray("conceptGroup");
@@ -139,7 +139,7 @@ public class RxNorm extends RxNav {
      * @throws IOException
      * @throws JSONException
      */
-    public JSONObject getRxConceptProperties(int rxcui) throws IOException, JSONException {
+    public JSONObject getRxConceptProperties(String rxcui) throws IOException, JSONException {
         return get("rxcui/" + rxcui + "/properties", null).getJSONObject("properties");
     }
 }

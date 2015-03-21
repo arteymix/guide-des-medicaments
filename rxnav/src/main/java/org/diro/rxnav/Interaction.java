@@ -35,10 +35,10 @@ public class Interaction extends RxNav {
      * @throws IOException
      * @throws JSONException
      */
-    public JSONArray findDrugInteractions(int rxcui, String... sources) throws IOException, JSONException {
+    public JSONArray findDrugInteractions(String rxcui, String... sources) throws IOException, JSONException {
         List<NameValuePair> query = new ArrayList<>();
 
-        query.add(new BasicNameValuePair("rxcui", Integer.toString(rxcui)));
+        query.add(new BasicNameValuePair("rxcui", rxcui));
 
         if (sources.length > 0)
             query.add(new BasicNameValuePair("propValues", StringUtils.join(sources, " ")));
@@ -60,7 +60,7 @@ public class Interaction extends RxNav {
      * @throws IOException
      * @throws JSONException
      */
-    public JSONArray findInteractionsFromList(int[] rxcuis, String... sources) throws IOException, JSONException {
+    public JSONArray findInteractionsFromList(String[] rxcuis, String... sources) throws IOException, JSONException {
         List<NameValuePair> query = new ArrayList<>();
 
         query.add(new BasicNameValuePair("rxcuis", StringUtils.join(rxcuis, " ")));

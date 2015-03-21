@@ -1,9 +1,11 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -23,8 +25,10 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Present information about a specific drug.
@@ -41,7 +45,7 @@ public class DrugActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
 
         // /REST/rxuid/{rxuid}/...
-        int rxuid = Integer.parseInt(getIntent().getData().getPathSegments().get(2));
+        String rxuid = getIntent().getData().getPathSegments().get(2);
 
         Log.d("", "displaying " + rxuid);
 
@@ -63,9 +67,9 @@ public class DrugActivity extends ActionBarActivity {
         /**
          * Récupère les données du concept affiché.
          */
-        new AsyncTask<Integer, Integer, JSONObject>() {
+        new AsyncTask<String, Integer, JSONObject>() {
             @Override
-            protected JSONObject doInBackground(Integer... rxcui) {
+            protected JSONObject doInBackground(String... rxcui) {
                 try {
                     return api.getRxConceptProperties(rxcui[0]);
                 } catch (IOException ioe) {
@@ -133,9 +137,18 @@ public class DrugActivity extends ActionBarActivity {
         switch (item.getItemId()) {
             case R.id.action_cart:
                 // add to cart!
+                Set<String> rxcuids = getSharedPreferences("cart", Context.MODE_PRIVATE).getStringSet("rxcuids", new HashSet<String>());
+
+                rxcuids.add(getIntent().getData().getPathSegments().get(2));
+
+                Log.i("", "about to write " + rxcuids + " for key cart");
+
+                getSharedPreferences("cart", Context.MODE_PRIVATE)
+                        .edit()
+                        .putStringSet("rxcuids", rxcuids)
+                        .apply();
+
                 startActivity(new Intent(this, DrugCartActivity.class));
-            case R.id.action_search:
-                return onSearchRequested();
         }
 
         return super.onOptionsItemSelected(item);
