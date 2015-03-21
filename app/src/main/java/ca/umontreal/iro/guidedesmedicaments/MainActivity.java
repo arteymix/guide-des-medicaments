@@ -47,6 +47,7 @@ public class MainActivity extends ActionBarActivity {
 
         final SearchView sv = (SearchView) findViewById(R.id.search_drug);
 
+        final RxNorm norm = new RxNorm();
         final RxClass api = new RxClass();
 
         findViewById(R.id.action_demo).setOnClickListener(new View.OnClickListener() {
@@ -69,7 +70,7 @@ public class MainActivity extends ActionBarActivity {
                     protected JSONArray doInBackground(String... params) {
                         // requête en API pour récupérer des suggestions
                         try {
-                            return api.allClasses(params);
+                            return norm.getApproximateMatch(params[0], 10, 1);
                         } catch (IOException e) {
                             Log.e("", e.getMessage(), e);
                             e.printStackTrace();
@@ -85,7 +86,7 @@ public class MainActivity extends ActionBarActivity {
                         if (result != null)
                             sv.setSuggestionsAdapter(new SimpleCursorAdapter(MainActivity.this,
                                     android.R.layout.simple_list_item_1, new JSONArrayCursor(result),
-                                    new String[]{"className"}, new int[]{android.R.id.text1}, 0x0));
+                                    new String[]{"rxcui"}, new int[]{android.R.id.text1}, 0x0));
                     }
                 }.execute(newText);
 
