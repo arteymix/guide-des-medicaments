@@ -36,6 +36,7 @@
             style="@android:style/Widget.DeviceDefault.Light.CompoundButton.Star" />
 
         <TextView
+            android:id="@+id/generic_name"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@id/drug_name"

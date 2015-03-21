@@ -99,6 +99,35 @@ public class RxNorm extends RxNav {
     }
 
     /**
+     * Do an approximate match search to determine the strings in the data set that most closely
+     * match the search string. The approximate match algorithm is discussed in detail here.
+     * <p/>
+     * The returned comment field contains messages about the processing of the operation.
+     *
+     * @param term       the search string
+     * @param maxEntries (optional, default=20) the maximum number of entries to returns
+     * @param option     (optional, default=0) special processing options. Valid values:
+     *                   0 - no special processing
+     *                   1 - return only information for terms contained in valid RxNorm concepts.
+     *                   That is, the term must either be from the RxNorm vocabulary or a synonym of
+     *                   a (non-suppressed) term in the RxNorm vocabulary.
+     * @return
+     * @throws IOException
+     * @throws JSONException
+     */
+    public JSONArray getApproximateMatch(String term, int maxEntries, int option) throws IOException, JSONException {
+        List<NameValuePair> query = new ArrayList<NameValuePair>();
+
+        query.add(new BasicNameValuePair("term", term));
+        query.add(new BasicNameValuePair("maxEntries", Integer.toString(maxEntries)));
+        query.add(new BasicNameValuePair("option", Integer.toString(option)));
+
+        return get("approximateTerm", query)
+                .getJSONObject("approximateGroup")
+                .getJSONArray("candidate");
+    }
+
+    /**
      * Get the drug products associated with a specified name. The name can be an ingredient, brand
      * name, clinical dose form, branded dose form, clinical drug component, or branded drug
      * component.

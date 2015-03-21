@@ -18,6 +18,7 @@ import android.widget.TextView;
 import com.linearlistview.LinearListView;
 
 import org.diro.rxnav.RxNorm;
+import org.diro.rxnav.RxTerms;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,6 +53,8 @@ public class DrugActivity extends ActionBarActivity {
         setContentView(R.layout.activity_drug);
 
         final TextView drugName = (TextView) findViewById(R.id.drug_name);
+        final TextView genericName = (TextView) findViewById(R.id.generic_name);
+        final TextView administrationMethod = (TextView) findViewById(R.id.administration_method);
         final LinearListView counterIndications = (LinearListView) findViewById(R.id.counter_indications);
         final LinearListView similarDrugs = (LinearListView) findViewById(R.id.similar_drugs);
 
@@ -62,7 +65,8 @@ public class DrugActivity extends ActionBarActivity {
             }
         });
 
-        final RxNorm api = new RxNorm();
+        final RxNorm norm = new RxNorm();
+        final RxTerms terms = new RxTerms();
 
         /**
          * Récupère les données du concept affiché.
@@ -71,13 +75,12 @@ public class DrugActivity extends ActionBarActivity {
             @Override
             protected JSONObject doInBackground(String... rxcui) {
                 try {
-                    return api.getRxConceptProperties(rxcui[0]);
+                    return norm.getRxConceptProperties(rxcui[0]);
                 } catch (IOException ioe) {
                     Log.e("", ioe.getMessage(), ioe);
                 } catch (JSONException je) {
                     Log.e("", je.getMessage(), je);
                 }
-
                 // already handled though...
                 return null;
             }
