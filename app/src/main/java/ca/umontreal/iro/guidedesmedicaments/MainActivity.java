@@ -1,5 +1,6 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.net.http.AndroidHttpClient;
@@ -11,6 +12,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SimpleCursorAdapter;
 
@@ -23,6 +28,8 @@ import org.json.JSONException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Provide search capabilities that initiate the application flow.
@@ -48,9 +55,21 @@ public class MainActivity extends ActionBarActivity {
         }
 
         final SearchView sv = (SearchView) findViewById(R.id.search_drug);
+        final ListView lv = (ListView) findViewById(R.id.bookmarks);
+
+        Set<String> rxcuis = getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
+                .getStringSet("rxcuis", new HashSet<String>());
+
+        lv.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, rxcuis.toArray()));
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://rxnav.nlm.nih.gov/REST/rxcui/" + id)));
+            }
+        });
 
         final RxNorm norm = new RxNorm();
-        final RxClass api = new RxClass();
 
         findViewById(R.id.action_demo).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,7 +81,8 @@ public class MainActivity extends ActionBarActivity {
         sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                return false;
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://rxnav.nlm.nih.gov/REST/rxcui/" + query)));
+                return true;
             }
 
             @Override

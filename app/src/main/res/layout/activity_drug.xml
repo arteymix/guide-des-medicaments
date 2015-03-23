@@ -15,7 +15,9 @@
         <ImageView
             android:id="@+id/drug_icon"
             android:layout_width="92dp"
-            android:layout_height="92dp" />
+            android:layout_height="92dp"
+
+            android:scaleType="centerCrop"/>
 
         <TextView
             android:id="@+id/drug_name"

@@ -116,7 +116,7 @@ public class RxNorm extends RxNav {
      * @throws JSONException
      */
     public JSONArray getApproximateMatch(String term, int maxEntries, int option) throws IOException, JSONException {
-        List<NameValuePair> query = new ArrayList<NameValuePair>();
+        List<NameValuePair> query = new ArrayList<>();
 
         query.add(new BasicNameValuePair("term", term));
         query.add(new BasicNameValuePair("maxEntries", Integer.toString(maxEntries)));

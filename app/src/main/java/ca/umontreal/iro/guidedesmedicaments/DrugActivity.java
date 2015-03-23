@@ -1,22 +1,26 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.SimpleAdapter;
-import android.widget.SimpleCursorAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.linearlistview.LinearListView;
 
+import org.apache.http.message.BasicNameValuePair;
+import org.diro.rxnav.RxImageAccess;
 import org.diro.rxnav.RxNorm;
 import org.diro.rxnav.RxTerms;
 import org.json.JSONArray;
@@ -24,11 +28,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -46,9 +49,9 @@ public class DrugActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
 
         // /REST/rxuid/{rxuid}/...
-        String rxuid = getIntent().getData().getPathSegments().get(2);
+        final String rxcui = getIntent().getData().getPathSegments().get(2);
 
-        Log.d("", "displaying " + rxuid);
+        Log.d("", "displaying " + rxcui);
 
         setContentView(R.layout.activity_drug);
 
@@ -58,6 +61,30 @@ public class DrugActivity extends ActionBarActivity {
         final LinearListView counterIndications = (LinearListView) findViewById(R.id.counter_indications);
         final LinearListView similarDrugs = (LinearListView) findViewById(R.id.similar_drugs);
 
+        CheckBox bookmark = (CheckBox) findViewById(R.id.bookmark);
+
+        bookmark.setChecked(getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
+                .getStringSet("rxcuis", new HashSet<String>())
+                .contains(rxcui));
+
+        bookmark.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Set<String> rxcuis = getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
+                        .getStringSet("rxcuis", new HashSet<String>());
+
+                if (isChecked)
+                    rxcuis.add(rxcui);
+                else
+                    rxcuis.remove(rxcui);
+
+                getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
+                        .edit()
+                        .putStringSet("rxcuis", rxcuis)
+                        .apply();
+            }
+        });
+
         similarDrugs.setOnItemClickListener(new LinearListView.OnItemClickListener() {
             @Override
             public void onItemClick(LinearListView linearListView, View view, int i, long l) {
@@ -66,7 +93,6 @@ public class DrugActivity extends ActionBarActivity {
         });
 
         final RxNorm norm = new RxNorm();
-        final RxTerms terms = new RxTerms();
 
         /**
          * Récupère les données du concept affiché.
@@ -94,38 +120,83 @@ public class DrugActivity extends ActionBarActivity {
                     Log.e("", jse.getMessage(), jse);
                 }
             }
-        }.execute(rxuid);
+        }.execute(rxcui);
 
-        /*
-        new AsyncTask<Integer, Integer, JSONArray>() {
+        final RxImageAccess image = new RxImageAccess();
+
+        /**
+         * Fetch potential images for the drug
+         */
+        new AsyncTask<String, Integer, JSONArray>() {
 
             @Override
-            protected JSONArray doInBackground(Integer... params) {
-
+            protected JSONArray doInBackground(String... params) {
                 try {
-                    api.getAllRelatedInfo(params[0]);
-                } catch (IOException ioe) {
-                    Log.e("", ioe.getMessage(), ioe);
-                } catch (JSONException je) {
-                    Log.e("", je.getMessage(), je);
+                    // TODO: use the rxcui to identify the images
+                    return image.rxbase(new BasicNameValuePair("name", "aspirin"));
+                } catch (IOException e) {
+                    Log.e("", e.getMessage(), e);
+                } catch (JSONException e) {
+                    Log.e("", e.getMessage(), e);
                 }
-
                 return null;
             }
 
             @Override
-            protected void onPostExecute(JSONArray result) {
+            protected void onPostExecute(JSONArray images) {
+                if (images == null)
+                    return; // TODO: could not fetch images
+
+                final ImageView drugIcon = (ImageView) findViewById(R.id.drug_icon);
+
+                final Uri[] imageUris = new Uri[images.length()];
+
                 try {
-
-                    JSONArrayCursor jac = new JSONArrayCursor(result);
-                    similarDrugs.setAdapter(new SimpleCursorAdapter(DrugActivity.this, R.layout.item_drug, jac, new String[]{}, new int[]{}, 0x0));
-
-                } catch (JSONException jse) {
-                    Log.e("", jse.getMessage(), jse);
+                    for (int i = 0; i < images.length(); i++)
+                        imageUris[i] = Uri.parse(images.getJSONObject(i).getString("imageUrl"));
+                } catch (JSONException e) {
+                    Log.e("", "could not extract 'imageUrl' from the RxImageAccess api", e);
                 }
+
+                drugIcon.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // display images in a gallery
+                        Intent i = new Intent(Intent.ACTION_VIEW);
+
+                        // TODO: put all images in the intent to display a nice gallery
+                        i.setDataAndType(imageUris[0], "image/jpeg");
+
+                        startActivity(i);
+                    }
+                });
+
+                // fetch the drugIcon
+                new AsyncTask<Uri, Integer, Bitmap>() {
+
+                    @Override
+                    protected Bitmap doInBackground(Uri... params) {
+
+                        Log.i("", "fetching image " + params[0]);
+
+                        try {
+                            InputStream in = new URL(params[0].toString()).openStream();
+                            return BitmapFactory.decodeStream(in);
+                        } catch (IOException e) {
+                            Log.e("", e.getMessage(), e);
+                        }
+
+                        return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(Bitmap bpm) {
+                        // fetch the image
+                        drugIcon.setImageBitmap(bpm);
+                    }
+                }.execute(imageUris);
             }
-        }.execute(rxuid);
-        */
+        }.execute(rxcui);
     }
 
     @Override
@@ -144,11 +215,9 @@ public class DrugActivity extends ActionBarActivity {
 
                 rxcuids.add(getIntent().getData().getPathSegments().get(2));
 
-                Log.i("", "about to write " + rxcuids + " for key cart");
-
                 getSharedPreferences("cart", Context.MODE_PRIVATE)
                         .edit()
-                        .putStringSet("rxcuids", rxcuids)
+                        .putStringSet("rxcuis", rxcuids)
                         .apply();
 
                 startActivity(new Intent(this, DrugCartActivity.class));

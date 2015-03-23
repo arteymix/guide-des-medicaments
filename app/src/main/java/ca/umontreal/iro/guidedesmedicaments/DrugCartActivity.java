@@ -40,10 +40,10 @@ public class DrugCartActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drug_cart);
 
-        final Set<String> rxcuids = getSharedPreferences("cart", Context.MODE_PRIVATE)
-                .getStringSet("rxcuids", new HashSet<String>());
+        final Set<String> rxcuis = getSharedPreferences("cart", Context.MODE_PRIVATE)
+                .getStringSet("rxcuis", new HashSet<String>());
 
-        Log.i("", "rxcuids dans le panier " + rxcuids);
+        Log.i("", "rxcuis dans le panier " + rxcuis);
 
         final Interaction interaction = new Interaction();
 
@@ -64,7 +64,7 @@ public class DrugCartActivity extends ActionBarActivity {
             @Override
             protected void onPostExecute(JSONArray interactions) {
             }
-        }.execute(rxcuids.toArray(new String[rxcuids.size()]));
+        }.execute(rxcuis.toArray(new String[rxcuis.size()]));
 
         // Set up the ViewPager with the sections adapter.
         final ViewPager pager = (ViewPager) findViewById(R.id.pager);
@@ -81,7 +81,7 @@ public class DrugCartActivity extends ActionBarActivity {
             @Override
             public int getCount() {
                 return 1 + getSharedPreferences("cart", Context.MODE_PRIVATE)
-                        .getStringSet("rxcuids", new HashSet<String>())
+                        .getStringSet("rxcuis", new HashSet<String>())
                         .size();
             }
         };
@@ -101,7 +101,7 @@ public class DrugCartActivity extends ActionBarActivity {
                     TextView tv = (TextView) findViewById(R.id.drug_name);
                     setTitle(tv.getText());
                 } else {
-                    setTitle("Panier");
+                    setTitle(getString(R.string.title_drug_cart_summary));
                 }
             }
 
