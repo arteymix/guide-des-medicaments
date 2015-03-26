@@ -16,8 +16,8 @@
             android:id="@+id/drug_icon"
             android:layout_width="92dp"
             android:layout_height="92dp"
-
-            android:scaleType="centerCrop"/>
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:scaleType="centerCrop" />
 
         <TextView
             android:id="@+id/drug_name"
@@ -31,11 +31,11 @@
 
         <CheckBox
             android:id="@+id/bookmark"
+            style="@android:style/Widget.DeviceDefault.Light.CompoundButton.Star"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
             android:layout_alignBaseline="@id/drug_name"
-            style="@android:style/Widget.DeviceDefault.Light.CompoundButton.Star" />
+            android:layout_alignParentRight="true" />
 
         <TextView
             android:id="@+id/generic_name"
@@ -109,8 +109,8 @@
 
         <TextView
             android:id="@+id/posologies"
-            android:layout_height="wrap_content"
             android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
             android:layout_below="@id/similar_drugs" />
 
     </RelativeLayout>

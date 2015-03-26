@@ -17,6 +17,7 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.linearlistview.LinearListView;
 
 import org.apache.http.message.BasicNameValuePair;
@@ -36,6 +37,8 @@ import java.util.Set;
 
 /**
  * Present information about a specific drug.
+ * <p/>
+ * List similar counter-indications and similar/related concepts.
  *
  * @author Guillaume Poirier-Morency
  * @author Patrice Dumontier-Houle
@@ -92,14 +95,12 @@ public class DrugActivity extends ActionBarActivity {
             }
         });
 
-        final RxNorm norm = new RxNorm();
-
-        /**
-         * Récupère les données du concept affiché.
-         */
+        // récupère le nom du concept
         new AsyncTask<String, Integer, JSONObject>() {
             @Override
             protected JSONObject doInBackground(String... rxcui) {
+                RxNorm norm = new RxNorm();
+
                 try {
                     return norm.getRxConceptProperties(rxcui[0]);
                 } catch (IOException ioe) {
@@ -122,8 +123,6 @@ public class DrugActivity extends ActionBarActivity {
             }
         }.execute(rxcui);
 
-        final RxImageAccess image = new RxImageAccess();
-
         /**
          * Fetch potential images for the drug
          */
@@ -131,6 +130,8 @@ public class DrugActivity extends ActionBarActivity {
 
             @Override
             protected JSONArray doInBackground(String... params) {
+                RxImageAccess image = new RxImageAccess();
+
                 try {
                     // TODO: use the rxcui to identify the images
                     return image.rxbase(new BasicNameValuePair("name", "aspirin"));
@@ -152,12 +153,19 @@ public class DrugActivity extends ActionBarActivity {
                 final Uri[] imageUris = new Uri[images.length()];
 
                 try {
+                    // charge l'icône du médicament
+                    Glide.with(DrugActivity.this)
+                            .load(images.getJSONObject(0).getString("imageUrl"))
+                            .placeholder(android.R.drawable.spinner_background)
+                            .into(drugIcon);
+
                     for (int i = 0; i < images.length(); i++)
                         imageUris[i] = Uri.parse(images.getJSONObject(i).getString("imageUrl"));
                 } catch (JSONException e) {
                     Log.e("", "could not extract 'imageUrl' from the RxImageAccess api", e);
                 }
 
+                // au clic, lancer la galerie avec tous les images du médicament
                 drugIcon.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -170,31 +178,6 @@ public class DrugActivity extends ActionBarActivity {
                         startActivity(i);
                     }
                 });
-
-                // fetch the drugIcon
-                new AsyncTask<Uri, Integer, Bitmap>() {
-
-                    @Override
-                    protected Bitmap doInBackground(Uri... params) {
-
-                        Log.i("", "fetching image " + params[0]);
-
-                        try {
-                            InputStream in = new URL(params[0].toString()).openStream();
-                            return BitmapFactory.decodeStream(in);
-                        } catch (IOException e) {
-                            Log.e("", e.getMessage(), e);
-                        }
-
-                        return null;
-                    }
-
-                    @Override
-                    protected void onPostExecute(Bitmap bpm) {
-                        // fetch the image
-                        drugIcon.setImageBitmap(bpm);
-                    }
-                }.execute(imageUris);
             }
         }.execute(rxcui);
     }

@@ -38,7 +38,7 @@ public class RxImageAccess extends RxNav {
      * It is recommended to use your own API
      */
     public RxImageAccess() {
-        super("http", "rximage.nlm.nih.gov", 80, "/api/");
+        super("http", "rximage.nlm.nih.gov", 80, "/api/", "");
     }
 
     /**

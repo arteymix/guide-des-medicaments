@@ -1,12 +1,7 @@
 package org.diro.rxnav;
 
-import android.util.Log;
-
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,13 +9,12 @@ import org.json.JSONTokener;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
 /**
  * RxNav is a browser for several drug information sources, including RxNorm, RxTerms and NDF-RT.
+ * <p/>
  * RxNav finds drugs in RxNorm from the names and codes in its constituent vocabularies. RxNav
  * displays links from clinical drugs, both branded and generic, to their active ingredients, drug
  * components and related brand names. RxNav also provides lists of NDC codes and links to package
@@ -60,16 +54,19 @@ public class RxNav {
      */
     public final String basePath;
 
+    public final String suffix;
+
     /**
      * @param host
      * @param port
      * @param basePath
      */
-    public RxNav(String scheme, String host, int port, String basePath) {
+    public RxNav(String scheme, String host, int port, String basePath, String suffix) {
         this.scheme = scheme;
         this.host = host;
         this.port = port;
         this.basePath = basePath;
+        this.suffix = suffix;
     }
 
     /**
@@ -78,7 +75,7 @@ public class RxNav {
      * It is recommended to use your own API
      */
     public RxNav() {
-        this("http", "rxnav.nlm.nih.gov", 80, "/REST/");
+        this("http", "rxnav.nlm.nih.gov", 80, "/REST/", ".json");
     }
 
     /**
@@ -92,7 +89,7 @@ public class RxNav {
      * @throws JSONException should not happen unless the API returns a corrupted response
      */
     protected JSONObject get(String path, List<? extends NameValuePair> query) throws IOException, JSONException {
-        URL url = new URL(scheme, host, port, basePath + path + ".json" + (query == null ? "" : "?" + URLEncodedUtils.format(query, "UTF-8")));
+        URL url = new URL(scheme, host, port, basePath + path + suffix + (query == null ? "" : "?" + URLEncodedUtils.format(query, "UTF-8")));
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
