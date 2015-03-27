@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,8 +9,6 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="ca.umontreal.iro.guidedesmedicaments.MainActivity">
-
-    android:layout_height="wrap_content">
 
     <SearchView
         android:id="@+id/search_drug"
@@ -31,7 +30,7 @@
                 android:entries="@array/types"
                 android:spinnerMode="dropdown" />
                 -->
-    
+
     <Button
         android:id="@+id/action_demo"
         android:layout_width="wrap_content"
@@ -41,7 +40,7 @@
     <ListView
         android:id="@+id/bookmarks"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"></ListView>
+        android:layout_height="wrap_content"/>
 
     <TextView
         android:layout_width="wrap_content"

@@ -100,7 +100,7 @@ public class RxNav {
      * @throws JSONException should not happen unless the API returns a corrupted response
      */
     protected JSONObject get(String path, NameValuePair... query) throws IOException, JSONException {
-        URL url = new URL(scheme, host, port, basePath + path + suffix + (query.length > 0 ? "" : "?" + URLEncodedUtils.format(Arrays.asList(query), "UTF-8")));
+        URL url = new URL(scheme, host, port, basePath + path + suffix + "?" + URLEncodedUtils.format(Arrays.asList(query), "UTF-8"));
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 

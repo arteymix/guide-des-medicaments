@@ -1,5 +1,6 @@
 package ca.umontreal.iro.guidedesmedicaments.concepts;
 
+import android.support.v4.app.ListFragment;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -12,11 +13,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
@@ -37,14 +36,19 @@ import java.util.List;
 import java.util.Set;
 
 import ca.umontreal.iro.guidedesmedicaments.DrugActivity;
-import ca.umontreal.iro.guidedesmedicaments.JSONArrayCursor;
+import ca.umontreal.iro.guidedesmedicaments.util.JSONArrayCursor;
 import ca.umontreal.iro.guidedesmedicaments.R;
 
 /**
  * Fragment presenting a drug concept.
  * <p/>
- * The view should be embedded in a {@link android.widget.ScrollView} as it will expand over the
- * screen height.
+ * If this is not embedded in the the {@link ca.umontreal.iro.guidedesmedicaments.DrugActivity}, the
+ * "rxcui" key has to be set in the fragment arguments.
+ * <p/>
+ * The layout is embedded in a {@link android.widget.ScrollView} and will expand after the screen
+ * height.
+ * <p/>
+ * TODO: extract and present the missing information from the RxNav API.
  *
  * @author Guillaume Poirier-Morency
  */
@@ -79,8 +83,9 @@ public class DrugFragment extends Fragment {
         final TextView drugName = (TextView) getView().findViewById(R.id.drug_name);
         final TextView genericName = (TextView) getView().findViewById(R.id.generic_name);
         final TextView administrationMethod = (TextView) getView().findViewById(R.id.administration_method);
-        final LinearListView counterIndications = (LinearListView) getView().findViewById(R.id.counter_indications);
-        final LinearListView similarDrugs = (LinearListView) getView().findViewById(R.id.similar_drugs);
+
+        final ListFragment counterIndications = (ListFragment) getFragmentManager().findFragmentById(R.id.counter_indications);
+        final ListFragment similarDrugs = (ListFragment) getFragmentManager().findFragmentById(R.id.similar_drugs);
 
         CheckBox bookmark = (CheckBox) getView().findViewById(R.id.bookmark);
 
@@ -106,12 +111,14 @@ public class DrugFragment extends Fragment {
             }
         });
 
+        /*
         similarDrugs.setOnItemClickListener(new LinearListView.OnItemClickListener() {
             @Override
             public void onItemClick(LinearListView linearListView, View view, int i, long l) {
                 startActivity(new Intent(view.getContext(), DrugActivity.class));
             }
         });
+        */
 
         // récupère le nom du concept
         new AsyncTask<String, Integer, JSONObject>() {
@@ -169,16 +176,18 @@ public class DrugFragment extends Fragment {
                                 e.printStackTrace();
                             }
 
-                            LinearListView relatedDrugs = (LinearListView) getView().findViewById(R.id.similar_drugs);
+                            ListFragment relatedDrugs = (ListFragment) getFragmentManager().findFragmentById(R.id.similar_drugs);
 
-                            relatedDrugs.setAdapter(new SimpleCursorAdapter(getActivity(), R.layout.drug_item, new MergeCursor(cursors.toArray(new Cursor[cursors.size()])), new String[]{"name"}, new int[]{R.id.drug_name}, 0x0));
+                            relatedDrugs.setListAdapter(new SimpleCursorAdapter(getActivity(), R.layout.drug_item, new MergeCursor(cursors.toArray(new Cursor[cursors.size()])), new String[]{"name"}, new int[]{R.id.drug_name}, 0x0));
 
+                            /*
                             relatedDrugs.setOnItemClickListener(new LinearListView.OnItemClickListener() {
                                 @Override
                                 public void onItemClick(LinearListView linearListView, View view, int i, long l) {
                                     // TODO: démarrer une activité pour afficher le médicament
                                 }
                             });
+                            */
                         }
 
                     }.execute(result.getString("name"));

@@ -4,7 +4,6 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.net.http.AndroidHttpClient;
 import android.net.http.HttpResponseCache;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -15,22 +14,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SimpleCursorAdapter;
 
-import org.apache.http.client.methods.HttpGet;
-import org.diro.rxnav.RxClass;
 import org.diro.rxnav.RxNorm;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
+
+import ca.umontreal.iro.guidedesmedicaments.util.JSONArrayCursor;
 
 /**
  * Provide search capabilities that initiate the application flow.
@@ -102,7 +98,7 @@ public class MainActivity extends ActionBarActivity {
             @Override
             protected void onPostExecute(JSONArray result) {
                 if (result != null)
-                    sv.setSuggestionsAdapter(new SimpleCursorAdapter(MainActivity.this, android.R.layout.simple_list_item_1, new JSONArrayCursor(result, true), new String[]{"_id"}, new int[]{android.R.id.text1}, 0x0));
+                    sv.setSuggestionsAdapter(new SimpleCursorAdapter(MainActivity.this, android.R.layout.simple_list_item_1, new JSONArrayCursor(result), new String[]{"_id"}, new int[]{android.R.id.text1}, 0x0));
             }
         }.execute();
     }
