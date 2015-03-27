@@ -5,6 +5,12 @@
     <string name="title_activity_drugs">Médicaments</string>
     <string name="title_activity_drug">Médicament</string>
     <string name="title_drug_cart_summary">Paniers</string>
+    <string name="counter_indication">Contre-indications</string>
+    <string name="maternity_index">Indice maternité</string>
+    <string name="administration_method">Méthode d\'administration\n2ême méthode\n3ème méthode</string>
+    <string name="similar_drugs">Médicaments similaires</string>
+    <string name="drug_icon_description">Image of the drug pill.</string>
+    <string name="search_a_drug">Rechercher un médicament</string>
     <string-array name="types">
         <item>Médicament</item>
         <item>Catégorie</item>

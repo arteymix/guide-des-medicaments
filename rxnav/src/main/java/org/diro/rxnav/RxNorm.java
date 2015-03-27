@@ -43,14 +43,14 @@ public class RxNorm extends RxNav {
      * @throws URISyntaxException
      */
     public JSONArray filterByProperty(String rxcui, String propName, String... propValues) throws IOException, JSONException, URISyntaxException {
-        List<NameValuePair> query = new ArrayList<>();
-
-        query.add(new BasicNameValuePair("propName", propName));
-
         if (propValues.length > 0)
-            query.add(new BasicNameValuePair("propValues", StringUtils.join(propValues, " ")));
+            return get("rxcui/" + rxcui + "/filter",
+                    new BasicNameValuePair("propName", propName),
+                    new BasicNameValuePair("propValues", StringUtils.join(propValues, " ")))
+                    .getJSONObject("propConceptGroup")
+                    .getJSONArray("propConcept");
 
-        return get("rxcui/" + rxcui + "/filter", query)
+        return get("rxcui/" + rxcui + "/filter", new BasicNameValuePair("propName", propName))
                 .getJSONObject("propConceptGroup")
                 .getJSONArray("propConcept");
     }
@@ -69,12 +69,12 @@ public class RxNorm extends RxNav {
      * @throws URISyntaxException
      */
     public JSONArray getAllProperties(String rxcui, String... prop) throws IOException, JSONException, URISyntaxException {
-        List<NameValuePair> query = new ArrayList<>();
-
         if (prop.length > 0)
-            query.add(new BasicNameValuePair("prop", StringUtils.join(prop, " ")));
+            return get("rxcui/" + rxcui + "/allProperties", new BasicNameValuePair("prop", StringUtils.join(prop, " ")))
+                    .getJSONObject("propConceptGroup")
+                    .getJSONArray("propConcept");
 
-        return get("rxcui/" + rxcui + "/allProperties", query)
+        return get("rxcui/" + rxcui + "/allProperties")
                 .getJSONObject("propConceptGroup")
                 .getJSONArray("propConcept");
     }
@@ -93,7 +93,7 @@ public class RxNorm extends RxNav {
      * @throws JSONException
      */
     public JSONArray getAllRelatedInfo(String rxcui) throws IOException, JSONException {
-        return get("rxcui/" + rxcui + "/allrelated", null)
+        return get("rxcui/" + rxcui + "/allrelated")
                 .getJSONObject("allRelatedGroup")
                 .getJSONArray("conceptGroup");
     }
@@ -116,15 +116,26 @@ public class RxNorm extends RxNav {
      * @throws JSONException
      */
     public JSONArray getApproximateMatch(String term, int maxEntries, int option) throws IOException, JSONException {
-        List<NameValuePair> query = new ArrayList<>();
-
-        query.add(new BasicNameValuePair("term", term));
-        query.add(new BasicNameValuePair("maxEntries", Integer.toString(maxEntries)));
-        query.add(new BasicNameValuePair("option", Integer.toString(option)));
-
-        return get("approximateTerm", query)
+        return get("approximateTerm",
+                new BasicNameValuePair("term", term),
+                new BasicNameValuePair("maxEntries", Integer.toString(maxEntries)),
+                new BasicNameValuePair("option", Integer.toString(option)))
                 .getJSONObject("approximateGroup")
                 .getJSONArray("candidate");
+    }
+
+    /**
+     * Gets the names used by RxNav for auto completion. This is a large list which includes names
+     * of ingredients, brands, and branded packs.
+     *
+     * @return
+     * @throws IOException
+     * @throws JSONException
+     */
+    public JSONArray getDisplayTerms() throws IOException, JSONException {
+        return get("displaynames")
+                .getJSONObject("displayTermsList")
+                .getJSONArray("term");
     }
 
     /**
@@ -134,13 +145,12 @@ public class RxNorm extends RxNav {
      * <p/>
      * http://rxnav.nlm.nih.gov/RxNormAPIs.html#uLink=RxNorm_REST_getDrugs
      *
-     * @param rxcui
-     * @param name  an ingredient, brand, clinical dose form, branded dose form, clinical drug
-     *              component or branded drug component name
+     * @param name an ingredient, brand, clinical dose form, branded dose form, clinical drug
+     *             component or branded drug component name
      * @return
      */
-    public JSONArray getDrugs(String rxcui, String name) throws IOException, JSONException {
-        return get("drugs", null)
+    public JSONArray getDrugs(String name) throws IOException, JSONException {
+        return get("drugs", new BasicNameValuePair("name", name))
                 .getJSONObject("drugGroup")
                 .getJSONArray("conceptGroup");
     }
@@ -155,7 +165,7 @@ public class RxNorm extends RxNav {
      * @return
      */
     public JSONArray getRelatedByType(String rxcui, String... tty) throws IOException, JSONException {
-        return get("rxcui/" + rxcui + "/allrelated", null)
+        return get("rxcui/" + rxcui + "/allrelated")
                 .getJSONObject("relatedGroup")
                 .getJSONArray("conceptGroup");
     }
@@ -169,6 +179,6 @@ public class RxNorm extends RxNav {
      * @throws JSONException
      */
     public JSONObject getRxConceptProperties(String rxcui) throws IOException, JSONException {
-        return get("rxcui/" + rxcui + "/properties", null).getJSONObject("properties");
+        return get("rxcui/" + rxcui + "/properties").getJSONObject("properties");
     }
 }

@@ -10,6 +10,7 @@ import org.json.JSONTokener;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -88,8 +89,8 @@ public class RxNav {
      * @throws IOException   always expect some I/O failure
      * @throws JSONException should not happen unless the API returns a corrupted response
      */
-    protected JSONObject get(String path, List<? extends NameValuePair> query) throws IOException, JSONException {
-        URL url = new URL(scheme, host, port, basePath + path + suffix + (query == null ? "" : "?" + URLEncodedUtils.format(query, "UTF-8")));
+    protected JSONObject get(String path, NameValuePair... query) throws IOException, JSONException {
+        URL url = new URL(scheme, host, port, basePath + path + suffix + (query == null ? "" : "?" + URLEncodedUtils.format(Arrays.asList(query), "UTF-8")));
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 

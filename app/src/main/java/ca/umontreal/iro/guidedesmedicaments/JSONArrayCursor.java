@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Cursor over a JSONArray of JSONObject.
  * <p/>
- * Allows simple integration of API data into {@link android.widget.Adapter}.
+ * Allow simple integration of JSON API data into {@link android.database.Cursor}.
  *
  * @author Guillaume Poirier-Morency
  */
@@ -21,11 +21,19 @@ public class JSONArrayCursor extends AbstractCursor {
 
     private final JSONArray data;
 
+    private final boolean scalar;
+
     /**
      * @param data
+     * @param scalar true if the items are scalar, otherwise consider them as objects
      */
-    public JSONArrayCursor(JSONArray data) {
+    public JSONArrayCursor(JSONArray data, boolean scalar) {
         this.data = data;
+        this.scalar = scalar;
+    }
+
+    public JSONArrayCursor(JSONArray data) {
+        this(data, false);
     }
 
     @Override
@@ -36,6 +44,9 @@ public class JSONArrayCursor extends AbstractCursor {
     @Override
     public String[] getColumnNames() {
         try {
+            if (scalar)
+                return new String[]{"_id"};
+            
             List<String> columnNames = IteratorUtils.toList(data.getJSONObject(mPos == -1 ? 0 : mPos).keys());
 
             // some api already provide a "_id" column
@@ -45,13 +56,16 @@ public class JSONArrayCursor extends AbstractCursor {
             return columnNames.toArray(new String[columnNames.size()]);
         } catch (JSONException je) {
             Log.e("", je.getMessage(), je);
-            return new String[0];
+            return new String[]{"_id"};
         }
     }
 
     @Override
     public String getString(int column) {
         try {
+            if (scalar)
+                return data.getString(mPos);
+
             return data.getJSONObject(mPos).getString(getColumnName(column));
         } catch (JSONException je) {
             Log.e("", "", je);
@@ -62,6 +76,9 @@ public class JSONArrayCursor extends AbstractCursor {
     @Override
     public short getShort(int column) {
         try {
+            if (scalar)
+                return (short) data.getInt(mPos);
+
             return (short) data.getJSONObject(mPos).getInt(getColumnName(column));
         } catch (JSONException je) {
             Log.e("", "", je);
@@ -72,6 +89,9 @@ public class JSONArrayCursor extends AbstractCursor {
     @Override
     public int getInt(int column) {
         try {
+            if (scalar)
+                return data.getInt(mPos);
+
             return data.getJSONObject(mPos).getInt(getColumnName(column));
         } catch (JSONException je) {
             Log.e("", "", je);
@@ -82,11 +102,17 @@ public class JSONArrayCursor extends AbstractCursor {
     @Override
     public long getLong(int column) {
         try {
-            JSONObject obj = data.getJSONObject(mPos);
-
             // use "_id" if it's provided in the data, otherwise {@link mPos}
-            if (column == getColumnIndex("_id"))
+            if (column == getColumnIndex("_id")) {
+                if (scalar)
+                    return mPos;
+
+                JSONObject obj = data.getJSONObject(mPos);
                 return obj.has("_id") ? obj.getLong("_id") : mPos;
+            }
+
+            if (scalar)
+                return data.getLong(mPos);
 
             return data.getJSONObject(mPos).getLong(getColumnName(column));
         } catch (JSONException je) {
@@ -98,6 +124,9 @@ public class JSONArrayCursor extends AbstractCursor {
     @Override
     public float getFloat(int column) {
         try {
+            if (scalar)
+                return (float) data.getDouble(mPos);
+
             return (float) data.getJSONObject(mPos).getDouble(getColumnName(column));
         } catch (JSONException je) {
             Log.e("", "", je);
@@ -108,6 +137,9 @@ public class JSONArrayCursor extends AbstractCursor {
     @Override
     public double getDouble(int column) {
         try {
+            if (scalar)
+                return data.getDouble(mPos);
+
             return data.getJSONObject(mPos).getDouble(getColumnName(column));
         } catch (JSONException je) {
             Log.e("", "", je);
@@ -118,6 +150,9 @@ public class JSONArrayCursor extends AbstractCursor {
     @Override
     public boolean isNull(int column) {
         try {
+            if (scalar)
+                return data.isNull(mPos);
+
             return data.getJSONObject(mPos).isNull(getColumnName(column));
         } catch (JSONException je) {
             Log.e("", "", je);

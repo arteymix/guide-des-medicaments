@@ -25,7 +25,7 @@ import java.util.List;
 public class RxClass extends RxNav {
 
     @Override
-    public JSONObject get(String path, List<? extends NameValuePair> query) throws JSONException, IOException {
+    public JSONObject get(String path, NameValuePair... query) throws JSONException, IOException {
         return super.get("rxclass/" + path, query);
     }
 
@@ -40,12 +40,12 @@ public class RxClass extends RxNav {
      * @throws org.json.JSONException
      */
     public JSONArray allClasses(String... classTypes) throws IOException, JSONException {
-        List<NameValuePair> query = new ArrayList<>();
-
         if (classTypes.length > 0)
-            query.add(new BasicNameValuePair("classTypes", StringUtils.join(classTypes, " ")));
+            return get("allClasses", new BasicNameValuePair("classTypes", StringUtils.join(classTypes, " ")))
+                    .getJSONObject("rxclassMinConceptList")
+                    .getJSONArray("rxclassMinConcept");
 
-        return get("allClasses", query)
+        return get("allClasses")
                 .getJSONObject("rxclassMinConceptList")
                 .getJSONArray("rxclassMinConcept");
     }
@@ -59,12 +59,9 @@ public class RxClass extends RxNav {
      * @return
      */
     public JSONArray getSpellingSuggestions(String term, String type) throws IOException, JSONException {
-        List<NameValuePair> query = new ArrayList<>();
-
-        query.add(new BasicNameValuePair("term", term));
-        query.add(new BasicNameValuePair("type", type));
-
-        return get("spellingsuggestions", query)
+        return get("spellingsuggestions",
+                new BasicNameValuePair("term", term),
+                new BasicNameValuePair("type", type))
                 .getJSONObject("suggestionList")
                 .getJSONArray("suggestion");
     }

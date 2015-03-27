@@ -23,7 +23,7 @@ import java.util.List;
 public class Interaction extends RxNav {
 
     @Override
-    public JSONObject get(String path, List<? extends NameValuePair> query) throws JSONException, IOException {
+    public JSONObject get(String path, NameValuePair... query) throws JSONException, IOException {
         return super.get("interaction/" + path, query);
     }
 
@@ -36,14 +36,12 @@ public class Interaction extends RxNav {
      * @throws JSONException
      */
     public JSONArray findDrugInteractions(String rxcui, String... sources) throws IOException, JSONException {
-        List<NameValuePair> query = new ArrayList<>();
-
-        query.add(new BasicNameValuePair("rxcui", rxcui));
-
         if (sources.length > 0)
-            query.add(new BasicNameValuePair("propValues", StringUtils.join(sources, " ")));
+            return get("interaction", new BasicNameValuePair("propValues", StringUtils.join(sources, " ")))
+                    .getJSONObject("interactionTypeGroup")
+                    .getJSONArray("interactionType");
 
-        return get("interaction", query)
+        return get("interaction")
                 .getJSONObject("interactionTypeGroup")
                 .getJSONArray("interactionType");
     }
@@ -61,14 +59,14 @@ public class Interaction extends RxNav {
      * @throws JSONException
      */
     public JSONArray findInteractionsFromList(String[] rxcuis, String... sources) throws IOException, JSONException {
-        List<NameValuePair> query = new ArrayList<>();
-
-        query.add(new BasicNameValuePair("rxcuis", StringUtils.join(rxcuis, " ")));
-
         if (sources.length > 0)
-            query.add(new BasicNameValuePair("propValues", StringUtils.join(sources, " ")));
+            return get("interaction",
+                    new BasicNameValuePair("rxcuis", StringUtils.join(rxcuis, " ")),
+                    new BasicNameValuePair("propValues", StringUtils.join(sources, " ")))
+                    .getJSONObject("fullInteractionTypeGroup")
+                    .getJSONArray("fullInteractionType");
 
-        return get("interaction", query)
+        return get("interaction", new BasicNameValuePair("rxcuis", StringUtils.join(rxcuis, " ")))
                 .getJSONObject("fullInteractionTypeGroup")
                 .getJSONArray("fullInteractionType");
     }

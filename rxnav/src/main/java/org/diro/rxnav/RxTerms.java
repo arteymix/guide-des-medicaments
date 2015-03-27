@@ -21,7 +21,7 @@ import java.util.List;
 public class RxTerms extends RxNav {
 
     @Override
-    public JSONObject get(String path, List<? extends NameValuePair> query) throws JSONException, IOException {
+    public JSONObject get(String path, NameValuePair... query) throws JSONException, IOException {
         return super.get("RxTerms/" + path, query);
     }
 

@@ -50,7 +50,7 @@ public class RxImageAccess extends RxNav {
      * @throws JSONException
      */
     public JSONArray rxnav(NameValuePair... query) throws IOException, JSONException {
-        return get("rximage/1/rxnav", Arrays.asList(query)).getJSONArray("nlmRxImages");
+        return get("rximage/1/rxnav", query).getJSONArray("nlmRxImages");
     }
 
     /**
@@ -62,7 +62,7 @@ public class RxImageAccess extends RxNav {
      * @throws JSONException
      */
     public JSONArray rxbase(NameValuePair... query) throws IOException, JSONException {
-        return get("rximage/1/rxbase", Arrays.asList(query)).getJSONArray("nlmRxImages");
+        return get("rximage/1/rxbase", query).getJSONArray("nlmRxImages");
     }
 
 }

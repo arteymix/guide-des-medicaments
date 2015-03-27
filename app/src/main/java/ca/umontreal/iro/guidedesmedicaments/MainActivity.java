@@ -1,5 +1,6 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -57,6 +58,9 @@ public class MainActivity extends ActionBarActivity {
         final SearchView sv = (SearchView) findViewById(R.id.search_drug);
         final ListView lv = (ListView) findViewById(R.id.bookmarks);
 
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        sv.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
         Set<String> rxcuis = getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
                 .getStringSet("rxcuis", new HashSet<String>());
 
@@ -78,48 +82,34 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
-        sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        // fetch suggestions
+        new AsyncTask<Void, Void, JSONArray>() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://rxnav.nlm.nih.gov/REST/rxcui/" + query)));
-                return true;
+            protected JSONArray doInBackground(Void... params) {
+                try {
+                    // this request is pretty heavy, but once cached it should be fine.
+                    return norm.getDisplayTerms();
+                } catch (IOException e) {
+                    Log.e("", e.getMessage(), e);
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    Log.e("", e.getMessage(), e);
+                }
+
+                return null;
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-                new AsyncTask<String, Integer, JSONArray>() {
-                    @Override
-                    protected JSONArray doInBackground(String... params) {
-                        // requête en API pour récupérer des suggestions
-                        try {
-                            return norm.getApproximateMatch(params[0], 10, 1);
-                        } catch (IOException e) {
-                            Log.e("", e.getMessage(), e);
-                            e.printStackTrace();
-                        } catch (JSONException e) {
-                            Log.e("", e.getMessage(), e);
-                        }
-
-                        return null;
-                    }
-
-                    @Override
-                    protected void onPostExecute(JSONArray result) {
-                        if (result != null)
-                            sv.setSuggestionsAdapter(new SimpleCursorAdapter(MainActivity.this,
-                                    android.R.layout.simple_list_item_1, new JSONArrayCursor(result),
-                                    new String[]{"rxcui"}, new int[]{android.R.id.text1}, 0x0));
-                    }
-                }.execute(newText);
-
-                return false;
+            protected void onPostExecute(JSONArray result) {
+                if (result != null)
+                    sv.setSuggestionsAdapter(new SimpleCursorAdapter(MainActivity.this, android.R.layout.simple_list_item_1, new JSONArrayCursor(result, true), new String[]{"_id"}, new int[]{android.R.id.text1}, 0x0));
             }
-        });
-
+        }.execute();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return super.onCreateOptionsMenu(menu);
     }

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="?android:attr/listPreferredItemHeightSmall">
+
+    <ImageView
+        android:id="@+id/drug_icon"
+        android:layout_width="92dp"
+        android:layout_height="92dp"
+        android:paddingRight="@dimen/activity_horizontal_margin" />
+
+    <TextView
+        android:id="@+id/drug_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/drug_icon"
+        android:layout_toRightOf="@id/drug_icon"
+        android:text="Aspirin"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <CheckBox
+        android:id="@+id/cart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="end" />
+
+    <CheckBox
+        android:id="@+id/bookmark"
+        style="@android:style/Widget.DeviceDefault.Light.CompoundButton.Star"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_toLeftOf="@id/cart" />
+
+    <TextView
+        android:id="@+id/categories"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/drug_name"
+        android:layout_toEndOf="@id/drug_icon"
+        android:layout_toRightOf="@id/drug_icon"
+        android:maxLines="1"
+        android:text="Carégorie 1, Catégorie 2, Catégorie 3"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/drug_description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/categories"
+        android:layout_toEndOf="@id/drug_icon"
+        android:layout_toRightOf="@id/drug_icon"
+        android:maxLines="2"
+        android:text="Description sommaire de l&apos;aspirine sur au plus 3 lignes de contenu! et ça continue encore à mettre plein de texte et ouais!"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+</RelativeLayout>

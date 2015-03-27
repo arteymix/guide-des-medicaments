@@ -21,8 +21,6 @@ android {
         exclude 'META-INF/NOTICE.txt'
         exclude 'META-INF/LICENSE.txt'
     }
-    compileOptions {
-    }
 }
 
 dependencies {

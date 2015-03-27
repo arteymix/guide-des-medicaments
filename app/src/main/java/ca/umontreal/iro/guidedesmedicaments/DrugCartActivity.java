@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -19,8 +18,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import ca.umontreal.iro.guidedesmedicaments.concepts.DrugFragment;
 
 /**
  * Present the drug cart and its content using a {@link android.support.v4.view.ViewPager}.
@@ -69,20 +72,22 @@ public class DrugCartActivity extends ActionBarActivity {
         // Set up the ViewPager with the sections adapter.
         final ViewPager pager = (ViewPager) findViewById(R.id.pager);
 
+        final List<String> cart = new ArrayList<>(getSharedPreferences("cart", Context.MODE_PRIVATE)
+                .getStringSet("rxcuis", new HashSet<String>()));
+
         final FragmentPagerAdapter pa = new FragmentPagerAdapter(getSupportFragmentManager()) {
 
             @Override
             public android.support.v4.app.Fragment getItem(int position) {
                 if (position == 0)
                     return new DrugInteractionFragment();
-                return new DrugFragment();
+
+                return DrugFragment.newInstance(cart.get(position - 1));
             }
 
             @Override
             public int getCount() {
-                return 1 + getSharedPreferences("cart", Context.MODE_PRIVATE)
-                        .getStringSet("rxcuis", new HashSet<String>())
-                        .size();
+                return 1 + cart.size();
             }
         };
 
@@ -129,19 +134,6 @@ public class DrugCartActivity extends ActionBarActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             return inflater.inflate(R.layout.fragment_interaction, container, false);
-        }
-    }
-
-    /**
-     * Fragment presenting a drug.
-     *
-     * @author Guillaume Poirier-Morency
-     */
-    public static class DrugFragment extends android.support.v4.app.Fragment {
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.activity_drug, container, false);
         }
     }
 
