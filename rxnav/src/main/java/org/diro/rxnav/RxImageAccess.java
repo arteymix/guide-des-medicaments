@@ -32,6 +32,10 @@ import java.util.Arrays;
  */
 public class RxImageAccess extends RxNav {
 
+    public static RxImageAccess newInstance() {
+        return new RxImageAccess();
+    }
+
     /**
      * Initialize RxNav to use the public API at http://rxnav.nlm.nih.gov
      * <p/>

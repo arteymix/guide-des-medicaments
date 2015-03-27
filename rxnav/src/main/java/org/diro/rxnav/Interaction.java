@@ -22,6 +22,10 @@ import java.util.List;
  */
 public class Interaction extends RxNav {
 
+    public static Interaction newInstance() {
+        return new Interaction();
+    }
+
     @Override
     public JSONObject get(String path, NameValuePair... query) throws JSONException, IOException {
         return super.get("interaction/" + path, query);

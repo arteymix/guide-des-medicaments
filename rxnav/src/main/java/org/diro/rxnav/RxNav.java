@@ -1,5 +1,7 @@
 package org.diro.rxnav;
 
+import android.util.Log;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -9,6 +11,7 @@ import org.json.JSONTokener;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.ResponseCache;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -58,9 +61,13 @@ public class RxNav {
     public final String suffix;
 
     /**
+     * Initialize RxNav to use a custom API endpoint.
+     *
+     * @param scheme
      * @param host
      * @param port
      * @param basePath
+     * @param suffix
      */
     public RxNav(String scheme, String host, int port, String basePath, String suffix) {
         this.scheme = scheme;
@@ -72,27 +79,33 @@ public class RxNav {
 
     /**
      * Initialize RxNav to use the public API at http://rxnav.nlm.nih.gov
-     * <p/>
-     * It is recommended to use your own API
      */
     public RxNav() {
         this("http", "rxnav.nlm.nih.gov", 80, "/REST/", ".json");
     }
 
     /**
-     * Execute a HTTP request on RxNav public endpoint using the provided
-     * {@link org.apache.http.client.HttpClient}.
+     * Execute a HTTP request on RxNav endpoint using {@link java.net.HttpURLConnection}.
+     * <p/>
+     * RxNav generally returns a load of useless meta-data and it is expected to be extracted by the
+     * caller.
+     * <p/>
+     * As recommended by the 'Terms Of Service', all requests are cached for a period of 24 hours
+     * assuming that {@link java.net.ResponseCache} has been set correctly.
      *
      * @param path  requested path prefixed by "/REST/" and suffixed by ".json"
-     * @param query HTTP query or null if you do not want a query at all
+     * @param query HTTP query used to parametrize the request
      * @return the requested resource that should be extracted to the meaningful data
      * @throws IOException   always expect some I/O failure
      * @throws JSONException should not happen unless the API returns a corrupted response
      */
     protected JSONObject get(String path, NameValuePair... query) throws IOException, JSONException {
-        URL url = new URL(scheme, host, port, basePath + path + suffix + (query == null ? "" : "?" + URLEncodedUtils.format(Arrays.asList(query), "UTF-8")));
+        URL url = new URL(scheme, host, port, basePath + path + suffix + (query.length > 0 ? "" : "?" + URLEncodedUtils.format(Arrays.asList(query), "UTF-8")));
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        // accepting staled response for up to 24 hours
+        connection.addRequestProperty("Cache-Control", "max-stale=86400");
 
         try {
             return (JSONObject) new JSONTokener(IOUtils.toString(connection.getInputStream())).nextValue();

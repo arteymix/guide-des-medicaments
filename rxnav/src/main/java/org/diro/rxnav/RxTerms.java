@@ -20,6 +20,10 @@ import java.util.List;
  */
 public class RxTerms extends RxNav {
 
+    public static RxTerms newInstance() {
+        return new RxTerms();
+    }
+
     @Override
     public JSONObject get(String path, NameValuePair... query) throws JSONException, IOException {
         return super.get("RxTerms/" + path, query);

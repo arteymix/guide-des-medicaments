@@ -27,6 +27,10 @@ import java.util.List;
  */
 public class RxNorm extends RxNav {
 
+    public static RxNorm newInstance() {
+        return new RxNorm();
+    }
+
     /**
      * Determine if a property exists for a concept and (optionally) matches the specified property
      * value. Returns the RxCUI if the property name matches.
