@@ -32,15 +32,6 @@ public class DrugActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drug);
 
-        try {
-            JSONArray data = RxNorm.newInstance().getAllRelatedInfo("21931283");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
         // /REST/rxuid/{rxuid}/...
         final String rxcui = getIntent().getData().getPathSegments().get(2);
     }
