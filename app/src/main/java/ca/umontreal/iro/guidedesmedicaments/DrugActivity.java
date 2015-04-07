@@ -1,42 +1,19 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
-import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
-import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.linearlistview.LinearListView;
-
-import org.apache.http.message.BasicNameValuePair;
-import org.diro.rxnav.RxImageAccess;
 import org.diro.rxnav.RxNorm;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-
-import ca.umontreal.iro.guidedesmedicaments.concepts.DrugFragment;
 
 /**
  * Present information about a specific drug.
@@ -54,6 +31,15 @@ public class DrugActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drug);
+
+        try {
+            JSONArray data = RxNorm.newInstance().getAllRelatedInfo("21931283");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         // /REST/rxuid/{rxuid}/...
         final String rxcui = getIntent().getData().getPathSegments().get(2);

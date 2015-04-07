@@ -1,6 +1,5 @@
 package ca.umontreal.iro.guidedesmedicaments.concepts;
 
-import android.support.v4.app.ListFragment;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -9,6 +8,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,7 +20,6 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.linearlistview.LinearListView;
 
 import org.apache.http.message.BasicNameValuePair;
 import org.diro.rxnav.RxImageAccess;
@@ -35,9 +34,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import ca.umontreal.iro.guidedesmedicaments.DrugActivity;
-import ca.umontreal.iro.guidedesmedicaments.util.JSONArrayCursor;
 import ca.umontreal.iro.guidedesmedicaments.R;
+import ca.umontreal.iro.guidedesmedicaments.util.JSONArrayCursor;
 
 /**
  * Fragment presenting a drug concept.
