@@ -32,6 +32,7 @@ public class DrugActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drug);
 
+
         // /REST/rxuid/{rxuid}/...
         final String rxcui = getIntent().getData().getPathSegments().get(2);
     }

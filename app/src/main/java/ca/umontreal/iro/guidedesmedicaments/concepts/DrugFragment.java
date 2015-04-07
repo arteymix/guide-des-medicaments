@@ -188,7 +188,7 @@ public class DrugFragment extends Fragment {
                             */
                         }
 
-                    }.execute(result.getString("name"));
+                    };//.execute(result.getString("name"));
                 } catch (JSONException jse) {
                     Log.e("", jse.getMessage(), jse);
                 }

@@ -64,14 +64,12 @@ public class Interaction extends RxNav {
      */
     public JSONArray findInteractionsFromList(String[] rxcuis, String... sources) throws IOException, JSONException {
         if (sources.length > 0)
-            return get("interaction",
+            return get("list",
                     new BasicNameValuePair("rxcuis", StringUtils.join(rxcuis, " ")),
                     new BasicNameValuePair("propValues", StringUtils.join(sources, " ")))
-                    .getJSONObject("fullInteractionTypeGroup")
-                    .getJSONArray("fullInteractionType");
+                    .getJSONArray("fullInteractionTypeGroup");
 
-        return get("interaction", new BasicNameValuePair("rxcuis", StringUtils.join(rxcuis, " ")))
-                .getJSONObject("fullInteractionTypeGroup")
-                .getJSONArray("fullInteractionType");
+        return get("list", new BasicNameValuePair("rxcuis", StringUtils.join(rxcuis, " ")))
+                .getJSONArray("fullInteractionTypeGroup");
     }
 }

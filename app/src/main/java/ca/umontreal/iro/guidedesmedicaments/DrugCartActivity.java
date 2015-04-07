@@ -11,8 +11,12 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.diro.rxnav.Interaction;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 import ca.umontreal.iro.guidedesmedicaments.concepts.DrugFragment;
+import ca.umontreal.iro.guidedesmedicaments.util.JSONArrayCursor;
 
 /**
  * Present the drug cart and its content using a {@link android.support.v4.view.ViewPager}.
@@ -134,7 +139,60 @@ public class DrugCartActivity extends ActionBarActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             return inflater.inflate(R.layout.interaction_fragment, container, false);
+
         }
+
+        @Override
+        public void onActivityCreated(Bundle savedInstance) {
+            super.onActivityCreated(savedInstance);
+
+            Set<String> rxcius = getActivity().getSharedPreferences("cart", Context.MODE_PRIVATE)
+                    .getStringSet("rxcuis", new HashSet<String>());
+
+            new AsyncTask<String, Void, JSONArray>() {
+
+                @Override
+                protected JSONArray doInBackground(String... rxcuis) {
+
+                    try {
+                        // todo: utiliser un code de couleur (gradation) pour la sévérité
+                        return Interaction.newInstance().findInteractionsFromList(rxcuis)
+                                .getJSONObject(0).getJSONArray("fullInteractionType")
+                                .getJSONObject(0)
+                                .getJSONArray("interactionPair");
+
+                    } catch (IOException e) {
+                        Log.e("", e.getMessage(), e);
+                    } catch (JSONException e) {
+                        Log.e("", e.getMessage(), e);
+                    }
+
+                    return null;
+                }
+
+                @Override
+                protected void onPostExecute(JSONArray interactions) {
+                    if (interactions == null) {
+                        // todo: avertir  l'usager qu'aucune interactions a été trouvée
+
+                        Toast.makeText(getActivity(), "No drug interaction found.", Toast.LENGTH_SHORT);
+
+                        return;
+                    }
+
+                    // todo: utiliser un JoinCursor
+                    JSONArray data = interactions;
+
+                    ListView interactionsList = (ListView) getView().findViewById(R.id.interactions);
+
+                    interactionsList.setAdapter(new SimpleCursorAdapter(getActivity(), R.layout.interaction_item, new JSONArrayCursor(interactions),
+                            new String[]{"description"},
+                            new int[]{R.id.description}, 0x0));
+                }
+            }.execute(rxcius.toArray(new String[rxcius.size()]));
+        }
+
+
     }
 
 }

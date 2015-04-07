@@ -52,7 +52,6 @@ public class MainActivity extends ActionBarActivity {
         }
 
         final SearchView sv = (SearchView) findViewById(R.id.search_drug);
-        final ListView lv = (ListView) findViewById(R.id.bookmarks);
 
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         sv.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
@@ -60,14 +59,6 @@ public class MainActivity extends ActionBarActivity {
         Set<String> rxcuis = getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
                 .getStringSet("rxcuis", new HashSet<String>());
 
-        lv.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, rxcuis.toArray()));
-
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://rxnav.nlm.nih.gov/REST/rxcui/" + id)));
-            }
-        });
 
         final RxNorm norm = new RxNorm();
 
