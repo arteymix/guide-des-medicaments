@@ -1,7 +1,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:yourapp="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:yourapp="http://schemas.android.com/apk/res-auto"
     tools:context="ca.umontreal.iro.guidedesmedicaments.DrugActivity">
+    <item
+        android:id="@+id/action_cart"
+        android:icon="@android:drawable/ic_menu_save"
+        android:title="Add to cart"/>
     <item
         android:id="@+id/action_search"
         android:icon="@android:drawable/ic_menu_search"

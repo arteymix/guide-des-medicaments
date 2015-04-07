@@ -1,35 +1,47 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
-import android.app.AlertDialog;
+import android.support.v4.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.linearlistview.LinearListView;
 
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.diro.rxnav.RxClass;
+import org.apache.http.message.BasicNameValuePair;
+import org.diro.rxnav.RxImageAccess;
+import org.diro.rxnav.RxNorm;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
+
+import ca.umontreal.iro.guidedesmedicaments.concepts.DrugFragment;
 
 /**
  * Present information about a specific drug.
+ * <p/>
+ * List similar counter-indications and similar/related concepts.
  *
  * @author Guillaume Poirier-Morency
  * @author Patrice Dumontier-Houle
@@ -41,93 +53,36 @@ public class DrugActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setTitle("Aspirin");
         setContentView(R.layout.activity_drug);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-
-        findViewById(R.id.drug_description).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new AlertDialog.Builder(v.getContext())
-                        .setTitle("Description")
-                        .setMessage("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum")
-                        .show();
-            }
-        });
-
-        LinearListView counterIndications = (LinearListView) findViewById(R.id.counter_indications);
-
-        counterIndications.setAdapter(new SimpleAdapter(this, new ArrayList<Map<String, String>>(), android.R.layout.simple_list_item_1, new String[0], new int[0]));
-
-        List<Map<String, String>> data = new ArrayList<>();
-        Map<String, String> entry = new HashMap<>();
-        entry.put("drug_name", "Aspirin");
-
-        for (int i = 0; i < 10; i++)
-            data.add(entry);
-
-        String[] stringIds = {"drug_name"};
-        int[] intIds = {R.id.drug_name};
-
-        final LinearListView similarDrugs = (LinearListView) findViewById(R.id.similar_drugs);
-        similarDrugs.setAdapter(new SimpleAdapter(this, data, R.layout.item_drug, stringIds, intIds));
-
-        similarDrugs.setOnItemClickListener(new LinearListView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(LinearListView linearListView, View view, int i, long l) {
-                startActivity(new Intent(view.getContext(), DrugActivity.class));
-
-            }
-        });
-
-        final RxClass api = new RxClass(new DefaultHttpClient());
-
-        new AsyncTask<String, Integer, JSONArray>() {
-            @Override
-            protected JSONArray doInBackground(String... classTypes) {
-                try {
-                    return api.allClasses();
-                } catch (IOException ioe) {
-                    Log.e("", "", ioe);
-                    // shit?
-                } catch (JSONException je) {
-                    Log.e("", "", je);
-                    // damn...
-                } catch (URISyntaxException e) {
-                    e.printStackTrace();
-                }
-
-                // already handled though...
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(JSONArray result) {
-                String[] fromIds = {"className"};
-                int[] toIds = {R.id.drug_name};
-                similarDrugs.setAdapter(new SimpleCursorAdapter(DrugActivity.this, R.layout.item_drug, new JSONArrayCursor(result), fromIds, toIds));
-            }
-        }.execute();
+        // /REST/rxuid/{rxuid}/...
+        final String rxcui = getIntent().getData().getPathSegments().get(2);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_medicament, menu);
+        getMenuInflater().inflate(R.menu.menu_drug, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_search:
-                return onSearchRequested();
+            case R.id.action_cart:
+                // add to cart!
+                Set<String> rxcuids = getSharedPreferences("cart", Context.MODE_PRIVATE).getStringSet("rxcuids", new HashSet<String>());
 
+                rxcuids.add(getIntent().getData().getPathSegments().get(2));
+
+                getSharedPreferences("cart", Context.MODE_PRIVATE)
+                        .edit()
+                        .putStringSet("rxcuis", rxcuids)
+                        .apply();
+
+                startActivity(new Intent(this, DrugCartActivity.class));
         }
+
         return super.onOptionsItemSelected(item);
     }
 
