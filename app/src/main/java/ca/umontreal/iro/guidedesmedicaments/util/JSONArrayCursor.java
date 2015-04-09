@@ -14,13 +14,11 @@ import java.util.List;
 /**
  * Cursor over a JSONArray of JSONObject, JSONArray or JSON primitive to provide simple integration
  * of JSON-based API data into {@link android.database.Cursor}.
- * <p/>
- * When using OBJECT, the name can be inferred.
- * <p/>
- * When using ARRAY, the names must be provided.
- * <p/>
- * When using PRIMITIVE as type, the data entry will be returned, no matter what column index or
- * name is provided. This is useful to cover APIs that return lists of JSON primitives.
+ *
+ * If specified, the "_id" column will be used from the JSONObject or fallback to the internal
+ * position attribute.
+ *
+ * TODO: way to specify '_id' column at construct-time
  *
  * @author Guillaume Poirier-Morency
  */
@@ -31,7 +29,9 @@ public class JSONArrayCursor extends AbstractCursor {
     private String[] columnNames = new String[]{"_id"};
 
     /**
-     * JSONArray of the providen type.
+     * Cursor over a {@link JSONArray} of {@link JSONObject} or primitives.
+     *
+     * In case of primitive, all columns in the cursor will point to the same value.
      *
      * @param data
      */
@@ -40,7 +40,9 @@ public class JSONArrayCursor extends AbstractCursor {
     }
 
     /**
-     * JSONArray of JSONArray, similar to {@link android.database.MatrixCursor}.
+     * Cursor over a {@link JSONArray} of {@link JSONArray} using predefined column names.
+     *
+     * This is functionnaly similar to {@link android.database.MatrixCursor}.
      *
      * @param data
      * @param columnNames
@@ -57,18 +59,21 @@ public class JSONArrayCursor extends AbstractCursor {
 
     @Override
     public String[] getColumnNames() {
-        if (mPos == -1 && data.length() == 0)
+        // empty data!
+        if (data.length() == 0)
             return columnNames;
 
         int pos = mPos == -1 ? 0 : mPos;
 
-        if (data.opt(pos).getClass().isPrimitive())
-            return new String[]{"_id"};
+        // primitive have no way of providing a ID
+        if (data.opt(pos).getClass().isPrimitive() || data.opt(mPos) instanceof String)
+            return columnNames;
 
+        // extract the column names from the keys of the current object
         if (data.opt(pos) instanceof JSONObject)
             columnNames = IteratorUtils.toArray(data.optJSONObject(pos).keys(), String.class);
 
-        // some api already provide a "_id" column
+        // some api already provide a "_id" column, use it
         if (ArrayUtils.contains(columnNames, "_id"))
             return columnNames;
 
@@ -78,18 +83,13 @@ public class JSONArrayCursor extends AbstractCursor {
 
     @Override
     public String getString(int column) {
-        try {
-            if (data.get(mPos).getClass().isPrimitive())
-                return data.getString(mPos);
+        if (data.opt(mPos).getClass().isPrimitive() || data.opt(mPos) instanceof String)
+            return data.optString(mPos);
 
-            if (data.get(mPos) instanceof JSONArray)
-                return data.getJSONArray(mPos).getString(column);
+        if (data.opt(mPos) instanceof JSONArray)
+            return data.optJSONArray(mPos).optString(column);
 
-            return data.getJSONObject(mPos).getString(getColumnName(column));
-        } catch (JSONException je) {
-            Log.e("", "", je);
-            return null;
-        }
+        return data.optJSONObject(mPos).optString(getColumnName(column));
     }
 
     @Override
@@ -113,12 +113,14 @@ public class JSONArrayCursor extends AbstractCursor {
         // check for cases of undefined "_id"
         if (column == getColumnIndex("_id")) {
             // always use {@link mPos} as primitive id
-            if (data.opt(mPos).getClass().isPrimitive())
+            if (data.opt(mPos).getClass().isPrimitive() || data.opt(mPos) instanceof String)
                 return mPos;
 
-            // last index of the matrix
-            if (data.opt(mPos) instanceof JSONArray && column == data.optJSONArray(mPos).length())
+            // JSONArray does not specify "_id" key
+            if (data.opt(mPos) instanceof JSONArray/* && column == data.optJSONArray(mPos).length()*/)
                 return mPos;
+
+            Log.i("", data.opt(mPos).toString());
 
             // object does not have the "_id" key
             if (!data.optJSONObject(mPos).has("_id"))

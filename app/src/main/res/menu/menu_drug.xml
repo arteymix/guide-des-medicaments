@@ -4,12 +4,12 @@
     tools:context="ca.umontreal.iro.guidedesmedicaments.DrugActivity">
     <item
         android:id="@+id/action_cart"
-        android:icon="@android:drawable/ic_menu_save"
-        yourapp:showAsAction="always"
-        android:title="Add to cart"/>
+        android:icon="@drawable/ic_fa_shopping_cart"
+        android:title="@string/add_to_cart"
+        yourapp:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_search"
         android:icon="@android:drawable/ic_menu_search"
         android:title="@android:string/search_go"
-        yourapp:showAsAction="always" />
+        yourapp:showAsAction="ifRoom" />
 </menu>

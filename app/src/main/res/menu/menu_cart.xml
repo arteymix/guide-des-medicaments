@@ -1,3 +1,15 @@
 <menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:yourapp="http://schemas.android.com/apk/res-auto"
     tools:context="ca.umontreal.iro.guidedesmedicaments.DrugCartActivity">
+    <item
+        android:id="@+id/action_bookmarks"
+        android:icon="@drawable/ic_fa_bookmark"
+        android:title="Bookmarks"
+        yourapp:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_search"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="@android:string/search_go"
+        yourapp:showAsAction="ifRoom" />
 </menu>

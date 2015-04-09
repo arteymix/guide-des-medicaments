@@ -24,7 +24,8 @@
 
         <activity
             android:name=".DrugsActivity"
-            android:label="@string/title_activity_drugs">
+            android:label="@string/title_activity_drugs"
+            android:launchMode="singleTop">
 
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />

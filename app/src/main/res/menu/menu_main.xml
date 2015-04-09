@@ -4,17 +4,12 @@
     tools:context="ca.umontreal.iro.guidedesmedicaments.MainActivity">
     <item
         android:id="@+id/action_bookmark"
-        android:title="Bookmark"
-        android:icon="@android:drawable/btn_star"
+        android:title="@string/bookmarks"
+        android:icon="@drawable/ic_fa_bookmark"
         yourapp:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_cart"
-        android:title="Cart"
-        android:icon="@android:drawable/ic_menu_search"
-        yourapp:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_search"
-        android:title="Search"
-        android:icon="@android:drawable/ic_menu_search"
+        android:title="@string/cart"
+        android:icon="@drawable/ic_fa_shopping_cart"
         yourapp:showAsAction="ifRoom" />
 </menu>

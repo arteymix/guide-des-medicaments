@@ -82,8 +82,8 @@ public class DrugFragment extends Fragment {
         final TextView genericName = (TextView) getView().findViewById(R.id.generic_name);
         final TextView administrationMethod = (TextView) getView().findViewById(R.id.administration_method);
 
-        final ListFragment counterIndications = (ListFragment) getFragmentManager().findFragmentById(R.id.counter_indications);
-        final ListFragment similarDrugs = (ListFragment) getFragmentManager().findFragmentById(R.id.similar_drugs);
+        final ListFragment counterIndications = (ListFragment) getChildFragmentManager().findFragmentById(R.id.counter_indications);
+        final ListFragment similarDrugs = (ListFragment) getChildFragmentManager().findFragmentById(R.id.similar_drugs);
 
         CheckBox bookmark = (CheckBox) getView().findViewById(R.id.bookmark);
 
@@ -161,7 +161,6 @@ public class DrugFragment extends Fragment {
 
                         @Override
                         protected void onPostExecute(JSONArray result) {
-
                             List<JSONArrayCursor> cursors = new ArrayList<JSONArrayCursor>();
 
                             // extract related concepts, the API group them by tty
@@ -174,9 +173,9 @@ public class DrugFragment extends Fragment {
                                 e.printStackTrace();
                             }
 
-                            ListFragment relatedDrugs = (ListFragment) getFragmentManager().findFragmentById(R.id.similar_drugs);
+                            //ListFragment relatedDrugs = (ListFragment) getFragmentManager().findFragmentById(R.id.similar_drugs);
 
-                            relatedDrugs.setListAdapter(new SimpleCursorAdapter(getActivity(), R.layout.drug_item, new MergeCursor(cursors.toArray(new Cursor[cursors.size()])), new String[]{"name"}, new int[]{R.id.drug_name}, 0x0));
+                            similarDrugs.setListAdapter(new SimpleCursorAdapter(getActivity(), R.layout.drug_item, new MergeCursor(cursors.toArray(new Cursor[cursors.size()])), new String[]{"name"}, new int[]{R.id.drug_name}, 0x0));
 
                             /*
                             relatedDrugs.setOnItemClickListener(new LinearListView.OnItemClickListener() {

@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * The RxClass API is a web service for accessing drug classes and drug members for a number of
  * different drug class types. No license is needed to use the RxClass API.
- * <p/>
+ * <p>
  *
  * @author Guillaume Poirier-Morency
  */
@@ -35,7 +35,7 @@ public class RxClass extends RxNav {
 
     /**
      * Get all classes for each specified class type.
-     * <p/>
+     * <p>
      * http://rxnav.nlm.nih.gov/RxNormAPIs.html#uLink=RxClass_REST_getAllClasses
      *
      * @param classTypes
@@ -50,6 +50,22 @@ public class RxClass extends RxNav {
                     .getJSONArray("rxclassMinConcept");
 
         return get("allClasses")
+                .getJSONObject("rxclassMinConceptList")
+                .getJSONArray("rxclassMinConcept");
+    }
+
+    /**
+     * Retrieve class information from a class identifier.
+     * <p>
+     * http://rxnav.nlm.nih.gov/RxClassAPIs.html#uLink=RxClass_REST_findClassById
+     *
+     * @param classId the class identifier.
+     * @return
+     * @throws IOException
+     * @throws JSONException
+     */
+    public JSONArray findClassById(String classId) throws IOException, JSONException {
+        return get("class/byId", new BasicNameValuePair("classId", classId))
                 .getJSONObject("rxclassMinConceptList")
                 .getJSONArray("rxclassMinConcept");
     }

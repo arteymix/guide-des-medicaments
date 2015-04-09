@@ -3,11 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context="ca.umontreal.iro.guidedesmedicaments.DrugsActivity">
-
-    <ListView
+    <fragment
         android:id="@+id/drugs"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:name="android.support.v4.app.ListFragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        tools:layout="@layout/drug_item" />
 </LinearLayout>

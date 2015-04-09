@@ -2,13 +2,18 @@ package ca.umontreal.iro.guidedesmedicaments;
 
 import android.app.SearchManager;
 import android.content.Intent;
+import android.support.v4.app.ListFragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import ca.umontreal.iro.guidedesmedicaments.util.JSONArrayCursor;
 
 /**
  * Present drugs issued from a search or a list of rxcuis.
@@ -30,7 +35,8 @@ public class DrugsActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drugs);
 
-        ListView drugs = (ListView) findViewById(R.id.drugs);
+        List<String> rxcuis = new ArrayList<>();
+        ListFragment drugs = (ListFragment) getSupportFragmentManager().findFragmentById(R.id.drugs);
 
         Intent intent = getIntent();
 
@@ -41,7 +47,7 @@ public class DrugsActivity extends ActionBarActivity {
         }
 
         if (intent.hasExtra(RXCUIS)) {
-            List<String> rxcuis = intent.getStringArrayListExtra(RXCUIS);
+            rxcuis = intent.getStringArrayListExtra(RXCUIS);
             // TODO: afficher une liste prédéfinies de rxcuis
         }
     }
