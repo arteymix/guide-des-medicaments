@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
@@ -13,10 +14,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.tobishiba.circularviewpager.library.BaseCircularViewPagerAdapter;
+import com.tobishiba.circularviewpager.library.CircularViewPagerHandler;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.diro.rxnav.Interaction;
@@ -57,22 +62,21 @@ public class DrugCartActivity extends ActionBarActivity {
 
         final Interaction interaction = new Interaction();
 
-        new AsyncTask<String, Integer, JSONArray>() {
+        new AsyncTask<String, Integer, Interaction.InteractionsFromList>() {
 
             @Override
-            protected JSONArray doInBackground(String... rxcuids) {
+            protected Interaction.InteractionsFromList doInBackground(String... rxcuids) {
                 try {
                     return interaction.findInteractionsFromList(rxcuids, "DRUG");
                 } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 return null;
             }
 
             @Override
-            protected void onPostExecute(JSONArray interactions) {
+            protected void onPostExecute(Interaction.InteractionsFromList interactions) {
+                // TODO!
             }
         }.execute(rxcuis.toArray(new String[rxcuis.size()]));
 
@@ -82,25 +86,21 @@ public class DrugCartActivity extends ActionBarActivity {
         final List<String> cart = new ArrayList<>(getSharedPreferences("cart", Context.MODE_PRIVATE)
                 .getStringSet("rxcuis", new HashSet<String>()));
 
-        final FragmentPagerAdapter pa = new FragmentPagerAdapter(getSupportFragmentManager()) {
+        // first page contains the interactions
+        cart.add(0, null);
+
+        pager.setAdapter(new BaseCircularViewPagerAdapter<String>(getSupportFragmentManager(), cart) {
 
             @Override
-            public android.support.v4.app.Fragment getItem(int position) {
-                if (position == 0)
+            protected Fragment getFragmentForItem(String rxcui) {
+                if (rxcui == null)
                     return new DrugInteractionFragment();
 
-                return DrugFragment.newInstance(cart.get(position - 1));
+                return DrugFragment.newInstance(rxcui);
             }
+        });
 
-            @Override
-            public int getCount() {
-                return 1 + cart.size();
-            }
-        };
-
-        pager.setAdapter(pa);
-
-        pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        new CircularViewPagerHandler(pager).setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -152,31 +152,29 @@ public class DrugCartActivity extends ActionBarActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             return inflater.inflate(R.layout.interaction_fragment, container, false);
-
         }
 
         @Override
         public void onActivityCreated(Bundle savedInstance) {
             super.onActivityCreated(savedInstance);
 
+            final TextView nlmDisclaimer = (TextView) getView().findViewById(R.id.nlm_disclaimer);
+            final ListView interactionsList = (ListView) getView().findViewById(R.id.interactions);
+
             Set<String> rxcius = getActivity().getSharedPreferences("cart", Context.MODE_PRIVATE)
                     .getStringSet("rxcuis", new HashSet<String>());
 
-            new AsyncTask<String, Void, JSONArray>() {
+            if (rxcius.isEmpty())
+                Toast.makeText(getActivity(), "The cart is empty, add some drugs in it first.", Toast.LENGTH_SHORT).show();
+
+            new AsyncTask<String, Void, Interaction.InteractionsFromList>() {
 
                 @Override
-                protected JSONArray doInBackground(String... rxcuis) {
-
+                protected Interaction.InteractionsFromList doInBackground(String... rxcuis) {
                     try {
                         // todo: utiliser un code de couleur (gradation) pour la sévérité
-                        return Interaction.newInstance().findInteractionsFromList(rxcuis)
-                                .getJSONObject(0).getJSONArray("fullInteractionType")
-                                .getJSONObject(0)
-                                .getJSONArray("interactionPair");
-
+                        return Interaction.newInstance().findInteractionsFromList(rxcuis);
                     } catch (IOException e) {
-                        Log.e("", e.getMessage(), e);
-                    } catch (JSONException e) {
                         Log.e("", e.getMessage(), e);
                     }
 
@@ -184,28 +182,24 @@ public class DrugCartActivity extends ActionBarActivity {
                 }
 
                 @Override
-                protected void onPostExecute(JSONArray interactions) {
-                    if (interactions == null) {
+                protected void onPostExecute(Interaction.InteractionsFromList interactions) {
+
+                    nlmDisclaimer.setText(interactions.nlmDisclaimer);
+
+                    if (interactions.fullInteractionTypeGroup == null) {
                         // todo: avertir  l'usager qu'aucune interactions a été trouvée
-
-                        Toast.makeText(getActivity(), "No drug interaction found.", Toast.LENGTH_SHORT);
-
+                        Toast.makeText(getActivity(), "No drug interactions found.", Toast.LENGTH_SHORT);
                         return;
                     }
 
-                    // todo: utiliser un JoinCursor
-                    JSONArray data = interactions;
-
-                    ListView interactionsList = (ListView) getView().findViewById(R.id.interactions);
-
-                    interactionsList.setAdapter(new SimpleCursorAdapter(getActivity(), R.layout.interaction_item, new JSONArrayCursor(interactions),
-                            new String[]{"description"},
-                            new int[]{R.id.description}, 0x0));
+                    // TODO: assembler toutes les interactions
+                    interactionsList.setAdapter(new ArrayAdapter<>(
+                            getActivity(),
+                            R.layout.interaction_item,
+                            interactions.fullInteractionTypeGroup.interactionType));
                 }
             }.execute(rxcius.toArray(new String[rxcius.size()]));
         }
-
-
     }
 
 }

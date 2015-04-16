@@ -1,5 +1,6 @@
 package ca.umontreal.iro.guidedesmedicaments.concepts;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -13,11 +14,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
@@ -119,79 +122,61 @@ public class DrugFragment extends Fragment {
         */
 
         // récupère le nom du concept
-        new AsyncTask<String, Integer, JSONObject>() {
+        new AsyncTask<String, Integer, RxNorm.RxConceptProperties>() {
             @Override
-            protected JSONObject doInBackground(String... rxcui) {
-                RxNorm norm = new RxNorm();
-
+            protected RxNorm.RxConceptProperties doInBackground(String... rxcui) {
                 try {
-                    return norm.getRxConceptProperties(rxcui[0]);
+                    return RxNorm.newInstance().getRxConceptProperties(rxcui[0]);
                 } catch (IOException ioe) {
-                    Log.e("", ioe.getMessage(), ioe);
-                } catch (JSONException je) {
-                    Log.e("", je.getMessage(), je);
+                    // les données ne peuvent pas être récupérées
+                    Toast.makeText(getActivity(), ioe.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                    getActivity().finish();
+                    // already handled...
+                    return null;
                 }
-                // already handled though...
-                return null;
             }
 
             @Override
-            protected void onPostExecute(JSONObject result) {
-                try {
-                    getActivity().setTitle(result.getString("name"));
-                    drugName.setText(result.getString("name"));
+            protected void onPostExecute(RxNorm.RxConceptProperties result) {
+                getActivity().setTitle(result.properties.name);
+                drugName.setText(result.properties.name);
 
-                    // fetch related drugs to the concept name
-                    new AsyncTask<String, Void, JSONArray>() {
+                // fetch related drugs to the concept name
+                new AsyncTask<String, Void, RxNorm.Drugs>() {
 
-                        @Override
-                        protected JSONArray doInBackground(String... params) {
-                            RxNorm norm = new RxNorm();
+                    @Override
+                    protected RxNorm.Drugs doInBackground(String... params) {
+                        RxNorm norm = new RxNorm();
 
-                            try {
-                                return norm.getDrugs(params[0]);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-
-                            return null;
+                        try {
+                            return norm.getDrugs(params[0]);
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
 
-                        @Override
-                        protected void onPostExecute(JSONArray result) {
-                            List<JSONArrayCursor> cursors = new ArrayList<JSONArrayCursor>();
+                        return null;
+                    }
 
-                            // extract related concepts, the API group them by tty
-                            try {
-                                for (int i = 0; i < result.length(); i++) {
-                                    if (result.getJSONObject(i).has("conceptProperties"))
-                                        cursors.add(new JSONArrayCursor(result.getJSONObject(i).optJSONArray("conceptProperties")));
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-
-                            //ListFragment relatedDrugs = (ListFragment) getFragmentManager().findFragmentById(R.id.similar_drugs);
-
-                            similarDrugs.setListAdapter(new SimpleCursorAdapter(getActivity(), R.layout.drug_item, new MergeCursor(cursors.toArray(new Cursor[cursors.size()])), new String[]{"name"}, new int[]{R.id.drug_name}, 0x0));
-
-                            /*
-                            relatedDrugs.setOnItemClickListener(new LinearListView.OnItemClickListener() {
-                                @Override
-                                public void onItemClick(LinearListView linearListView, View view, int i, long l) {
-                                    // TODO: démarrer une activité pour afficher le médicament
-                                }
-                            });
-                            */
+                    @Override
+                    protected void onPostExecute(RxNorm.Drugs result) {
+                        if (result == null) {
+                            // todo: toast & stuff
+                            return;
                         }
 
-                    };//.execute(result.getString("name"));
-                } catch (JSONException jse) {
-                    Log.e("", jse.getMessage(), jse);
-                }
+                        List<RxNorm.ConceptProperties> conceptProperties = new ArrayList<>();
 
+                        // extract related concepts, the API group them by tty
+                        for (RxNorm.ConceptGroup c : result.drugGroup.conceptGroup)
+                            if (c.conceptProperties != null)
+                                conceptProperties.addAll(c.conceptProperties);
+
+                        similarDrugs.setListAdapter(new ArrayAdapter<>(getActivity(),
+                                android.R.layout.simple_list_item_1,
+                                conceptProperties));
+                    }
+
+                }.execute(result.properties.name);
             }
         }.execute(rxcui);
 
@@ -244,10 +229,18 @@ public class DrugFragment extends Fragment {
                         // display images in a gallery
                         Intent i = new Intent(Intent.ACTION_VIEW);
 
-                        // TODO: put all images in the intent to display a nice gallery
-                        i.setDataAndType(imageUris[0], "image/jpeg");
+                        i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                        i.putExtra(Intent.EXTRA_STREAM, imageUris);
 
-                        startActivity(i);
+                        // TODO: put all images in the intent to display a nice gallery
+                        i.setDataAndType(imageUris[0], "image/*");
+
+                        try {
+                            startActivity(i);
+                        } catch (ActivityNotFoundException activityNotFoundException) {
+                            // TODO: display the gallery in a basic {@link ViewFlipper}
+                            Toast.makeText(getActivity(), "Could not display the drug images in a gallery.", Toast.LENGTH_LONG).show();
+                        }
                     }
                 });
             }

@@ -1,8 +1,11 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
 import android.app.SearchManager;
+import android.content.ContentProvider;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.net.http.HttpResponseCache;
 import android.os.AsyncTask;
@@ -70,26 +73,23 @@ public class MainActivity extends ActionBarActivity {
         });
 
         // fetch suggestions
-        new AsyncTask<Void, Void, JSONArray>() {
+        new AsyncTask<Void, Void, RxNorm.DisplayTerms>() {
             @Override
-            protected JSONArray doInBackground(Void... params) {
+            protected RxNorm.DisplayTerms doInBackground(Void... params) {
                 try {
                     // this request is pretty heavy, but once cached it should be fine.
                     return norm.getDisplayTerms();
                 } catch (IOException e) {
                     Log.e("", e.getMessage(), e);
                     e.printStackTrace();
-                } catch (JSONException e) {
-                    Log.e("", e.getMessage(), e);
                 }
 
                 return null;
             }
 
             @Override
-            protected void onPostExecute(JSONArray result) {
-                if (result != null)
-                    sv.setSuggestionsAdapter(new SimpleCursorAdapter(MainActivity.this, android.R.layout.simple_list_item_1, new JSONArrayCursor(result), new String[]{"_id"}, new int[]{android.R.id.text1}, 0x0));
+            protected void onPostExecute(RxNorm.DisplayTerms result) {
+                // TODO!
             }
         }.execute();
     }

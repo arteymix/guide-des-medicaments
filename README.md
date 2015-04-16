@@ -30,3 +30,10 @@ Fonctionnalités
  - paniers de médicaments
     - mémorise une liste de médicaments
     - affiche les conflits au sein des médicaments
+
+Iconographie
+------------
+
+En plus des icônes de base, l'application utilise des icônes provenant de la collection
+[Font Awesome](http://fortawesome.github.io/Font-Awesome/) et d'une intégration pour Android par
+[svenkapudija](https://github.com/svenkapudija/Android-Action-Bar-Icons)
