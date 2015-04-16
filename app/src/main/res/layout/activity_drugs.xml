@@ -4,11 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="ca.umontreal.iro.guidedesmedicaments.DrugsActivity">
-    <fragment
+
+    <ListView
         android:id="@+id/drugs"
-        android:name="android.support.v4.app.ListFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        tools:layout="@layout/drug_item" />
+        android:layout_height="wrap_content" />
 </LinearLayout>

@@ -453,4 +453,50 @@ public class RxNorm extends RxNav {
             connection.disconnect();
         }
     }
+
+    public class TermTypes implements Parcelable {
+
+        public class TermTypeList implements Parcelable {
+
+            public String[] termType;
+
+            @Override
+            public int describeContents() {
+                return 0;
+            }
+
+            @Override
+            public void writeToParcel(Parcel dest, int flags) {
+                dest.writeStringArray(termType);
+            }
+        }
+
+        public TermTypeList termTypeList;
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeParcelable(termTypeList, flags);
+        }
+    }
+
+    /**
+     * Get the valid term types in the RxNorm data set.
+     *
+     * @return
+     * @throws IOException
+     */
+    public TermTypes getTermTypes() throws IOException {
+        HttpURLConnection connection = getHttpConnection("termtypes");
+
+        try {
+            return gson.fromJson(new InputStreamReader(connection.getInputStream()), TermTypes.class);
+        } finally {
+            connection.disconnect();
+        }
+    }
 }
