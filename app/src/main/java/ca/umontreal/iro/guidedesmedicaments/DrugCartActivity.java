@@ -1,11 +1,9 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -16,17 +14,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.tobishiba.circularviewpager.library.BaseCircularViewPagerAdapter;
 import com.tobishiba.circularviewpager.library.CircularViewPagerHandler;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.diro.rxnav.Interaction;
-import org.json.JSONArray;
-import org.json.JSONException;
+import ca.umontreal.iro.rxnav.Interaction;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,7 +29,6 @@ import java.util.List;
 import java.util.Set;
 
 import ca.umontreal.iro.guidedesmedicaments.concepts.DrugFragment;
-import ca.umontreal.iro.guidedesmedicaments.util.JSONArrayCursor;
 
 /**
  * Present the drug cart and its content using a {@link android.support.v4.view.ViewPager}.

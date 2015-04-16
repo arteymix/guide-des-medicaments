@@ -1,14 +1,12 @@
-package org.diro.rxnav;
+package ca.umontreal.iro.rxnav;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -48,7 +46,7 @@ public class RxNorm extends RxNav {
      * @throws JSONException
      * @throws URISyntaxException
      */
-    public JSONArray filterByProperty(String rxcui, String propName, String... propValues) throws IOException, JSONException, URISyntaxException {
+    public JSONArray filterByProperty(String rxcui, String propName, String... propValues) throws IOException, JSONException {
         if (propValues.length > 0)
             return get("rxcui/" + rxcui + "/filter",
                     new BasicNameValuePair("propName", propName),
@@ -74,7 +72,7 @@ public class RxNorm extends RxNav {
      * @throws JSONException
      * @throws URISyntaxException
      */
-    public JSONArray getAllProperties(String rxcui, String... prop) throws IOException, JSONException, URISyntaxException {
+    public JSONArray getAllProperties(String rxcui, String... prop) throws IOException, JSONException {
         if (prop.length > 0)
             return get("rxcui/" + rxcui + "/allProperties", new BasicNameValuePair("prop", StringUtils.join(prop, " ")))
                     .getJSONObject("propConceptGroup")
@@ -162,7 +160,7 @@ public class RxNorm extends RxNav {
      * @throws IOException
      * @throws JSONException
      */
-    public ApproximateGroup getApproximateMatch(String term, int maxEntries, int option) throws IOException, JSONException {
+    public ApproximateGroup getApproximateMatch(String term, int maxEntries, int option) throws IOException {
         final HttpURLConnection connection = getHttpConnection("approximateTerm",
                 new BasicNameValuePair("term", term),
                 new BasicNameValuePair("maxEntries", Integer.toString(maxEntries)),
@@ -175,9 +173,6 @@ public class RxNorm extends RxNav {
         }
     }
 
-    /**
-     *
-     */
     public class DisplayTerms implements Parcelable {
 
         public class DisplayTermsList implements Parcelable {
@@ -351,7 +346,7 @@ public class RxNorm extends RxNav {
      *              /termtypes example for the valid term types.
      * @return
      */
-    public RelatedGroup getRelatedByType(String rxcui, String... tty) throws IOException, JSONException {
+    public RelatedGroup getRelatedByType(String rxcui, String... tty) throws IOException {
         HttpURLConnection connection = getHttpConnection("rxcui/" + rxcui + "/allrelated");
 
         try {
@@ -385,8 +380,75 @@ public class RxNorm extends RxNav {
      */
     public RxConceptProperties getRxConceptProperties(String rxcui) throws IOException {
         HttpURLConnection connection = getHttpConnection("rxcui/" + rxcui + "/properties");
+
         try {
             return gson.fromJson(new InputStreamReader(connection.getInputStream()), RxConceptProperties.class);
+        } finally {
+            connection.disconnect();
+        }
+    }
+
+    public class SpellingSuggestions implements Parcelable {
+
+        public class SuggestionGroup implements Parcelable {
+
+            public class SuggestionList implements Parcelable {
+
+                public String[] suggestion;
+
+                @Override
+                public int describeContents() {
+                    return 0;
+                }
+
+                @Override
+                public void writeToParcel(Parcel dest, int flags) {
+                    dest.writeStringArray(suggestion);
+                }
+            }
+
+            public String name;
+            public SuggestionList suggestionList;
+
+            @Override
+            public int describeContents() {
+                return 0;
+            }
+
+            @Override
+            public void writeToParcel(Parcel dest, int flags) {
+                dest.writeString(name);
+                dest.writeParcelable(suggestionList, flags);
+            }
+        }
+
+        public SuggestionGroup suggestionGroup;
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeParcelable(suggestionGroup, flags);
+        }
+    }
+
+    /**
+     * Get spelling suggestions for a given term. The suggestions are RxNorm terms contained in the
+     * current version, listed in decreasing order of closeness to the original phrase.
+     *
+     * @param name the name for which spelling suggestions are to be generated. This field is
+     *             required.
+     * @return
+     * @throws IOException
+     */
+    public SpellingSuggestions getSpellingSuggestions(String name) throws IOException {
+        HttpURLConnection connection = getHttpConnection("spellingsuggestions", new BasicNameValuePair("name", name));
+
+        try {
+            return gson.fromJson(new InputStreamReader(connection.getInputStream()), SpellingSuggestions.class);
         } finally {
             connection.disconnect();
         }

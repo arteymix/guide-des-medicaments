@@ -4,14 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import org.diro.rxnav.RxNorm;
-import org.json.JSONArray;
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,9 +28,8 @@ public class DrugActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drug);
 
-
         // /REST/rxuid/{rxuid}/...
-        final String rxcui = getIntent().getData().getPathSegments().get(2);
+        Log.i("", "loading drug with rxuid" + getIntent().getData().getPathSegments().get(2));
     }
 
     @Override

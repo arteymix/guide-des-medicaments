@@ -3,8 +3,6 @@ package ca.umontreal.iro.guidedesmedicaments.concepts;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.MergeCursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -18,18 +16,14 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
 import org.apache.http.message.BasicNameValuePair;
-import org.diro.rxnav.RxImageAccess;
-import org.diro.rxnav.RxNorm;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,7 +32,8 @@ import java.util.List;
 import java.util.Set;
 
 import ca.umontreal.iro.guidedesmedicaments.R;
-import ca.umontreal.iro.guidedesmedicaments.util.JSONArrayCursor;
+import ca.umontreal.iro.rxnav.RxImageAccess;
+import ca.umontreal.iro.rxnav.RxNorm;
 
 /**
  * Fragment presenting a drug concept.

@@ -1,4 +1,4 @@
-package org.diro.rxnav;
+package ca.umontreal.iro.rxnav;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;

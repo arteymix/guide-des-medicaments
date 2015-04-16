@@ -14,14 +14,16 @@ import java.util.List;
 /**
  * Cursor over a JSONArray of JSONObject, JSONArray or JSON primitive to provide simple integration
  * of JSON-based API data into {@link android.database.Cursor}.
- *
+ * <p/>
  * If specified, the "_id" column will be used from the JSONObject or fallback to the internal
  * position attribute.
- *
+ * <p/>
  * TODO: way to specify '_id' column at construct-time
  *
  * @author Guillaume Poirier-Morency
+ * @deprecated moving to {@link com.google.gson.Gson} in progress...
  */
+@Deprecated
 public class JSONArrayCursor extends AbstractCursor {
 
     private final JSONArray data;
@@ -30,7 +32,7 @@ public class JSONArrayCursor extends AbstractCursor {
 
     /**
      * Cursor over a {@link JSONArray} of {@link JSONObject} or primitives.
-     *
+     * <p/>
      * In case of primitive, all columns in the cursor will point to the same value.
      *
      * @param data
@@ -41,7 +43,7 @@ public class JSONArrayCursor extends AbstractCursor {
 
     /**
      * Cursor over a {@link JSONArray} of {@link JSONArray} using predefined column names.
-     *
+     * <p/>
      * This is functionnaly similar to {@link android.database.MatrixCursor}.
      *
      * @param data

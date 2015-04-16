@@ -1,11 +1,8 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
 import android.app.SearchManager;
-import android.content.ContentProvider;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.net.http.HttpResponseCache;
 import android.os.AsyncTask;
@@ -15,21 +12,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.SearchView;
-import android.widget.SimpleCursorAdapter;
-
-import org.diro.rxnav.RxNorm;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import ca.umontreal.iro.guidedesmedicaments.util.JSONArrayCursor;
+import ca.umontreal.iro.rxnav.RxNorm;
 
 /**
  * Provide search capabilities that initiate the application flow.
@@ -62,9 +51,6 @@ public class MainActivity extends ActionBarActivity {
         Set<String> rxcuis = getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
                 .getStringSet("rxcuis", new HashSet<String>());
 
-
-        final RxNorm norm = new RxNorm();
-
         findViewById(R.id.action_demo).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -78,7 +64,7 @@ public class MainActivity extends ActionBarActivity {
             protected RxNorm.DisplayTerms doInBackground(Void... params) {
                 try {
                     // this request is pretty heavy, but once cached it should be fine.
-                    return norm.getDisplayTerms();
+                    return RxNorm.newInstance().getDisplayTerms();
                 } catch (IOException e) {
                     Log.e("", e.getMessage(), e);
                     e.printStackTrace();

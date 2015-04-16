@@ -1,4 +1,4 @@
-package org.diro.rxnav;
+package ca.umontreal.iro.rxnav;
 
 import com.google.gson.Gson;
 
@@ -111,7 +111,7 @@ public class RxNav {
      * @return the requested resource that should be extracted to the meaningful data
      * @throws IOException   always expect some I/O failure
      * @throws JSONException should not happen unless the API returns a corrupted response
-     * @deprecated use {@link RxNav.getHttpConnection} with {@link Gson}
+     * @deprecated use getHttpConnection with {@link Gson}
      */
     protected JSONObject get(String path, NameValuePair... query) throws IOException, JSONException {
         HttpURLConnection connection = getHttpConnection(path, query);
