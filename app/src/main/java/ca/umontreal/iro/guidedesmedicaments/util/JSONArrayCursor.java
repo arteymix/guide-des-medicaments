@@ -6,10 +6,7 @@ import android.util.Log;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.List;
 
 /**
  * Cursor over a JSONArray of JSONObject, JSONArray or JSON primitive to provide simple integration

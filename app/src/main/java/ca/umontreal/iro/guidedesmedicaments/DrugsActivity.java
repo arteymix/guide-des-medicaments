@@ -1,7 +1,6 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
 import android.app.SearchManager;
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -22,8 +21,6 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 
 import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 import java.io.IOException;
 
@@ -78,8 +75,6 @@ public class DrugsActivity extends ActionBarActivity {
                         finish();
                     }
 
-                    Log.i("", "" + spellingSuggestions.suggestionGroup.suggestionList.suggestion);
-
                     setTitle("Results for " + spellingSuggestions.suggestionGroup.name);
 
                     drugs.setAdapter(new ArrayAdapter<String>(DrugsActivity.this,
@@ -104,14 +99,13 @@ public class DrugsActivity extends ActionBarActivity {
                                     try {
                                         // TODO: use the rxcui to identify the images
                                         return Uri.parse(image.rxbase(new BasicNameValuePair("name", params[0]))
-                                                .getJSONObject(0)
-                                                .getString("imageUrl"));
+                                                .nlmRxImages[0]
+                                                .imageUrl);
 
                                     } catch (IOException e) {
                                         Log.e("", e.getMessage(), e);
-                                    } catch (JSONException e) {
-                                        Log.e("", e.getMessage(), e);
                                     }
+
                                     return null;
                                 }
 
@@ -141,9 +135,8 @@ public class DrugsActivity extends ActionBarActivity {
                                         RxImageAccess.newInstance().rxnav(new BasicNameValuePair("name", params[0]));
                                     } catch (IOException e) {
                                         e.printStackTrace();
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
                                     }
+
                                     return null;
                                 }
                             }.execute(spellingSuggestions.suggestionGroup.suggestionList.suggestion[position]);

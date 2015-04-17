@@ -4,16 +4,11 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.util.List;
 
 /**
  * The Interaction API is a web service for accessing drug-drug interactions. No license is needed
@@ -57,7 +52,7 @@ public class Interaction extends RxNav {
                     public SourceConceptItem sourceConceptItem;
                 }
 
-                public List<InteractionConcept> interactionConcept;
+                public InteractionConcept[] interactionConcept;
                 public String description;
             }
 
@@ -65,13 +60,13 @@ public class Interaction extends RxNav {
         }
 
         public String sourceDisclaimer;
-        public List<InteractionType> interactionType;
+        public InteractionType[] interactionType;
     }
 
     public class DrugInteractions implements Parcelable {
 
         public class UserInput implements Parcelable {
-            public List<String> sources;
+            public String[] sources;
             public String rxcui;
 
             @Override
@@ -81,14 +76,14 @@ public class Interaction extends RxNav {
 
             @Override
             public void writeToParcel(Parcel dest, int flags) {
-                dest.writeStringList(sources);
+                dest.writeStringArray(sources);
                 dest.writeString(rxcui);
             }
         }
 
         public String nlmDisclaimer;
         public UserInput userInput;
-        public List<InteractionTypeGroup> interactionTypeGroup;
+        public InteractionTypeGroup[] interactionTypeGroup;
 
         @Override
         public int describeContents() {
@@ -105,15 +100,16 @@ public class Interaction extends RxNav {
      * Get the drug interactions for a specified drug.
      *
      * @param rxcui
+     * @param sources the sources to use. If not specified, all sources will be used.
      * @return
      * @throws IOException
      */
     public DrugInteractions findDrugInteractions(String rxcui, String... sources) throws IOException {
         final HttpURLConnection connection = sources.length > 0 ?
-                getHttpConnection("interaction/interaction",
+                openHttpURLConnection("interaction/interaction",
                         new BasicNameValuePair("rxcui", rxcui),
                         new BasicNameValuePair("sources", StringUtils.join(sources, " "))) :
-                getHttpConnection("interaction/interaction", new BasicNameValuePair("rxcui", rxcui));
+                openHttpURLConnection("interaction/interaction", new BasicNameValuePair("rxcui", rxcui));
 
         try {
             return gson.fromJson(new InputStreamReader(connection.getInputStream()), DrugInteractions.class);
@@ -126,8 +122,8 @@ public class Interaction extends RxNav {
     public class InteractionsFromList {
 
         public class UserInput {
-            public List<String> sources;
-            public List<String> rxcuis;
+            public String[] sources;
+            public String[] rxcuis;
         }
 
         public String nlmDisclaimer;
@@ -148,10 +144,10 @@ public class Interaction extends RxNav {
      */
     public InteractionsFromList findInteractionsFromList(String[] rxcuis, String... sources) throws IOException {
         HttpURLConnection connection = sources.length > 0 ?
-                getHttpConnection("interaction/list",
+                openHttpURLConnection("interaction/list",
                         new BasicNameValuePair("rxcuis", StringUtils.join(rxcuis, " ")),
                         new BasicNameValuePair("propValues", StringUtils.join(sources, " "))) :
-                getHttpConnection("interaction/list", new BasicNameValuePair("rxcuis", StringUtils.join(rxcuis, " ")));
+                openHttpURLConnection("interaction/list", new BasicNameValuePair("rxcuis", StringUtils.join(rxcuis, " ")));
 
         try {
             return gson.fromJson(new InputStreamReader(connection.getInputStream()), InteractionsFromList.class);

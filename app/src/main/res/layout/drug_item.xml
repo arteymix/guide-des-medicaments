@@ -8,6 +8,7 @@
         android:id="@+id/drug_icon"
         android:layout_width="92dp"
         android:layout_height="92dp"
+        android:contentDescription="@string/drug_icon_description"
         android:paddingEnd="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin" />
 
@@ -17,7 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/drug_icon"
         android:layout_toRightOf="@id/drug_icon"
-        android:text="Aspirin"
+        android:text="@string/aspirin_name"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <CheckBox
@@ -45,7 +46,7 @@
         android:layout_toEndOf="@id/drug_icon"
         android:layout_toRightOf="@id/drug_icon"
         android:maxLines="1"
-        android:text="Carégorie 1, Catégorie 2, Catégorie 3"
+        android:text="@string/aspirin_categories"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TextView
@@ -56,7 +57,7 @@
         android:layout_toEndOf="@id/drug_icon"
         android:layout_toRightOf="@id/drug_icon"
         android:maxLines="2"
-        android:text="Description sommaire de l&apos;aspirine sur au plus 3 lignes de contenu! et ça continue encore à mettre plein de texte et ouais!"
+        android:text="@string/aspirin_description"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
 </RelativeLayout>

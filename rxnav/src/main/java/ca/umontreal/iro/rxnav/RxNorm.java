@@ -11,8 +11,6 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
-import java.util.List;
 
 /**
  * The RxNorm API is a web service for accessing the current RxNorm data set.
@@ -44,7 +42,6 @@ public class RxNorm extends RxNav {
      * @return
      * @throws IOException
      * @throws JSONException
-     * @throws URISyntaxException
      */
     public JSONArray filterByProperty(String rxcui, String propName, String... propValues) throws IOException, JSONException {
         if (propValues.length > 0)
@@ -70,7 +67,6 @@ public class RxNorm extends RxNav {
      * @return
      * @throws IOException
      * @throws JSONException
-     * @throws URISyntaxException
      */
     public JSONArray getAllProperties(String rxcui, String... prop) throws IOException, JSONException {
         if (prop.length > 0)
@@ -127,7 +123,7 @@ public class RxNorm extends RxNav {
         public String inputTerm;
         public String maxEntries;
         public String comment;
-        public List<Candidate> candidate;
+        public Candidate[] candidate;
 
         @Override
         public int describeContents() {
@@ -139,7 +135,7 @@ public class RxNorm extends RxNav {
             dest.writeString(inputTerm);
             dest.writeString(maxEntries);
             dest.writeString(comment);
-            dest.writeParcelableArray(candidate.toArray(new Candidate[candidate.size()]), flags);
+            dest.writeParcelableArray(candidate, flags);
         }
     }
 
@@ -158,10 +154,9 @@ public class RxNorm extends RxNav {
      *                   a (non-suppressed) term in the RxNorm vocabulary.
      * @return
      * @throws IOException
-     * @throws JSONException
      */
     public ApproximateGroup getApproximateMatch(String term, int maxEntries, int option) throws IOException {
-        final HttpURLConnection connection = getHttpConnection("approximateTerm",
+        final HttpURLConnection connection = openHttpURLConnection("approximateTerm",
                 new BasicNameValuePair("term", term),
                 new BasicNameValuePair("maxEntries", Integer.toString(maxEntries)),
                 new BasicNameValuePair("option", Integer.toString(option)));
@@ -176,7 +171,7 @@ public class RxNorm extends RxNav {
     public class DisplayTerms implements Parcelable {
 
         public class DisplayTermsList implements Parcelable {
-            public List<String> term;
+            public String[] term;
 
             @Override
             public int describeContents() {
@@ -185,7 +180,7 @@ public class RxNorm extends RxNav {
 
             @Override
             public void writeToParcel(Parcel dest, int flags) {
-                dest.writeStringList(term);
+                dest.writeStringArray(term);
             }
         }
 
@@ -208,10 +203,9 @@ public class RxNorm extends RxNav {
      *
      * @return
      * @throws IOException
-     * @throws JSONException
      */
     public DisplayTerms getDisplayTerms() throws IOException {
-        final HttpURLConnection connection = getHttpConnection("displaynames");
+        final HttpURLConnection connection = openHttpURLConnection("displaynames");
 
         try {
             return this.gson.fromJson(new InputStreamReader(connection.getInputStream()), DisplayTerms.class);
@@ -250,7 +244,7 @@ public class RxNorm extends RxNav {
 
         public String tty;
 
-        public List<ConceptProperties> conceptProperties;
+        public ConceptProperties[] conceptProperties;
 
         @Override
         public int describeContents() {
@@ -260,7 +254,7 @@ public class RxNorm extends RxNav {
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeString(tty);
-            dest.writeParcelableArray(conceptProperties.toArray(new ConceptProperties[conceptProperties.size()]), flags);
+            dest.writeParcelableArray(conceptProperties, flags);
         }
 
     }
@@ -270,7 +264,7 @@ public class RxNorm extends RxNav {
         public class DrugGroup implements Parcelable {
 
             public String name;
-            public List<ConceptGroup> conceptGroup;
+            public ConceptGroup[] conceptGroup;
 
             @Override
             public int describeContents() {
@@ -280,7 +274,7 @@ public class RxNorm extends RxNav {
             @Override
             public void writeToParcel(Parcel dest, int flags) {
                 dest.writeString(name);
-                dest.writeParcelableArray(conceptGroup.toArray(new ConceptGroup[conceptGroup.size()]), flags);
+                dest.writeParcelableArray(conceptGroup, flags);
             }
         }
 
@@ -309,7 +303,7 @@ public class RxNorm extends RxNav {
      * @return
      */
     public Drugs getDrugs(String name) throws IOException {
-        HttpURLConnection connection = getHttpConnection("drugs", new BasicNameValuePair("name", name));
+        HttpURLConnection connection = openHttpURLConnection("drugs", new BasicNameValuePair("name", name));
 
         try {
             return this.gson.fromJson(new InputStreamReader(connection.getInputStream()), Drugs.class);
@@ -321,8 +315,8 @@ public class RxNorm extends RxNav {
     public class RelatedGroup implements Parcelable {
 
         public String rxcui;
-        public List<String> termType;
-        public List<ConceptGroup> conceptGroup;
+        public String[] termType;
+        public ConceptGroup[] conceptGroup;
 
         @Override
         public int describeContents() {
@@ -332,8 +326,8 @@ public class RxNorm extends RxNav {
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeString(rxcui);
-            dest.writeStringList(termType);
-            dest.writeParcelableArray(conceptGroup.toArray(new ConceptGroup[conceptGroup.size()]), flags);
+            dest.writeStringArray(termType);
+            dest.writeParcelableArray(conceptGroup, flags);
         }
     }
 
@@ -347,7 +341,7 @@ public class RxNorm extends RxNav {
      * @return
      */
     public RelatedGroup getRelatedByType(String rxcui, String... tty) throws IOException {
-        HttpURLConnection connection = getHttpConnection("rxcui/" + rxcui + "/allrelated");
+        HttpURLConnection connection = openHttpURLConnection("rxcui/" + rxcui + "/allrelated");
 
         try {
             return gson.fromJson(new InputStreamReader(connection.getInputStream()), RelatedGroup.class);
@@ -379,7 +373,7 @@ public class RxNorm extends RxNav {
      * @throws IOException
      */
     public RxConceptProperties getRxConceptProperties(String rxcui) throws IOException {
-        HttpURLConnection connection = getHttpConnection("rxcui/" + rxcui + "/properties");
+        HttpURLConnection connection = openHttpURLConnection("rxcui/" + rxcui + "/properties");
 
         try {
             return gson.fromJson(new InputStreamReader(connection.getInputStream()), RxConceptProperties.class);
@@ -445,7 +439,7 @@ public class RxNorm extends RxNav {
      * @throws IOException
      */
     public SpellingSuggestions getSpellingSuggestions(String name) throws IOException {
-        HttpURLConnection connection = getHttpConnection("spellingsuggestions", new BasicNameValuePair("name", name));
+        HttpURLConnection connection = openHttpURLConnection("spellingsuggestions", new BasicNameValuePair("name", name));
 
         try {
             return gson.fromJson(new InputStreamReader(connection.getInputStream()), SpellingSuggestions.class);
@@ -491,7 +485,7 @@ public class RxNorm extends RxNav {
      * @throws IOException
      */
     public TermTypes getTermTypes() throws IOException {
-        HttpURLConnection connection = getHttpConnection("termtypes");
+        HttpURLConnection connection = openHttpURLConnection("termtypes");
 
         try {
             return gson.fromJson(new InputStreamReader(connection.getInputStream()), TermTypes.class);

@@ -83,10 +83,10 @@ public class RxNav {
      *
      * @param path  requested path automatically prefixed by "/REST/" and suffixed by ".json"
      * @param query HTTP query used to parametrize the request
-     * @return
+     * @return an opened connection to the API that should be closed by the caller
      * @throws IOException always expect some I/O failure
      */
-    protected HttpURLConnection getHttpConnection(String path, NameValuePair... query) throws IOException {
+    protected HttpURLConnection openHttpURLConnection(String path, NameValuePair... query) throws IOException {
         URL url = new URL(scheme, host, port, basePath + path + suffix + "?" + URLEncodedUtils.format(Arrays.asList(query), "UTF-8"));
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -111,10 +111,10 @@ public class RxNav {
      * @return the requested resource that should be extracted to the meaningful data
      * @throws IOException   always expect some I/O failure
      * @throws JSONException should not happen unless the API returns a corrupted response
-     * @deprecated use getHttpConnection with {@link Gson}
+     * @deprecated use openHttpURLConnection with {@link Gson}
      */
     protected JSONObject get(String path, NameValuePair... query) throws IOException, JSONException {
-        HttpURLConnection connection = getHttpConnection(path, query);
+        HttpURLConnection connection = openHttpURLConnection(path, query);
 
         try {
             return (JSONObject) new JSONTokener(IOUtils.toString(connection.getInputStream())).nextValue();

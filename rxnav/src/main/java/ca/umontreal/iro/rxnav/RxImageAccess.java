@@ -1,11 +1,18 @@
 package ca.umontreal.iro.rxnav;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.apache.http.NameValuePair;
-import org.json.JSONArray;
-import org.json.JSONException;
+import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * RxImageAccess Applications Programming Interface (API) is an online offering from the National
@@ -37,36 +44,179 @@ public class RxImageAccess extends RxNav {
     }
 
     /**
-     * Initialize RxNav to use the public API at http://rxnav.nlm.nih.gov
-     * <p/>
-     * It is recommended to use your own API
+     * Initialize RxNav to use the public API at http://rximage.nlm.nih.gov
      */
     public RxImageAccess() {
         super("http", "rximage.nlm.nih.gov", 80, "/api/", "");
     }
 
     /**
+     * RxImageAccess API returns uniform JSON responses.
+     * <p/>
+     * The specification can be accessed here http://rximage.nlm.nih.gov/rxImageAccess.json
+     * <p/>
+     * An {@link Iterator} is implemented as results are paginated.
+     */
+    public class ImageAccess implements Iterator<ImageAccess>, Parcelable {
+
+        public class ReplyStatus implements Parcelable {
+            public String success;
+            public int imageCount;
+            public int totalImageCount;
+            public String date;
+            public Map<String, String> matchedTerms;
+
+            @Override
+            public int describeContents() {
+                return 0;
+            }
+
+            @Override
+            public void writeToParcel(Parcel dest, int flags) {
+                dest.writeString(success);
+                dest.writeInt(imageCount);
+                dest.writeInt(totalImageCount);
+                dest.writeString(date);
+                // todo: write the matchedTerms Map
+            }
+        }
+
+        public class RxImage implements Parcelable {
+
+            public class Relabeler implements Parcelable {
+
+                /**
+                 * Named @sourceNdc9
+                 */
+                public String sourceNdc9;
+                public String[] ndc9;
+
+                @Override
+                public int describeContents() {
+                    return 0;
+                }
+
+                @Override
+                public void writeToParcel(Parcel dest, int flags) {
+                    dest.writeString(sourceNdc9);
+                    dest.writeStringArray(ndc9);
+                }
+            }
+
+            public int id;
+            public String ndc11;
+            public int part;
+            public String matchNdc;
+            public Relabeler[] relabelersNdc9;
+            public String status;
+            public int rxcui;
+            public String splSetId;
+            public String acqDate;
+            public String name;
+            public String labeler;
+            public String imageUrl;
+            public int imageSize;
+            public String attribution;
+
+            @Override
+            public int describeContents() {
+                return 0;
+            }
+
+            @Override
+            public void writeToParcel(Parcel dest, int flags) {
+                dest.writeInt(id);
+                dest.writeString(ndc11);
+                dest.writeInt(part);
+                dest.writeString(matchNdc);
+                dest.writeParcelableArray(relabelersNdc9, flags);
+                dest.writeString(status);
+                dest.writeInt(rxcui);
+                dest.writeString(splSetId);
+                dest.writeString(acqDate);
+                dest.writeString(name);
+                dest.writeString(labeler);
+                dest.writeString(imageUrl);
+                dest.writeInt(imageSize);
+                dest.writeString(attribution);
+            }
+        }
+
+        public ReplyStatus replyStatus;
+
+        public RxImage[] nlmRxImages;
+
+        @Override
+        public boolean hasNext() {
+            return replyStatus.imageCount < replyStatus.totalImageCount;
+        }
+
+        @Override
+        public ImageAccess next() {
+            List<BasicNameValuePair> matchedTerms = new ArrayList<>();
+
+            for (Map.Entry<String, String> e : replyStatus.matchedTerms.entrySet()) {
+                matchedTerms.add(new BasicNameValuePair(e.getKey(), e.getValue()));
+            }
+
+            try {
+                // todo: reuse the same api method and RxImageAccess instance
+                return RxImageAccess.newInstance().rxnav(matchedTerms.toArray(new BasicNameValuePair[matchedTerms.size()]));
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("this instance is immutable");
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeParcelable(replyStatus, flags);
+            dest.writeParcelableArray(nlmRxImages, flags);
+        }
+    }
+
+    /**
      * This is the recommended image collection due to the inclusion of an information panel.
      *
-     * @param query
+     * @param query contains pretty much what ends in the HTTP query
      * @return
      * @throws IOException
-     * @throws JSONException
      */
-    public JSONArray rxnav(NameValuePair... query) throws IOException, JSONException {
-        return get("rximage/1/rxnav", query).getJSONArray("nlmRxImages");
+    public ImageAccess rxnav(NameValuePair... query) throws IOException {
+        final HttpURLConnection connection = openHttpURLConnection("rximage/1/rxnav", query);
+
+        try {
+            return gson.fromJson(new InputStreamReader(connection.getInputStream()), ImageAccess.class);
+        } finally {
+            connection.disconnect();
+        }
     }
 
     /**
      * This collection is identical to the rxnav collection without the panel.
      *
-     * @param query
+     * @param query contains pretty much what ends in the HTTP query
      * @return
      * @throws IOException
-     * @throws JSONException
      */
-    public JSONArray rxbase(NameValuePair... query) throws IOException, JSONException {
-        return get("rximage/1/rxbase", query).getJSONArray("nlmRxImages");
+    public ImageAccess rxbase(NameValuePair... query) throws IOException {
+        final HttpURLConnection connection = openHttpURLConnection("rximage/1/rxbase", query);
+
+        try {
+            return gson.fromJson(new InputStreamReader(connection.getInputStream()), ImageAccess.class);
+        } finally {
+            connection.disconnect();
+        }
     }
 
 }

@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,17 +22,22 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
+import org.mediawiki.api.json.Api;
+import org.mediawiki.api.json.ApiException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import ca.umontreal.iro.guidedesmedicaments.R;
+import ca.umontreal.iro.rxnav.Interaction;
 import ca.umontreal.iro.rxnav.RxImageAccess;
 import ca.umontreal.iro.rxnav.RxNorm;
 
@@ -77,6 +83,7 @@ public class DrugFragment extends Fragment {
                 getArguments().getString("rxcui");
 
         final TextView drugName = (TextView) getView().findViewById(R.id.drug_name);
+        final TextView drugDescription = (TextView) getView().findViewById(R.id.drug_description);
         final TextView genericName = (TextView) getView().findViewById(R.id.generic_name);
         final TextView administrationMethod = (TextView) getView().findViewById(R.id.administration_method);
 
@@ -107,17 +114,8 @@ public class DrugFragment extends Fragment {
             }
         });
 
-        /*
-        similarDrugs.setOnItemClickListener(new LinearListView.OnItemClickListener() {
-            @Override
-            public void onItemClick(LinearListView linearListView, View view, int i, long l) {
-                startActivity(new Intent(view.getContext(), DrugActivity.class));
-            }
-        });
-        */
-
-        // récupère le nom du concept
-        new AsyncTask<String, Integer, RxNorm.RxConceptProperties>() {
+        // fetch drug properties
+        new AsyncTask<String, Void, RxNorm.RxConceptProperties>() {
             @Override
             protected RxNorm.RxConceptProperties doInBackground(String... rxcui) {
                 try {
@@ -136,26 +134,77 @@ public class DrugFragment extends Fragment {
                 getActivity().setTitle(result.properties.name);
                 drugName.setText(result.properties.name);
 
+                // fetch description & additionnal information from Wikipedia
+                new AsyncTask<String, Void, JSONObject>() {
+
+                    @Override
+                    protected JSONObject doInBackground(String... drugNames) {
+                        try {
+                            JSONObject pages = new Api("en.wikipedia.org")
+                                    .action("query")
+                                    .param("prop", "extracts")
+                                    .param("titles", StringUtils.join(drugNames, "|"))
+                                    .param("redirects", "")
+                                    .get()
+                                    .asObject()
+                                    .getJSONObject("query")
+                                    .getJSONObject("pages");
+
+                            return pages.getJSONObject(pages.keys().next());
+                        } catch (ApiException | JSONException e) {
+                            Log.e("", e.getLocalizedMessage(), e);
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    protected void onPostExecute(final JSONObject description) {
+                        if (description == null) {
+                            drugDescription.setText("No description were found.");
+                            return;
+                        }
+
+                        // todo: show first paragraph rather than a limited number of lines
+                        genericName.setText(description.optString("title"));
+                        drugDescription.setText(Html.fromHtml(description.optString("extract")));
+
+                        // expand/collapse on click
+                        // todo: smooth animation
+                        drugDescription.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                if (drugDescription.getLineCount() > 10) {
+                                    // expanded, time to collapse
+                                    Log.i("", "expanding description...");
+                                    drugDescription.setMaxLines(10);
+                                } else {
+                                    // collapsed, expand and restitute the text :)
+                                    Log.i("", "collapsing description...");
+                                    drugDescription.setMaxLines(Integer.MAX_VALUE);
+                                    drugDescription.setText(Html.fromHtml(description.optString("extract")));
+                                }
+                            }
+                        });
+                    }
+                }.execute(result.properties.name);
+
                 // fetch related drugs to the concept name
                 new AsyncTask<String, Void, RxNorm.Drugs>() {
 
                     @Override
                     protected RxNorm.Drugs doInBackground(String... params) {
-                        RxNorm norm = new RxNorm();
-
                         try {
-                            return norm.getDrugs(params[0]);
+                            return RxNorm.newInstance().getDrugs(params[0]);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            Log.e("", e.getLocalizedMessage(), e);
+                            return null;
                         }
-
-                        return null;
                     }
 
                     @Override
                     protected void onPostExecute(RxNorm.Drugs result) {
                         if (result == null) {
-                            // todo: toast & stuff
+                            Toast.makeText(getActivity(), "No related drugs were found.", Toast.LENGTH_LONG).show();
                             return;
                         }
 
@@ -164,7 +213,7 @@ public class DrugFragment extends Fragment {
                         // extract related concepts, the API group them by tty
                         for (RxNorm.ConceptGroup c : result.drugGroup.conceptGroup)
                             if (c.conceptProperties != null)
-                                conceptProperties.addAll(c.conceptProperties);
+                                conceptProperties.addAll(Arrays.asList(c.conceptProperties));
 
                         similarDrugs.setListAdapter(new ArrayAdapter<>(getActivity(),
                                 android.R.layout.simple_list_item_1,
@@ -175,13 +224,44 @@ public class DrugFragment extends Fragment {
             }
         }.execute(rxcui);
 
-        /**
-         * Fetch potential images for the drug
-         */
-        new AsyncTask<String, Integer, JSONArray>() {
+        // todo: fetch contraindications (interactions?)
+        new AsyncTask<String, Void, Interaction.DrugInteractions>() {
 
             @Override
-            protected JSONArray doInBackground(String... params) {
+            protected Interaction.DrugInteractions doInBackground(String... params) {
+                try {
+                    return Interaction.newInstance().findDrugInteractions(params[0]);
+                } catch (IOException e) {
+                    Log.e("", e.getLocalizedMessage(), e);
+                    return null;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(Interaction.DrugInteractions drugInteractions) {
+                if (drugInteractions == null) {
+                    Toast.makeText(getActivity(), "No drug interactions were found.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                List<String> comments = new ArrayList<>();
+
+                for (Interaction.InteractionTypeGroup interactionTypeGroup : drugInteractions.interactionTypeGroup)
+                    for (Interaction.InteractionTypeGroup.InteractionType interactionType : interactionTypeGroup.interactionType)
+                        comments.add(interactionType.comment);
+
+                counterIndications.setListAdapter(new ArrayAdapter<>(
+                        getActivity(),
+                        android.R.layout.simple_list_item_1,
+                        comments));
+            }
+        }.execute(rxcui);
+
+        // fetch potential images for the drug
+        new AsyncTask<String, Void, RxImageAccess.ImageAccess>() {
+
+            @Override
+            protected RxImageAccess.ImageAccess doInBackground(String... params) {
                 RxImageAccess image = new RxImageAccess();
 
                 try {
@@ -189,49 +269,43 @@ public class DrugFragment extends Fragment {
                     return image.rxbase(new BasicNameValuePair("name", "aspirin"));
                 } catch (IOException e) {
                     Log.e("", e.getMessage(), e);
-                } catch (JSONException e) {
-                    Log.e("", e.getMessage(), e);
                 }
+
                 return null;
             }
 
             @Override
-            protected void onPostExecute(JSONArray images) {
+            protected void onPostExecute(final RxImageAccess.ImageAccess images) {
                 if (images == null)
                     return; // TODO: could not fetch images
 
                 final ImageView drugIcon = (ImageView) getView().findViewById(R.id.drug_icon);
 
-                final Uri[] imageUris = new Uri[images.length()];
-
-                try {
-                    // charge l'icône du médicament
-                    Glide.with(getActivity())
-                            .load(images.getJSONObject(0).getString("imageUrl"))
-                            .crossFade()
-                            .into(drugIcon);
-
-                    for (int i = 0; i < images.length(); i++)
-                        imageUris[i] = Uri.parse(images.getJSONObject(i).getString("imageUrl"));
-                } catch (JSONException e) {
-                    Log.e("", "could not extract 'imageUrl' from the RxImageAccess api", e);
-                }
+                // charge l'icône du médicament
+                Glide.with(getActivity())
+                        .load(images.nlmRxImages[0].imageUrl)
+                        .crossFade()
+                        .into(drugIcon);
 
                 // au clic, lancer la galerie avec tous les images du médicament
                 drugIcon.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         // display images in a gallery
-                        Intent i = new Intent(Intent.ACTION_VIEW);
+                        Intent displayImages = new Intent(Intent.ACTION_VIEW);
 
-                        i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                        i.putExtra(Intent.EXTRA_STREAM, imageUris);
+                        displayImages.setDataAndType(Uri.parse(images.nlmRxImages[0].imageUrl), "image/*");
 
-                        // TODO: put all images in the intent to display a nice gallery
-                        i.setDataAndType(imageUris[0], "image/*");
+                        Uri[] imageUris = new Uri[images.nlmRxImages.length];
+
+                        for (int i = 0; i < images.nlmRxImages.length; i++)
+                            imageUris[i] = Uri.parse(images.nlmRxImages[i].imageUrl);
+
+                        displayImages.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                        displayImages.putExtra(Intent.EXTRA_STREAM, imageUris);
 
                         try {
-                            startActivity(i);
+                            startActivity(displayImages);
                         } catch (ActivityNotFoundException activityNotFoundException) {
                             // TODO: display the gallery in a basic {@link ViewFlipper}
                             Toast.makeText(getActivity(), "Could not display the drug images in a gallery.", Toast.LENGTH_LONG).show();

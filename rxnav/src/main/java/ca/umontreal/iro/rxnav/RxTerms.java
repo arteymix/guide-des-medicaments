@@ -1,14 +1,12 @@
 package ca.umontreal.iro.rxnav;
 
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.List;
 
 /**
  * The RxTerms API is a web service for accessing the current RxTerms data set. No license is needed
@@ -24,11 +22,6 @@ public class RxTerms extends RxNav {
         return new RxTerms();
     }
 
-    @Override
-    public JSONObject get(String path, NameValuePair... query) throws JSONException, IOException {
-        return super.get("RxTerms/" + path, query);
-    }
-
     /**
      * This resource gets the RxTerms information for a specified RxNorm concept.
      *
@@ -36,10 +29,9 @@ public class RxTerms extends RxNav {
      * @return
      * @throws IOException
      * @throws JSONException
-     * @throws URISyntaxException
      */
     public JSONObject getAllRxTermInfo(int rxcui) throws IOException, JSONException {
-        return get("rxcui/" + rxcui + "/allinfo", null)
+        return get("RxTerms/rxcui/" + rxcui + "/allinfo")
                 .getJSONObject("rxtermsProperties");
     }
 
@@ -50,10 +42,9 @@ public class RxTerms extends RxNav {
      * @return
      * @throws IOException
      * @throws JSONException
-     * @throws URISyntaxException
      */
     public String getRxTermDisplayName(int rxcui) throws IOException, JSONException {
-        return get("rxcui/" + rxcui + "/name", null)
+        return get("RxTerms/rxcui/" + rxcui + "/name")
                 .getJSONObject("displayGroup")
                 .getString("displayName");
     }
@@ -66,10 +57,9 @@ public class RxTerms extends RxNav {
      * @return
      * @throws IOException
      * @throws JSONException
-     * @throws URISyntaxException
      */
-    public String getRxTermsVersion() throws IOException, JSONException, URISyntaxException {
-        return get("version", null).getString("rxtermsVersion");
+    public String getRxTermsVersion() throws IOException, JSONException {
+        return get("RxTerms/version").getString("rxtermsVersion");
     }
 
     /**
@@ -80,10 +70,9 @@ public class RxTerms extends RxNav {
      * @return
      * @throws IOException
      * @throws JSONException
-     * @throws URISyntaxException
      */
     public JSONArray getAllConcepts() throws IOException, JSONException {
-        return get("allconcepts", null)
+        return get("RxTerms/allconcepts")
                 .getJSONObject("minConceptGroup")
                 .getJSONArray("minConcept");
     }

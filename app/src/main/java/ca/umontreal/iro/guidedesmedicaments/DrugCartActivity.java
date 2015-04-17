@@ -181,7 +181,7 @@ public class DrugCartActivity extends ActionBarActivity {
 
                     if (interactions.fullInteractionTypeGroup == null) {
                         // todo: avertir  l'usager qu'aucune interactions a été trouvée
-                        Toast.makeText(getActivity(), "No drug interactions found.", Toast.LENGTH_SHORT);
+                        Toast.makeText(getActivity(), "No drug interactions found.", Toast.LENGTH_SHORT).show();
                         return;
                     }
 

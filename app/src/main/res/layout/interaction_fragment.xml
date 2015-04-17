@@ -13,7 +13,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Interactions"
+        android:text="@string/interactions"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <ListView

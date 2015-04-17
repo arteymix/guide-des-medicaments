@@ -15,5 +15,6 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
+        maven { url 'https://tools.wmflabs.org/android-maven-repo' }
     }
 }

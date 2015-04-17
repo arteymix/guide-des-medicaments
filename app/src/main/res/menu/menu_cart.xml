@@ -5,7 +5,7 @@
     <item
         android:id="@+id/action_bookmarks"
         android:icon="@drawable/ic_fa_bookmark"
-        android:title="Bookmarks"
+        android:title="@string/bookmarks"
         yourapp:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_search"
