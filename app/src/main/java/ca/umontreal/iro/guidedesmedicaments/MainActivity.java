@@ -14,6 +14,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.SearchView;
 
+import com.squareup.okhttp.Cache;
+import com.squareup.okhttp.OkHttpClient;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,11 +40,9 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        try {
-            HttpResponseCache.install(getCacheDir(), 10 * 1024 * 1024);// 10 MiB
-        } catch (IOException ioe) {
-            Log.i("", "could not install the HTTP response cache", ioe);
-        }
+        final OkHttpClient httpClient = new OkHttpClient();
+
+        httpClient.setCache(new Cache(getCacheDir(), 10 * 1024 * 1024));
 
         final SearchView sv = (SearchView) findViewById(R.id.search_drug);
 
@@ -64,7 +65,7 @@ public class MainActivity extends ActionBarActivity {
             protected RxNorm.DisplayTerms doInBackground(Void... params) {
                 try {
                     // this request is pretty heavy, but once cached it should be fine.
-                    return RxNorm.newInstance().getDisplayTerms();
+                    return RxNorm.newInstance(httpClient).getDisplayTerms();
                 } catch (IOException e) {
                     Log.e("", e.getMessage(), e);
                     e.printStackTrace();

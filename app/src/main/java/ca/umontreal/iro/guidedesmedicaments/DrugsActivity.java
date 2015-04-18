@@ -1,6 +1,7 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
 import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -19,10 +21,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.squareup.okhttp.OkHttpClient;
 
 import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import ca.umontreal.iro.rxnav.RxImageAccess;
 import ca.umontreal.iro.rxnav.RxNorm;
@@ -47,6 +52,10 @@ public class DrugsActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drugs);
 
+        final OkHttpClient httpClient = new OkHttpClient();
+
+        httpClient.setCache(new com.squareup.okhttp.Cache(getCacheDir(), 10 * 1024 * 1024));
+
         final ListView drugs = (ListView) findViewById(R.id.drugs);
 
         Intent intent = getIntent();
@@ -59,7 +68,7 @@ public class DrugsActivity extends ActionBarActivity {
                 @Override
                 protected RxNorm.SpellingSuggestions doInBackground(String... params) {
                     try {
-                        return RxNorm.newInstance().getSpellingSuggestions(params[0]);
+                        return RxNorm.newInstance(httpClient).getSpellingSuggestions(params[0]);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -79,46 +88,63 @@ public class DrugsActivity extends ActionBarActivity {
 
                     drugs.setAdapter(new ArrayAdapter<String>(DrugsActivity.this,
                             R.layout.drug_item,
+                            R.id.drug_name,
                             spellingSuggestions.suggestionGroup.suggestionList.suggestion) {
 
                         @Override
-                        public View getView(int position, View convertView, ViewGroup parent) {
-                            final View c = getLayoutInflater().inflate(R.layout.drug_item, parent, false);
+                        public View getView(final int position, View convertView, ViewGroup parent) {
+                            final View c = super.getView(position, convertView, parent);
 
-                            TextView drugName = (TextView) c.findViewById(R.id.drug_name);
+                            c.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    // récupération de l'id
+                                    // todo: utiliser des rxcui comme id
 
-                            drugName.setText(spellingSuggestions.suggestionGroup.suggestionList.suggestion[position]);
+                                    new AsyncTask<String, Void, RxNorm.Rxcui>() {
+
+                                        @Override
+                                        protected RxNorm.Rxcui doInBackground(String... params) {
+                                            try {
+                                                return RxNorm.newInstance(httpClient).findRxcuiByString(params[0], new String[]{}, false, 0);
+                                            } catch (IOException e) {
+                                                Log.e("", e.getLocalizedMessage(), e);
+                                                return null;
+                                            }
+                                        }
+
+                                        protected void onPostExecute(RxNorm.Rxcui rxcui) {
+                                            if (rxcui.idGroup.rxnormId != null)
+                                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://rxnav.nlm.nih.gov/REST/rxcui/" + rxcui.idGroup.rxnormId[0])));
+                                        }
+                                    }.execute(spellingSuggestions.suggestionGroup.suggestionList.suggestion[position]);
+                                }
+                            });
 
                             // récupération de la vignette
-                            new AsyncTask<String, Integer, Uri>() {
+                            new AsyncTask<String, Void, RxImageAccess.ImageAccess>() {
 
                                 @Override
-                                protected Uri doInBackground(String... params) {
-                                    RxImageAccess image = new RxImageAccess();
-
+                                protected RxImageAccess.ImageAccess doInBackground(String... params) {
                                     try {
                                         // TODO: use the rxcui to identify the images
-                                        return Uri.parse(image.rxbase(new BasicNameValuePair("name", params[0]))
-                                                .nlmRxImages[0]
-                                                .imageUrl);
-
+                                        return RxImageAccess.newInstance(httpClient).rxbase(new BasicNameValuePair("name", params[0]));
                                     } catch (IOException e) {
                                         Log.e("", e.getMessage(), e);
+                                        return null;
                                     }
-
-                                    return null;
                                 }
 
                                 @Override
-                                protected void onPostExecute(Uri image) {
-                                    if (image == null)
-                                        return; // TODO: could not fetch images
+                                protected void onPostExecute(RxImageAccess.ImageAccess image) {
+                                    if (image.replyStatus.imageCount == 0)
+                                        return;
 
                                     final ImageView drugIcon = (ImageView) c.findViewById(R.id.drug_icon);
 
                                     // charge l'icône du médicament
                                     Glide.with(DrugsActivity.this)
-                                            .load(image)
+                                            .load(image.nlmRxImages[0].imageUrl)
                                             .crossFade()
                                             .fitCenter()
                                             .centerCrop()
@@ -126,33 +152,10 @@ public class DrugsActivity extends ActionBarActivity {
                                 }
                             }.execute(spellingSuggestions.suggestionGroup.suggestionList.suggestion[position]);
 
-                            // récupération de la vignette
-                            new AsyncTask<String, Void, Bitmap>() {
-
-                                @Override
-                                protected Bitmap doInBackground(String... params) {
-                                    try {
-                                        RxImageAccess.newInstance().rxnav(new BasicNameValuePair("name", params[0]));
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-
-                                    return null;
-                                }
-                            }.execute(spellingSuggestions.suggestionGroup.suggestionList.suggestion[position]);
-
                             // todo: bookmarking live!
                             // c.findViewById(R.id.bookmark).setOnClickListener();
 
                             return c;
-                        }
-                    });
-
-                    drugs.setOnItemClickListener(new ListView.OnItemClickListener() {
-                        @Override
-                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                            // todo: faire correspond le champs id au rxcui
-                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://rxnav.nlm.nih.gov/REST/rxcui/" + id)));
                         }
                     });
                 }
@@ -173,6 +176,28 @@ public class DrugsActivity extends ActionBarActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_drugs, menu);
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_search:
+                return onSearchRequested();
+            case R.id.action_cart:
+                // add to cart!
+                Set<String> rxcuids = getSharedPreferences("cart", Context.MODE_PRIVATE).getStringSet("rxcuids", new HashSet<String>());
+
+                rxcuids.add(getIntent().getData().getPathSegments().get(2));
+
+                getSharedPreferences("cart", Context.MODE_PRIVATE)
+                        .edit()
+                        .putStringSet("rxcuis", rxcuids)
+                        .apply();
+
+                startActivity(new Intent(this, DrugCartActivity.class));
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
 }

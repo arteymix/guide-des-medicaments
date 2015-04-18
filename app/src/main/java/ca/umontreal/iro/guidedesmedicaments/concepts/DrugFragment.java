@@ -21,6 +21,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.squareup.okhttp.OkHttpClient;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.message.BasicNameValuePair;
@@ -28,6 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.mediawiki.api.json.Api;
 import org.mediawiki.api.json.ApiException;
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,8 +41,11 @@ import java.util.Set;
 
 import ca.umontreal.iro.guidedesmedicaments.R;
 import ca.umontreal.iro.rxnav.Interaction;
+import ca.umontreal.iro.rxnav.RxClass;
 import ca.umontreal.iro.rxnav.RxImageAccess;
 import ca.umontreal.iro.rxnav.RxNorm;
+
+import static humanize.Humanize.oxford;
 
 /**
  * Fragment presenting a drug concept.
@@ -78,6 +84,10 @@ public class DrugFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        final OkHttpClient httpClient = new OkHttpClient();
+
+        httpClient.setCache(new com.squareup.okhttp.Cache(getActivity().getCacheDir(), 10 * 1024 * 1024));
+
         final String rxcui = getArguments() == null ?
                 getActivity().getIntent().getData().getPathSegments().get(2) :
                 getArguments().getString("rxcui");
@@ -85,6 +95,7 @@ public class DrugFragment extends Fragment {
         final TextView drugName = (TextView) getView().findViewById(R.id.drug_name);
         final TextView drugDescription = (TextView) getView().findViewById(R.id.drug_description);
         final TextView genericName = (TextView) getView().findViewById(R.id.generic_name);
+        final TextView categories = (TextView) getView().findViewById(R.id.categories);
         final TextView administrationMethod = (TextView) getView().findViewById(R.id.administration_method);
 
         final ListFragment counterIndications = (ListFragment) getChildFragmentManager().findFragmentById(R.id.counter_indications);
@@ -119,7 +130,7 @@ public class DrugFragment extends Fragment {
             @Override
             protected RxNorm.RxConceptProperties doInBackground(String... rxcui) {
                 try {
-                    return RxNorm.newInstance().getRxConceptProperties(rxcui[0]);
+                    return RxNorm.newInstance(httpClient).getRxConceptProperties(rxcui[0]);
                 } catch (IOException ioe) {
                     // les données ne peuvent pas être récupérées
                     Toast.makeText(getActivity(), ioe.getLocalizedMessage(), Toast.LENGTH_LONG).show();
@@ -134,8 +145,63 @@ public class DrugFragment extends Fragment {
                 getActivity().setTitle(result.properties.name);
                 drugName.setText(result.properties.name);
 
+                // fetch potential images for the drug
+                new AsyncTask<String, Void, RxImageAccess.ImageAccess>() {
+
+                    @Override
+                    protected RxImageAccess.ImageAccess doInBackground(String... params) {
+                        try {
+                            return RxImageAccess.newInstance(httpClient).rxbase(new BasicNameValuePair("name", params[0]));
+                        } catch (IOException e) {
+                            Log.e("", e.getMessage(), e);
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    protected void onPostExecute(final RxImageAccess.ImageAccess images) {
+                        if (images.replyStatus.imageCount == 0)
+                            return;
+
+                        final ImageView drugIcon = (ImageView) getView().findViewById(R.id.drug_icon);
+
+                        // charge l'icône du médicament
+                        Glide.with(getActivity())
+                                .load(images.nlmRxImages[0].imageUrl)
+                                .crossFade()
+                                .into(drugIcon);
+
+                        // au clic, lancer la galerie avec tous les images du médicament
+                        drugIcon.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                // display images in a gallery
+                                Intent displayImages = new Intent(Intent.ACTION_VIEW);
+
+                                displayImages.setDataAndType(Uri.parse(images.nlmRxImages[0].imageUrl), "image/*");
+
+                                Uri[] imageUris = new Uri[images.nlmRxImages.length];
+
+                                for (int i = 0; i < images.nlmRxImages.length; i++)
+                                    imageUris[i] = Uri.parse(images.nlmRxImages[i].imageUrl);
+
+                                displayImages.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                                displayImages.putExtra(Intent.EXTRA_STREAM, imageUris);
+
+                                try {
+                                    startActivity(displayImages);
+                                } catch (ActivityNotFoundException activityNotFoundException) {
+                                    // TODO: display the gallery in a basic {@link ViewFlipper}
+                                    Toast.makeText(getActivity(), "Could not display the drug images in a gallery.", Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        });
+                    }
+                }.execute(result.properties.name);
+
                 // fetch description & additionnal information from Wikipedia
                 new AsyncTask<String, Void, JSONObject>() {
+
 
                     @Override
                     protected JSONObject doInBackground(String... drugNames) {
@@ -194,7 +260,7 @@ public class DrugFragment extends Fragment {
                     @Override
                     protected RxNorm.Drugs doInBackground(String... params) {
                         try {
-                            return RxNorm.newInstance().getDrugs(params[0]);
+                            return RxNorm.newInstance(httpClient).getDrugs(params[0]);
                         } catch (IOException e) {
                             Log.e("", e.getLocalizedMessage(), e);
                             return null;
@@ -224,13 +290,39 @@ public class DrugFragment extends Fragment {
             }
         }.execute(rxcui);
 
+        new AsyncTask<String, Void, RxClass.ClassByRxNormDrugId>() {
+
+            @Override
+            protected RxClass.ClassByRxNormDrugId doInBackground(String... params) {
+                try {
+                    return RxClass.newInstance(httpClient).getClassByRxNormDrugId(params[0], null);
+                } catch (IOException e) {
+                    Log.e("", e.getLocalizedMessage(), e);
+                    return null;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(RxClass.ClassByRxNormDrugId classByRxNormDrugId) {
+                if (classByRxNormDrugId.rxclassDrugInfoList == null)
+                    return;
+
+                List<String> classNames = new ArrayList<>();
+
+                for (RxClass.ClassByRxNormDrugId.RxClassDrugInfoList.RxClassDrugInfo rxclassDrugInfo : classByRxNormDrugId.rxclassDrugInfoList.rxclassDrugInfo)
+                    classNames.add(rxclassDrugInfo.rxclassMinConceptItem.className);
+
+                categories.setText(StringUtils.join(classNames, ", ") /*oxford(classNames)*/);
+            }
+        }.execute(rxcui);
+
         // todo: fetch contraindications (interactions?)
         new AsyncTask<String, Void, Interaction.DrugInteractions>() {
 
             @Override
             protected Interaction.DrugInteractions doInBackground(String... params) {
                 try {
-                    return Interaction.newInstance().findDrugInteractions(params[0]);
+                    return Interaction.newInstance(httpClient).findDrugInteractions(params[0]);
                 } catch (IOException e) {
                     Log.e("", e.getLocalizedMessage(), e);
                     return null;
@@ -239,7 +331,7 @@ public class DrugFragment extends Fragment {
 
             @Override
             protected void onPostExecute(Interaction.DrugInteractions drugInteractions) {
-                if (drugInteractions == null) {
+                if (drugInteractions.interactionTypeGroup == null) {
                     Toast.makeText(getActivity(), "No drug interactions were found.", Toast.LENGTH_LONG).show();
                     return;
                 }
@@ -254,64 +346,6 @@ public class DrugFragment extends Fragment {
                         getActivity(),
                         android.R.layout.simple_list_item_1,
                         comments));
-            }
-        }.execute(rxcui);
-
-        // fetch potential images for the drug
-        new AsyncTask<String, Void, RxImageAccess.ImageAccess>() {
-
-            @Override
-            protected RxImageAccess.ImageAccess doInBackground(String... params) {
-                RxImageAccess image = new RxImageAccess();
-
-                try {
-                    // TODO: use the rxcui to identify the images
-                    return image.rxbase(new BasicNameValuePair("name", "aspirin"));
-                } catch (IOException e) {
-                    Log.e("", e.getMessage(), e);
-                }
-
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(final RxImageAccess.ImageAccess images) {
-                if (images == null)
-                    return; // TODO: could not fetch images
-
-                final ImageView drugIcon = (ImageView) getView().findViewById(R.id.drug_icon);
-
-                // charge l'icône du médicament
-                Glide.with(getActivity())
-                        .load(images.nlmRxImages[0].imageUrl)
-                        .crossFade()
-                        .into(drugIcon);
-
-                // au clic, lancer la galerie avec tous les images du médicament
-                drugIcon.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // display images in a gallery
-                        Intent displayImages = new Intent(Intent.ACTION_VIEW);
-
-                        displayImages.setDataAndType(Uri.parse(images.nlmRxImages[0].imageUrl), "image/*");
-
-                        Uri[] imageUris = new Uri[images.nlmRxImages.length];
-
-                        for (int i = 0; i < images.nlmRxImages.length; i++)
-                            imageUris[i] = Uri.parse(images.nlmRxImages[i].imageUrl);
-
-                        displayImages.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                        displayImages.putExtra(Intent.EXTRA_STREAM, imageUris);
-
-                        try {
-                            startActivity(displayImages);
-                        } catch (ActivityNotFoundException activityNotFoundException) {
-                            // TODO: display the gallery in a basic {@link ViewFlipper}
-                            Toast.makeText(getActivity(), "Could not display the drug images in a gallery.", Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
             }
         }.execute(rxcui);
     }

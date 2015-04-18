@@ -1,5 +1,7 @@
 package ca.umontreal.iro.rxnav;
 
+import com.squareup.okhttp.OkHttpClient;
+
 import org.apache.http.NameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,8 +20,12 @@ import java.net.URISyntaxException;
  */
 public class RxTerms extends RxNav {
 
-    public static RxTerms newInstance() {
-        return new RxTerms();
+    public static RxTerms newInstance(OkHttpClient httpClient) {
+        return new RxTerms(httpClient);
+    }
+
+    public RxTerms(OkHttpClient httpClient) {
+        super(httpClient);
     }
 
     /**

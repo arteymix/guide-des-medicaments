@@ -3,6 +3,9 @@ package ca.umontreal.iro.rxnav;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Response;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
@@ -25,8 +28,12 @@ import java.net.HttpURLConnection;
  */
 public class RxNorm extends RxNav {
 
-    public static RxNorm newInstance() {
-        return new RxNorm();
+    public static RxNorm newInstance(OkHttpClient httpClient) {
+        return new RxNorm(httpClient);
+    }
+
+    public RxNorm(OkHttpClient httpClient) {
+        super(httpClient);
     }
 
     /**
@@ -54,6 +61,65 @@ public class RxNorm extends RxNav {
         return get("rxcui/" + rxcui + "/filter", new BasicNameValuePair("propName", propName))
                 .getJSONObject("propConceptGroup")
                 .getJSONArray("propConcept");
+    }
+
+    public class Rxcui implements Parcelable {
+
+        public class IdGroup implements Parcelable {
+            public String name;
+            public String[] rxnormId;
+
+            @Override
+            public int describeContents() {
+                return 0;
+            }
+
+            @Override
+            public void writeToParcel(Parcel dest, int flags) {
+                dest.writeString(name);
+                dest.writeStringArray(rxnormId);
+            }
+        }
+
+        public IdGroup idGroup;
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeParcelable(idGroup, flags);
+        }
+    }
+
+    /**
+     * Search for a name in the RxNorm data set and return the RxCUIs of any concepts which have
+     * that name as an RxNorm term or as a synonym of an RxNorm term.
+     *
+     * @param name    the search string. This must be specified.
+     * @param srclist a list of the source vocabulary names to use. Only used when allsrc is set to
+     *                1. See the /sourcetypes example for the valid source vocabularies. If not
+     *                specified, all sources are used.
+     * @param allsrc  a field indicating whether all RxCUIs are to be returned. If set to 0
+     *                (the default), only RxCUIs which contain a non-suppressed RxNorm vocabulary
+     *                term will be returned. If set to 1, all non-suppressed RxCUIs will be returned
+     *                that match any of the sources specified, even if there is not a RxNorm
+     *                vocabulary term for the concept.
+     * @param search  a number indicating the type of search to be performed. If set to 0
+     *                (the default), exact match search will be performed. If set to 1, a normalized
+     *                string search will be done. When search = 2, then an exact match search will
+     *                be done, and if no results are found, a normalized search will be done.
+     * @return
+     * @throws IOException
+     */
+    public Rxcui findRxcuiByString(String name, String[] srclist, boolean allsrc, int search) throws IOException {
+        return request(Rxcui.class, "rxcui",
+                new BasicNameValuePair("name", name),
+                new BasicNameValuePair("srclist", StringUtils.join(srclist, " ")),
+                new BasicNameValuePair("allsrc", allsrc ? "1" : "0"),
+                new BasicNameValuePair("search", Integer.toString(search)));
     }
 
     /**
@@ -156,16 +222,10 @@ public class RxNorm extends RxNav {
      * @throws IOException
      */
     public ApproximateGroup getApproximateMatch(String term, int maxEntries, int option) throws IOException {
-        final HttpURLConnection connection = openHttpURLConnection("approximateTerm",
+        return request(ApproximateGroup.class, "approximateTerm",
                 new BasicNameValuePair("term", term),
                 new BasicNameValuePair("maxEntries", Integer.toString(maxEntries)),
                 new BasicNameValuePair("option", Integer.toString(option)));
-
-        try {
-            return this.gson.fromJson(new InputStreamReader(connection.getInputStream()), ApproximateGroup.class);
-        } finally {
-            connection.disconnect();
-        }
     }
 
     public class DisplayTerms implements Parcelable {
@@ -205,13 +265,7 @@ public class RxNorm extends RxNav {
      * @throws IOException
      */
     public DisplayTerms getDisplayTerms() throws IOException {
-        final HttpURLConnection connection = openHttpURLConnection("displaynames");
-
-        try {
-            return this.gson.fromJson(new InputStreamReader(connection.getInputStream()), DisplayTerms.class);
-        } finally {
-            connection.disconnect();
-        }
+        return request(DisplayTerms.class, "displaynames");
     }
 
     public class ConceptProperties implements Parcelable {
@@ -303,13 +357,7 @@ public class RxNorm extends RxNav {
      * @return
      */
     public Drugs getDrugs(String name) throws IOException {
-        HttpURLConnection connection = openHttpURLConnection("drugs", new BasicNameValuePair("name", name));
-
-        try {
-            return this.gson.fromJson(new InputStreamReader(connection.getInputStream()), Drugs.class);
-        } finally {
-            connection.disconnect();
-        }
+        return request(Drugs.class, "drugs", new BasicNameValuePair("name", name));
     }
 
     public class RelatedGroup implements Parcelable {
@@ -341,13 +389,7 @@ public class RxNorm extends RxNav {
      * @return
      */
     public RelatedGroup getRelatedByType(String rxcui, String... tty) throws IOException {
-        HttpURLConnection connection = openHttpURLConnection("rxcui/" + rxcui + "/allrelated");
-
-        try {
-            return gson.fromJson(new InputStreamReader(connection.getInputStream()), RelatedGroup.class);
-        } finally {
-            connection.disconnect();
-        }
+        return request(RelatedGroup.class, "rxcui/" + rxcui + "/allrelated");
     }
 
     public class RxConceptProperties implements Parcelable {
@@ -373,13 +415,7 @@ public class RxNorm extends RxNav {
      * @throws IOException
      */
     public RxConceptProperties getRxConceptProperties(String rxcui) throws IOException {
-        HttpURLConnection connection = openHttpURLConnection("rxcui/" + rxcui + "/properties");
-
-        try {
-            return gson.fromJson(new InputStreamReader(connection.getInputStream()), RxConceptProperties.class);
-        } finally {
-            connection.disconnect();
-        }
+        return request(RxConceptProperties.class, "rxcui/" + rxcui + "/properties");
     }
 
     public class SpellingSuggestions implements Parcelable {
@@ -439,13 +475,7 @@ public class RxNorm extends RxNav {
      * @throws IOException
      */
     public SpellingSuggestions getSpellingSuggestions(String name) throws IOException {
-        HttpURLConnection connection = openHttpURLConnection("spellingsuggestions", new BasicNameValuePair("name", name));
-
-        try {
-            return gson.fromJson(new InputStreamReader(connection.getInputStream()), SpellingSuggestions.class);
-        } finally {
-            connection.disconnect();
-        }
+        return request(SpellingSuggestions.class, "spellingsuggestions", new BasicNameValuePair("name", name));
     }
 
     public class TermTypes implements Parcelable {
@@ -485,12 +515,6 @@ public class RxNorm extends RxNav {
      * @throws IOException
      */
     public TermTypes getTermTypes() throws IOException {
-        HttpURLConnection connection = openHttpURLConnection("termtypes");
-
-        try {
-            return gson.fromJson(new InputStreamReader(connection.getInputStream()), TermTypes.class);
-        } finally {
-            connection.disconnect();
-        }
+        return request(TermTypes.class, "termtypes");
     }
 }

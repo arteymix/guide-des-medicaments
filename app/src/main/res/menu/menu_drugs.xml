@@ -3,9 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="ca.umontreal.iro.guidedesmedicaments.DrugsActivity">
     <item
-        android:id="@+id/action_bookmark"
-        android:title="@string/bookmarks"
-        android:icon="@drawable/ic_fa_bookmark"
+        android:id="@+id/action_cart"
+        android:title="@string/cart"
+        android:icon="@drawable/ic_fa_shopping_cart"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_search"

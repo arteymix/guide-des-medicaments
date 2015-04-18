@@ -20,7 +20,7 @@
             android:contentDescription="@string/drug_icon_description"
             android:paddingEnd="@dimen/activity_horizontal_margin"
             android:paddingRight="@dimen/activity_horizontal_margin"
-            android:scaleType="centerCrop" />
+            android:scaleType="centerCrop"/>
 
         <TextView
             android:id="@+id/drug_name"

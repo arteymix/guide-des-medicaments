@@ -1,5 +1,10 @@
 package ca.umontreal.iro.rxnav;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import com.squareup.okhttp.OkHttpClient;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -9,7 +14,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -18,24 +25,23 @@ import java.util.List;
 /**
  * The RxClass API is a web service for accessing drug classes and drug members for a number of
  * different drug class types. No license is needed to use the RxClass API.
- * <p>
+ * <p/>
  *
  * @author Guillaume Poirier-Morency
  */
 public class RxClass extends RxNav {
 
-    public static RxClass newInstance() {
-        return new RxClass();
+    public static RxClass newInstance(OkHttpClient httpClient) {
+        return new RxClass(httpClient);
     }
 
-    @Override
-    public JSONObject get(String path, NameValuePair... query) throws JSONException, IOException {
-        return super.get("rxclass/" + path, query);
+    public RxClass(OkHttpClient httpClient) {
+        super(httpClient);
     }
 
     /**
      * Get all classes for each specified class type.
-     * <p>
+     * <p/>
      * http://rxnav.nlm.nih.gov/RxNormAPIs.html#uLink=RxClass_REST_getAllClasses
      *
      * @param classTypes
@@ -56,7 +62,7 @@ public class RxClass extends RxNav {
 
     /**
      * Retrieve class information from a class identifier.
-     * <p>
+     * <p/>
      * http://rxnav.nlm.nih.gov/RxClassAPIs.html#uLink=RxClass_REST_findClassById
      *
      * @param classId the class identifier.
@@ -68,6 +74,118 @@ public class RxClass extends RxNav {
         return get("class/byId", new BasicNameValuePair("classId", classId))
                 .getJSONObject("rxclassMinConceptList")
                 .getJSONArray("rxclassMinConcept");
+    }
+
+    public class ClassByRxNormDrugId implements Parcelable {
+
+        public class UserInput implements Parcelable {
+
+            public String relaSource;
+            public String relas;
+            public String rxcui;
+
+            @Override
+            public int describeContents() {
+                return 0;
+            }
+
+            @Override
+            public void writeToParcel(Parcel dest, int flags) {
+                dest.writeString(relaSource);
+                dest.writeString(relas);
+                dest.writeString(rxcui);
+            }
+        }
+
+        public class RxClassDrugInfoList implements Parcelable {
+
+            public class RxClassDrugInfo implements Parcelable {
+
+                public class RxClassMinConceptItem implements Parcelable {
+
+                    public String classId;
+                    public String className;
+                    public String classType;
+
+                    @Override
+                    public int describeContents() {
+                        return 0;
+                    }
+
+                    @Override
+                    public void writeToParcel(Parcel dest, int flags) {
+                        dest.writeString(classId);
+                        dest.writeString(className);
+                        dest.writeString(classType);
+                    }
+                }
+
+                public Interaction.InteractionTypeGroup.InteractionType.MinConcept minConcept;
+                public RxClassMinConceptItem rxclassMinConceptItem;
+                public String rela;
+
+                public String relaSource;
+
+                @Override
+                public int describeContents() {
+                    return 0;
+                }
+
+                @Override
+                public void writeToParcel(Parcel dest, int flags) {
+
+                }
+            }
+
+            public RxClassDrugInfo[] rxclassDrugInfo;
+
+            @Override
+            public int describeContents() {
+                return 0;
+            }
+
+            @Override
+            public void writeToParcel(Parcel dest, int flags) {
+
+            }
+        }
+
+        public UserInput userInput;
+        public RxClassDrugInfoList rxclassDrugInfoList;
+
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+
+        }
+    }
+
+    /**
+     * Get the classes of a RxNorm drug identifier. The user can limit the classes returned by
+     * specifying a list of sources of drug-class relations, as well as a list of relations.
+     *
+     * @param rxcui      the RxNorm identifier (RxCUI) of the drug. This must be an identifier for
+     *                   an ingredient, precise ingredient or multiple ingredient.
+     * @param relaSource (optional) a source of drug-class relationships. See /relaSources for the
+     *                   list of sources of drug-class relations. If this field is omitted, all
+     *                   sources of drug-class relationships will be used.
+     * @param relas      (optional) a list of relationships of the drug to the class. This field is
+     *                   ignored if relaSource is not specified.
+     * @return
+     * @throws IOException
+     */
+    public ClassByRxNormDrugId getClassByRxNormDrugId(String rxcui, String relaSource, String... relas) throws IOException {
+        return relaSource == null ?
+                request(ClassByRxNormDrugId.class, "rxclass/class/byRxcui", new BasicNameValuePair("rxcui", rxcui)) :
+                request(ClassByRxNormDrugId.class, "rxclass/class/byRxcui",
+                        new BasicNameValuePair("rxcui", rxcui),
+                        new BasicNameValuePair("relaSource", relaSource),
+                        new BasicNameValuePair("relas", StringUtils.join(relas, " ")));
     }
 
     /**

@@ -1,8 +1,11 @@
 package ca.umontreal.iro.rxnav;
 
 import com.google.gson.Gson;
+import com.squareup.okhttp.CacheControl;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.json.JSONException;
@@ -10,9 +13,9 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 /**
  * RxNav is a browser for several drug information sources, including RxNorm, RxTerms and NDF-RT.
@@ -47,6 +50,11 @@ public class RxNav {
     private final String suffix;
 
     /**
+     * Used to request the RxNav API.
+     */
+    protected final OkHttpClient httpClient;
+
+    /**
      * Used to extract and generate JSON.
      */
     protected final Gson gson = new Gson();
@@ -54,13 +62,15 @@ public class RxNav {
     /**
      * Initialize RxNav to use a custom API endpoint.
      *
-     * @param scheme   should be http or https
-     * @param host     hostname or ip address from which the API is served
-     * @param port     port, usually 80 unless you do request through SSL
-     * @param basePath base path prefixing path if the API is serving from a non-standard path
-     * @param suffix   generally ".json", but can be overwritten when needed
+     * @param httpClient OkHttpClient used to request the API (reuse it as much as possible!)
+     * @param scheme     should be http or https
+     * @param host       hostname or ip address from which the API is served
+     * @param port       port, usually 80 unless you do request through SSL
+     * @param basePath   base path prefixing path if the API is serving from a non-standard path
+     * @param suffix     generally ".json", but can be overwritten when needed
      */
-    public RxNav(String scheme, String host, int port, String basePath, String suffix) {
+    public RxNav(OkHttpClient httpClient, String scheme, String host, int port, String basePath, String suffix) {
+        this.httpClient = httpClient;
         this.scheme = scheme;
         this.host = host;
         this.port = port;
@@ -71,30 +81,43 @@ public class RxNav {
     /**
      * Initialize RxNav to use the public API at http://rxnav.nlm.nih.gov
      */
-    public RxNav() {
-        this("http", "rxnav.nlm.nih.gov", 80, "/REST/", ".json");
+    public RxNav(OkHttpClient httpClient) {
+        this(httpClient, "http", "rxnav.nlm.nih.gov", 80, "/REST/", ".json");
     }
 
     /**
-     * Obtain a HttpURLConnection against the requested resource on RxNav API.
+     * Request RxNav API and extract the JSON in the providen class using {@link Gson}.
      * <p/>
      * As recommended by the 'Terms Of Service', all requests are cached for a period of 24 hours
      * assuming that {@link java.net.ResponseCache} has been set correctly.
      *
-     * @param path  requested path automatically prefixed by "/REST/" and suffixed by ".json"
-     * @param query HTTP query used to parametrize the request
+     * @param classOfT class populated by {@link Gson}
+     * @param path     requested path automatically prefixed by "/REST/" and suffixed by ".json"
+     * @param query    HTTP query used to parametrize the request
      * @return an opened connection to the API that should be closed by the caller
      * @throws IOException always expect some I/O failure
      */
-    protected HttpURLConnection openHttpURLConnection(String path, NameValuePair... query) throws IOException {
+    protected <T> T request(Class<T> classOfT, String path, NameValuePair... query) throws IOException {
         URL url = new URL(scheme, host, port, basePath + path + suffix + "?" + URLEncodedUtils.format(Arrays.asList(query), "UTF-8"));
 
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
         // accepting staled response for up to 24 hours
-        connection.addRequestProperty("Cache-Control", "max-stale=86400");
+        CacheControl cacheControl = new CacheControl.Builder()
+                .maxStale(24, TimeUnit.HOURS)
+                .build();
 
-        return connection;
+        Request request = new Request.Builder()
+                .get()
+                .url(url)
+                .cacheControl(cacheControl)
+                .build();
+
+        Response response = httpClient.newCall(request).execute();
+
+        try {
+            return gson.fromJson(response.body().charStream(), classOfT);
+        } finally {
+            response.body().close();
+        }
     }
 
     /**
@@ -113,14 +136,27 @@ public class RxNav {
      * @throws JSONException should not happen unless the API returns a corrupted response
      * @deprecated use openHttpURLConnection with {@link Gson}
      */
+    @Deprecated
     protected JSONObject get(String path, NameValuePair... query) throws IOException, JSONException {
-        HttpURLConnection connection = openHttpURLConnection(path, query);
+        URL url = new URL(scheme, host, port, basePath + path + suffix + "?" + URLEncodedUtils.format(Arrays.asList(query), "UTF-8"));
+
+        // accepting staled response for up to 24 hours
+        CacheControl cacheControl = new CacheControl.Builder()
+                .maxStale(24, TimeUnit.HOURS)
+                .build();
+
+        Request request = new Request.Builder()
+                .get()
+                .url(url)
+                .cacheControl(cacheControl)
+                .build();
+
+        Response response = httpClient.newCall(request).execute();
 
         try {
-            return (JSONObject) new JSONTokener(IOUtils.toString(connection.getInputStream())).nextValue();
+            return (JSONObject) new JSONTokener(response.body().string()).nextValue();
         } finally {
-            connection.disconnect();
+            response.body().close();
         }
     }
-
 }

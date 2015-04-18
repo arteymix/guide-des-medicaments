@@ -3,6 +3,8 @@ package ca.umontreal.iro.rxnav;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.squareup.okhttp.OkHttpClient;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.message.BasicNameValuePair;
 
@@ -18,8 +20,12 @@ import java.net.HttpURLConnection;
  */
 public class Interaction extends RxNav {
 
-    public static Interaction newInstance() {
-        return new Interaction();
+    public static Interaction newInstance(OkHttpClient httpClient) {
+        return new Interaction(httpClient);
+    }
+
+    public Interaction(OkHttpClient httpClient) {
+        super(httpClient);
     }
 
     public class InteractionTypeGroup {
@@ -105,18 +111,11 @@ public class Interaction extends RxNav {
      * @throws IOException
      */
     public DrugInteractions findDrugInteractions(String rxcui, String... sources) throws IOException {
-        final HttpURLConnection connection = sources.length > 0 ?
-                openHttpURLConnection("interaction/interaction",
+        return sources.length > 0 ?
+                request(DrugInteractions.class, "interaction/interaction",
                         new BasicNameValuePair("rxcui", rxcui),
                         new BasicNameValuePair("sources", StringUtils.join(sources, " "))) :
-                openHttpURLConnection("interaction/interaction", new BasicNameValuePair("rxcui", rxcui));
-
-        try {
-            return gson.fromJson(new InputStreamReader(connection.getInputStream()), DrugInteractions.class);
-        } finally {
-            connection.disconnect();
-        }
-
+                request(DrugInteractions.class, "interaction/interaction", new BasicNameValuePair("rxcui", rxcui));
     }
 
     public class InteractionsFromList {
@@ -143,16 +142,11 @@ public class Interaction extends RxNav {
      * @throws IOException
      */
     public InteractionsFromList findInteractionsFromList(String[] rxcuis, String... sources) throws IOException {
-        HttpURLConnection connection = sources.length > 0 ?
-                openHttpURLConnection("interaction/list",
+        return sources.length > 0 ?
+                request(InteractionsFromList.class, "interaction/list",
                         new BasicNameValuePair("rxcuis", StringUtils.join(rxcuis, " ")),
                         new BasicNameValuePair("propValues", StringUtils.join(sources, " "))) :
-                openHttpURLConnection("interaction/list", new BasicNameValuePair("rxcuis", StringUtils.join(rxcuis, " ")));
-
-        try {
-            return gson.fromJson(new InputStreamReader(connection.getInputStream()), InteractionsFromList.class);
-        } finally {
-            connection.disconnect();
-        }
+                request(InteractionsFromList.class, "interaction/list",
+                        new BasicNameValuePair("rxcuis", StringUtils.join(rxcuis, " ")));
     }
 }

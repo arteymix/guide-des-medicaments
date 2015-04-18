@@ -3,6 +3,9 @@ package ca.umontreal.iro.rxnav;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Response;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
@@ -39,15 +42,15 @@ import java.util.Map;
  */
 public class RxImageAccess extends RxNav {
 
-    public static RxImageAccess newInstance() {
-        return new RxImageAccess();
+    public static RxImageAccess newInstance(OkHttpClient httpClient) {
+        return new RxImageAccess(httpClient);
     }
 
     /**
      * Initialize RxNav to use the public API at http://rximage.nlm.nih.gov
      */
-    public RxImageAccess() {
-        super("http", "rximage.nlm.nih.gov", 80, "/api/", "");
+    public RxImageAccess(OkHttpClient httpClient) {
+        super(httpClient, "http", "rximage.nlm.nih.gov", 80, "/api/", "");
     }
 
     /**
@@ -161,7 +164,7 @@ public class RxImageAccess extends RxNav {
 
             try {
                 // todo: reuse the same api method and RxImageAccess instance
-                return RxImageAccess.newInstance().rxnav(matchedTerms.toArray(new BasicNameValuePair[matchedTerms.size()]));
+                return RxImageAccess.newInstance(httpClient).rxnav(matchedTerms.toArray(new BasicNameValuePair[matchedTerms.size()]));
             } catch (IOException e) {
                 e.printStackTrace();
                 return null;
@@ -193,13 +196,7 @@ public class RxImageAccess extends RxNav {
      * @throws IOException
      */
     public ImageAccess rxnav(NameValuePair... query) throws IOException {
-        final HttpURLConnection connection = openHttpURLConnection("rximage/1/rxnav", query);
-
-        try {
-            return gson.fromJson(new InputStreamReader(connection.getInputStream()), ImageAccess.class);
-        } finally {
-            connection.disconnect();
-        }
+        return request(ImageAccess.class, "rximage/1/rxnav", query);
     }
 
     /**
@@ -210,13 +207,7 @@ public class RxImageAccess extends RxNav {
      * @throws IOException
      */
     public ImageAccess rxbase(NameValuePair... query) throws IOException {
-        final HttpURLConnection connection = openHttpURLConnection("rximage/1/rxbase", query);
-
-        try {
-            return gson.fromJson(new InputStreamReader(connection.getInputStream()), ImageAccess.class);
-        } finally {
-            connection.disconnect();
-        }
+        return request(ImageAccess.class, "rximage/1/rxbase", query);
     }
 
 }
