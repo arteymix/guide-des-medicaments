@@ -29,7 +29,7 @@ public class DrugActivity extends ActionBarActivity {
         setContentView(R.layout.activity_drug);
 
         // /REST/rxuid/{rxuid}/...
-        Log.i("", "loading drug with rxuid" + getIntent().getData().getPathSegments().get(2));
+        Log.i("", "loading drug with rxuid " + getIntent().getData().getPathSegments().get(2));
     }
 
     @Override

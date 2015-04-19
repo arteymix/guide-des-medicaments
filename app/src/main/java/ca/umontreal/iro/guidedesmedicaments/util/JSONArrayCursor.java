@@ -72,7 +72,7 @@ public class JSONArrayCursor extends AbstractCursor {
         if (data.opt(pos) instanceof JSONObject)
             columnNames = IteratorUtils.toArray(data.optJSONObject(pos).keys(), String.class);
 
-        // some api already provide a "_id" column, use it
+        // some rxNav already provide a "_id" column, use it
         if (ArrayUtils.contains(columnNames, "_id"))
             return columnNames;
 

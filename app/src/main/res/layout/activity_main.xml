@@ -19,23 +19,14 @@
         android:layout_gravity="bottom"
         android:queryHint="@string/search_a_drug" />
 
-        <Spinner
-            android:id="@+id/search_type"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@id/search_drug"
-            android:layout_below="@id/search_drug"
-            android:entries="@array/types"
-            android:spinnerMode="dropdown" />
-
-
-    <Button
-        android:id="@+id/action_demo"
+    <Spinner
+        android:id="@+id/search_type"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="bottom"
-        android:text="@string/drug_prototype" />
-
+        android:layout_alignBaseline="@id/search_drug"
+        android:layout_below="@id/search_drug"
+        android:entries="@array/types"
+        android:spinnerMode="dropdown" />
 
     <TextView
         android:layout_width="wrap_content"

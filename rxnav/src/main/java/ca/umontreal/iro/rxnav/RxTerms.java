@@ -2,13 +2,11 @@ package ca.umontreal.iro.rxnav;
 
 import com.squareup.okhttp.OkHttpClient;
 
-import org.apache.http.NameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 /**
  * The RxTerms API is a web service for accessing the current RxTerms data set. No license is needed

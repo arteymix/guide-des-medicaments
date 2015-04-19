@@ -1,4 +1,4 @@
-package ca.umontreal.iro.guidedesmedicaments.concepts;
+package ca.umontreal.iro.guidedesmedicaments.fragments;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -8,6 +8,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,7 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.squareup.okhttp.OkHttpClient;
 
 import org.apache.commons.lang3.StringUtils;
@@ -30,7 +32,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.mediawiki.api.json.Api;
 import org.mediawiki.api.json.ApiException;
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,12 +41,11 @@ import java.util.List;
 import java.util.Set;
 
 import ca.umontreal.iro.guidedesmedicaments.R;
+import ca.umontreal.iro.guidedesmedicaments.loaders.RxNavAsyncTaskLoader;
 import ca.umontreal.iro.rxnav.Interaction;
 import ca.umontreal.iro.rxnav.RxClass;
 import ca.umontreal.iro.rxnav.RxImageAccess;
 import ca.umontreal.iro.rxnav.RxNorm;
-
-import static humanize.Humanize.oxford;
 
 /**
  * Fragment presenting a drug concept.
@@ -57,10 +57,22 @@ import static humanize.Humanize.oxford;
  * height.
  * <p/>
  * TODO: extract and present the missing information from the RxNav API.
+ * TODO: adapt the code to support drug_item layout
  *
  * @author Guillaume Poirier-Morency
  */
 public class DrugFragment extends Fragment {
+
+    /**
+     * Ids for different loaders in this fragment.
+     */
+    public static int
+            NAME_LOADER = 0,
+            DESCRIPTION_LOADER = 1,
+            IMAGE_LOADER = 2,
+            CLASS_LOADER = 5,
+            SIMILAR_DRUGS_LOADER = 6,
+            CONTRAINDICATIONS_LOADER = 7;
 
     public static DrugFragment newInstance(String rxcui) {
         Bundle bundle = new Bundle();
@@ -93,7 +105,7 @@ public class DrugFragment extends Fragment {
                 getArguments().getString("rxcui");
 
         final TextView drugName = (TextView) getView().findViewById(R.id.drug_name);
-        final TextView drugDescription = (TextView) getView().findViewById(R.id.drug_description);
+        final ExpandableTextView drugDescription = (ExpandableTextView) getView().findViewById(R.id.drug_description);
         final TextView genericName = (TextView) getView().findViewById(R.id.generic_name);
         final TextView categories = (TextView) getView().findViewById(R.id.categories);
         final TextView administrationMethod = (TextView) getView().findViewById(R.id.administration_method);
@@ -125,25 +137,28 @@ public class DrugFragment extends Fragment {
             }
         });
 
-        // fetch drug properties
-        new AsyncTask<String, Void, RxNorm.RxConceptProperties>() {
+        getLoaderManager().initLoader(NAME_LOADER, null, new LoaderManager.LoaderCallbacks<RxNorm.RxConceptProperties>() {
             @Override
-            protected RxNorm.RxConceptProperties doInBackground(String... rxcui) {
-                try {
-                    return RxNorm.newInstance(httpClient).getRxConceptProperties(rxcui[0]);
-                } catch (IOException ioe) {
-                    // les données ne peuvent pas être récupérées
-                    Toast.makeText(getActivity(), ioe.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-                    getActivity().finish();
-                    // already handled...
-                    return null;
-                }
+            public Loader<RxNorm.RxConceptProperties> onCreateLoader(int id, Bundle args) {
+                return new RxNavAsyncTaskLoader<RxNorm, RxNorm.RxConceptProperties>(getActivity(), RxNorm.newInstance(httpClient)) {
+
+                    @Override
+                    public RxNorm.RxConceptProperties loadInBackgroundSafely() throws IOException {
+                        return rxNav.getRxConceptProperties(rxcui);
+                    }
+                };
             }
 
             @Override
-            protected void onPostExecute(RxNorm.RxConceptProperties result) {
-                getActivity().setTitle(result.properties.name);
-                drugName.setText(result.properties.name);
+            public void onLoadFinished(Loader<RxNorm.RxConceptProperties> loader, RxNorm.RxConceptProperties data) {
+                if (loader.isAbandoned()) {
+                    // les données ne peuvent pas être récupérées
+                    Toast.makeText(getActivity(), "Could not fetch drug details.", Toast.LENGTH_LONG).show();
+                    getActivity().finish();
+                    return;
+                }
+                getActivity().setTitle(data.properties.name);
+                drugName.setText(data.properties.name);
 
                 // fetch potential images for the drug
                 new AsyncTask<String, Void, RxImageAccess.ImageAccess>() {
@@ -197,11 +212,10 @@ public class DrugFragment extends Fragment {
                             }
                         });
                     }
-                }.execute(result.properties.name);
+                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, data.properties.name);
 
                 // fetch description & additionnal information from Wikipedia
                 new AsyncTask<String, Void, JSONObject>() {
-
 
                     @Override
                     protected JSONObject doInBackground(String... drugNames) {
@@ -224,35 +238,17 @@ public class DrugFragment extends Fragment {
                     }
 
                     @Override
-                    protected void onPostExecute(final JSONObject description) {
-                        if (description == null) {
+                    protected void onPostExecute(final JSONObject page) {
+                        if (page == null) {
                             drugDescription.setText("No description were found.");
                             return;
                         }
 
                         // todo: show first paragraph rather than a limited number of lines
-                        genericName.setText(description.optString("title"));
-                        drugDescription.setText(Html.fromHtml(description.optString("extract")));
-
-                        // expand/collapse on click
-                        // todo: smooth animation
-                        drugDescription.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                if (drugDescription.getLineCount() > 10) {
-                                    // expanded, time to collapse
-                                    Log.i("", "expanding description...");
-                                    drugDescription.setMaxLines(10);
-                                } else {
-                                    // collapsed, expand and restitute the text :)
-                                    Log.i("", "collapsing description...");
-                                    drugDescription.setMaxLines(Integer.MAX_VALUE);
-                                    drugDescription.setText(Html.fromHtml(description.optString("extract")));
-                                }
-                            }
-                        });
+                        genericName.setText(page.optString("title"));
+                        drugDescription.setText(Html.fromHtml(page.optString("extract")));
                     }
-                }.execute(result.properties.name);
+                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, data.properties.name);
 
                 // fetch related drugs to the concept name
                 new AsyncTask<String, Void, RxNorm.Drugs>() {
@@ -286,51 +282,67 @@ public class DrugFragment extends Fragment {
                                 conceptProperties));
                     }
 
-                }.execute(result.properties.name);
+                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, data.properties.name);
             }
-        }.execute(rxcui);
-
-        new AsyncTask<String, Void, RxClass.ClassByRxNormDrugId>() {
 
             @Override
-            protected RxClass.ClassByRxNormDrugId doInBackground(String... params) {
-                try {
-                    return RxClass.newInstance(httpClient).getClassByRxNormDrugId(params[0], null);
-                } catch (IOException e) {
-                    Log.e("", e.getLocalizedMessage(), e);
-                    return null;
+            public void onLoaderReset(Loader<RxNorm.RxConceptProperties> loader) {
+
+            }
+        }).forceLoad();
+
+        // fetch drug classes
+        getLoaderManager().initLoader(CLASS_LOADER, null, new LoaderManager.LoaderCallbacks<RxClass.ClassByRxNormDrugId>() {
+
+            @Override
+            public Loader<RxClass.ClassByRxNormDrugId> onCreateLoader(int id, final Bundle args) {
+                return new RxNavAsyncTaskLoader<RxClass, RxClass.ClassByRxNormDrugId>(getActivity(), RxClass.newInstance(httpClient)) {
+
+                    @Override
+                    public RxClass.ClassByRxNormDrugId loadInBackgroundSafely() throws IOException {
+                        Log.d("", "requesting!");
+                        return rxNav.getClassByRxNormDrugId(rxcui, null);
+                    }
+                };
+            }
+
+            @Override
+            public void onLoadFinished(Loader<RxClass.ClassByRxNormDrugId> loader, RxClass.ClassByRxNormDrugId data) {
+                Log.d("", "loaded drug classes");
+                if (data.rxclassDrugInfoList == null) {
+                    categories.setText("No categories found"); // collapse the categories
+                    return; // no data :(
                 }
-            }
-
-            @Override
-            protected void onPostExecute(RxClass.ClassByRxNormDrugId classByRxNormDrugId) {
-                if (classByRxNormDrugId.rxclassDrugInfoList == null)
-                    return;
 
                 List<String> classNames = new ArrayList<>();
 
-                for (RxClass.ClassByRxNormDrugId.RxClassDrugInfoList.RxClassDrugInfo rxclassDrugInfo : classByRxNormDrugId.rxclassDrugInfoList.rxclassDrugInfo)
+                for (RxClass.ClassByRxNormDrugId.RxClassDrugInfoList.RxClassDrugInfo rxclassDrugInfo : data.rxclassDrugInfoList.rxclassDrugInfo)
                     classNames.add(rxclassDrugInfo.rxclassMinConceptItem.className);
 
                 categories.setText(StringUtils.join(classNames, ", ") /*oxford(classNames)*/);
             }
-        }.execute(rxcui);
-
-        // todo: fetch contraindications (interactions?)
-        new AsyncTask<String, Void, Interaction.DrugInteractions>() {
 
             @Override
-            protected Interaction.DrugInteractions doInBackground(String... params) {
-                try {
-                    return Interaction.newInstance(httpClient).findDrugInteractions(params[0]);
-                } catch (IOException e) {
-                    Log.e("", e.getLocalizedMessage(), e);
-                    return null;
-                }
+            public void onLoaderReset(Loader<RxClass.ClassByRxNormDrugId> loader) {
+
+            }
+        }).forceLoad();
+
+        // todo: fetch contraindications (interactions?)
+        getLoaderManager().initLoader(CONTRAINDICATIONS_LOADER, null, new LoaderManager.LoaderCallbacks<Interaction.DrugInteractions>() {
+            @Override
+            public Loader<Interaction.DrugInteractions> onCreateLoader(int id, Bundle args) {
+                return new RxNavAsyncTaskLoader<Interaction, Interaction.DrugInteractions>(getActivity(), Interaction.newInstance(httpClient)) {
+
+                    @Override
+                    public Interaction.DrugInteractions loadInBackgroundSafely() throws IOException {
+                        return this.rxNav.findDrugInteractions(rxcui);
+                    }
+                };
             }
 
             @Override
-            protected void onPostExecute(Interaction.DrugInteractions drugInteractions) {
+            public void onLoadFinished(Loader<Interaction.DrugInteractions> loader, Interaction.DrugInteractions drugInteractions) {
                 if (drugInteractions.interactionTypeGroup == null) {
                     Toast.makeText(getActivity(), "No drug interactions were found.", Toast.LENGTH_LONG).show();
                     return;
@@ -347,6 +359,13 @@ public class DrugFragment extends Fragment {
                         android.R.layout.simple_list_item_1,
                         comments));
             }
-        }.execute(rxcui);
+
+            @Override
+            public void onLoaderReset(Loader<Interaction.DrugInteractions> loader) {
+
+            }
+        }).forceLoad();
+
+        // TODO: similar drugs loader
     }
 }

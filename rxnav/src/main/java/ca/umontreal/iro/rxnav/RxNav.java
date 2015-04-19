@@ -1,5 +1,7 @@
 package ca.umontreal.iro.rxnav;
 
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.squareup.okhttp.CacheControl;
 import com.squareup.okhttp.OkHttpClient;
@@ -113,6 +115,8 @@ public class RxNav {
 
         Response response = httpClient.newCall(request).execute();
 
+        Log.i("RxNav", response.code() + " GET " + url);
+
         try {
             return gson.fromJson(response.body().charStream(), classOfT);
         } finally {
@@ -152,6 +156,8 @@ public class RxNav {
                 .build();
 
         Response response = httpClient.newCall(request).execute();
+
+        Log.i("RxNav", response.code() + " GET " + url);
 
         try {
             return (JSONObject) new JSONTokener(response.body().string()).nextValue();

@@ -9,8 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 
 /**
  * The Interaction API is a web service for accessing drug-drug interactions. No license is needed

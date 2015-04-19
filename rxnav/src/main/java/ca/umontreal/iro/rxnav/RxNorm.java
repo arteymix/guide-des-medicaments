@@ -4,7 +4,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Response;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.message.BasicNameValuePair;
@@ -12,8 +11,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 
 /**
  * The RxNorm API is a web service for accessing the current RxNorm data set.

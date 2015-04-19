@@ -3,9 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="ca.umontreal.iro.guidedesmedicaments.concepts.DrugFragment">
+    tools:context="ca.umontreal.iro.guidedesmedicaments.fragments.DrugFragment">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="@dimen/activity_vertical_margin"
@@ -20,7 +20,7 @@
             android:contentDescription="@string/drug_icon_description"
             android:paddingEnd="@dimen/activity_horizontal_margin"
             android:paddingRight="@dimen/activity_horizontal_margin"
-            android:scaleType="centerCrop"/>
+            android:scaleType="centerCrop" />
 
         <TextView
             android:id="@+id/drug_name"
@@ -58,14 +58,28 @@
             android:text="@string/aspirin_name"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <TextView
+        <com.ms.square.android.expandabletextview.ExpandableTextView
             android:id="@+id/drug_description"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/categories"
-            android:ellipsize="end"
-            android:maxLines="10"
-            android:text="@string/aspirin_description" />
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@id/expandable_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end" />
+
+            <ImageButton
+                android:id="@id/expand_collapse"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:layout_gravity="center|bottom"
+                android:background="@android:color/transparent" />
+        </com.ms.square.android.expandabletextview.ExpandableTextView>
 
         <TextView
             android:id="@+id/maternity_index"

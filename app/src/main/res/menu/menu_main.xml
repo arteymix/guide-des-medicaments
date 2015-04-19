@@ -3,7 +3,7 @@
     xmlns:yourapp="http://schemas.android.com/apk/res-auto"
     tools:context="ca.umontreal.iro.guidedesmedicaments.MainActivity">
     <item
-        android:id="@+id/action_bookmark"
+        android:id="@+id/action_bookmarks"
         android:title="@string/bookmarks"
         android:icon="@drawable/ic_fa_bookmark"
         yourapp:showAsAction="ifRoom" />

@@ -3,9 +3,7 @@ package ca.umontreal.iro.guidedesmedicaments;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.FixedFragmentStatePagerAdapter;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
@@ -20,14 +18,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.common.cache.Cache;
 import com.squareup.okhttp.OkHttpClient;
-import com.tobishiba.circularviewpager.library.BaseCircularViewPagerAdapter;
-import com.tobishiba.circularviewpager.library.CircularViewPagerHandler;
-
-import org.apache.commons.lang3.ArrayUtils;
-
-import ca.umontreal.iro.rxnav.Interaction;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,7 +26,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import ca.umontreal.iro.guidedesmedicaments.concepts.DrugFragment;
+import ca.umontreal.iro.guidedesmedicaments.fragments.DrugFragment;
+import ca.umontreal.iro.rxnav.Interaction;
 
 /**
  * Present the drug cart and its content using a {@link android.support.v4.view.ViewPager}.
