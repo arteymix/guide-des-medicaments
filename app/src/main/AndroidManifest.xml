@@ -66,6 +66,10 @@
 
         </activity>
 
+        <provider
+            android:name=".providers.DisplayTermsProvider"
+            android:authorities="ca.umontreal.iro.guidedesmedicaments.providers.DisplayTermsProvider" />
+
     </application>
 
 </manifest>

@@ -41,9 +41,7 @@ import ca.umontreal.iro.rxnav.RxNorm;
  * @author Aldo Lamarre
  */
 public class MainActivity extends ActionBarActivity {
-
-    public static final int SUGGESTION_LOADER = 0;
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,70 +51,10 @@ public class MainActivity extends ActionBarActivity {
 
         httpClient.setCache(new Cache(getCacheDir(), 10 * 1024 * 1024));
 
-        final Trie<String, Long> termsTrie = new PatriciaTrie();
-
         final SearchView sv = (SearchView) findViewById(R.id.search_drug);
 
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         sv.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-
-        // charge les termes dans la trie
-        getSupportLoaderManager().initLoader(SUGGESTION_LOADER, null, new LoaderManager.LoaderCallbacks<RxNorm.DisplayTerms>() {
-            @Override
-            public Loader<RxNorm.DisplayTerms> onCreateLoader(int id, Bundle args) {
-
-                return new RxNavAsyncTaskLoader<RxNorm, RxNorm.DisplayTerms>(MainActivity.this, RxNorm.newInstance(httpClient)) {
-
-                    @Override
-                    public RxNorm.DisplayTerms loadInBackgroundSafely() throws IOException {
-                        return rxNav.getDisplayTerms();
-                    }
-                };
-            }
-
-            @Override
-            public void onLoadFinished(Loader<RxNorm.DisplayTerms> loader, RxNorm.DisplayTerms data) {
-                // populate the index
-                for (int i = 0; i < data.displayTermsList.term.length; i++) {
-                    termsTrie.put(data.displayTermsList.term[i], (long) i);
-                }
-            }
-
-            @Override
-            public void onLoaderReset(Loader<RxNorm.DisplayTerms> loader) {
-
-            }
-        }).forceLoad();
-
-        sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                SortedMap<String, Long> matchingTerms = termsTrie.prefixMap(newText);
-
-                MatrixCursor matrixCursor = new MatrixCursor(
-                        new String[]{"_id", "term"},
-                        matchingTerms.size()); // avoid resize :P
-
-                for (Map.Entry<String, Long> e : matchingTerms.entrySet()) {
-                    matrixCursor.addRow(new Object[]{e.getValue(), e.getKey()});
-                }
-
-                // fetch from the index!
-                sv.setSuggestionsAdapter(new SimpleCursorAdapter(MainActivity.this,
-                        android.R.layout.simple_list_item_1,
-                        matrixCursor,
-                        new String[]{"term"},
-                        new int[]{android.R.id.text1},
-                        0x0));
-
-                return false;
-            }
-        });
     }
 
     @Override

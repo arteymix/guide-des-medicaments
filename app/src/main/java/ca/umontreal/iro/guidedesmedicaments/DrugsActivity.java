@@ -47,17 +47,21 @@ public class DrugsActivity extends ActionBarActivity {
      */
     public static final String RXCUIS = "rxcuis";
 
+    private OkHttpClient httpClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_drugs);
 
-        final ListView drugs = (ListView) findViewById(R.id.drugs);
-
-        final OkHttpClient httpClient = new OkHttpClient();
-
+        // initialize the client for reuse over intents
+        httpClient = new OkHttpClient();
         httpClient.setCache(new com.squareup.okhttp.Cache(getCacheDir(), 10 * 1024 * 1024));
+    }
 
-        Intent intent = getIntent();
+    @Override
+    public void onNewIntent(Intent intent) {
+        final ListView drugs = (ListView) findViewById(R.id.drugs);
 
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             final String query = intent.getStringExtra(SearchManager.QUERY);
