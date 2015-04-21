@@ -6,6 +6,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -14,7 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -23,12 +26,12 @@ import com.squareup.okhttp.OkHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
+import ca.umontreal.iro.guidedesmedicaments.loader.IOAsyncTaskLoader;
 import ca.umontreal.iro.rxnav.RxImageAccess;
 import ca.umontreal.iro.rxnav.RxNorm;
 
@@ -42,11 +45,16 @@ import ca.umontreal.iro.rxnav.RxNorm;
  */
 public class DrugsActivity extends ActionBarActivity {
 
+    public static final int DRUGS_LOADER = 0;
+
     /**
      * Intent key to present a list of concepts from their rxcui identifier.
      */
     public static final String RXCUIS = "rxcuis";
 
+    /**
+     * HTTP client reused over requests.
+     */
     private OkHttpClient httpClient;
 
     @Override
@@ -57,163 +65,17 @@ public class DrugsActivity extends ActionBarActivity {
         // initialize the client for reuse over intents
         httpClient = new OkHttpClient();
         httpClient.setCache(new com.squareup.okhttp.Cache(getCacheDir(), 10 * 1024 * 1024));
+
+        getSupportLoaderManager()
+                .initLoader(DRUGS_LOADER, getIntent().getExtras(), new DrugsLoaderCallbacks())
+                .forceLoad();
     }
 
     @Override
-    public void onNewIntent(Intent intent) {
-        final ListView drugs = (ListView) findViewById(R.id.drugs);
-
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            final String query = intent.getStringExtra(SearchManager.QUERY);
-
-            new AsyncTask<String, Void, RxNorm.SpellingSuggestions>() {
-
-                @Override
-                protected RxNorm.SpellingSuggestions doInBackground(String... params) {
-                    try {
-                        return RxNorm.newInstance(httpClient).getSpellingSuggestions(params[0]);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    return null;
-                }
-
-                @Override
-                protected void onPostExecute(final RxNorm.SpellingSuggestions spellingSuggestions) {
-                    if (spellingSuggestions.suggestionGroup.suggestionList == null) {
-                        Toast.makeText(DrugsActivity.this, "No matches for " + spellingSuggestions.suggestionGroup.name + ".",
-                                Toast.LENGTH_LONG).show();
-                        finish();
-                    }
-
-                    setTitle("Results for " + spellingSuggestions.suggestionGroup.name);
-
-                    drugs.setAdapter(new ArrayAdapter<String>(DrugsActivity.this,
-                            R.layout.drug_item,
-                            R.id.drug_name,
-                            spellingSuggestions.suggestionGroup.suggestionList.suggestion) {
-
-                        /**
-                         * Results for the API are stored here!
-                         *
-                         * By caching the rxcuis values, the user does not have to trigger and wait
-                         * on the {@link AsyncTask} to complete.
-                         */
-                        private RxNorm.Rxcui[] rxcuiCache = new RxNorm.Rxcui[spellingSuggestions.suggestionGroup.suggestionList.suggestion.length];
-
-                        @Override
-                        public View getView(final int position, View convertView, ViewGroup parent) {
-                            final View c = super.getView(position, convertView, parent);
-
-                            // récupération du rxcui
-                            final AsyncTask<String, Void, RxNorm.Rxcui> fetchRxcui = new AsyncTask<String, Void, RxNorm.Rxcui>() {
-
-                                @Override
-                                protected RxNorm.Rxcui doInBackground(String... params) {
-                                    try {
-                                        return RxNorm.newInstance(httpClient).findRxcuiByString(params[0], new String[]{}, false, 0);
-                                    } catch (IOException e) {
-                                        Log.e("", e.getLocalizedMessage(), e);
-                                        return null;
-                                    }
-                                }
-
-                                @Override
-                                protected void onPostExecute(RxNorm.Rxcui rxcui) {
-                                    rxcuiCache[position] = rxcui;
-                                }
-                            };
-
-                            fetchRxcui.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, spellingSuggestions.suggestionGroup.suggestionList.suggestion[position]);
-
-                            // récupération de la vignette
-                            new AsyncTask<String, Void, RxImageAccess.ImageAccess>() {
-
-                                @Override
-                                protected RxImageAccess.ImageAccess doInBackground(String... name) {
-                                    try {
-                                        // TODO: use the rxcui to identify the images
-                                        return RxImageAccess.newInstance(httpClient).rxbase(new BasicNameValuePair("name", name[0]));
-                                    } catch (IOException e) {
-                                        Log.e("", e.getMessage(), e);
-                                        return null;
-                                    }
-                                }
-
-                                @Override
-                                protected void onPostExecute(RxImageAccess.ImageAccess image) {
-                                    if (image.replyStatus.imageCount == 0)
-                                        return;
-
-                                    final ImageView drugIcon = (ImageView) c.findViewById(R.id.drug_icon);
-
-                                    // charge l'icône du médicament
-                                    Glide.with(DrugsActivity.this)
-                                            .load(image.nlmRxImages[0].imageUrl)
-                                            .crossFade()
-                                            .fitCenter()
-                                            .centerCrop()
-                                            .into(drugIcon);
-                                }
-                            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, spellingSuggestions.suggestionGroup.suggestionList.suggestion[position]);
-
-                            // todo: bookmarking live!
-                            // c.findViewById(R.id.bookmark).setOnClickListener();
-
-                            // présente le médicament au clic
-                            c.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    if (rxcuiCache[position] == null) {
-                                        // rxcui pas encore chargé...
-                                        Log.w("", "rxcui for entry at position " + position + " is not loaded yet, deferring execution...");
-
-                                        // defer execution...
-                                        new AsyncTask<AsyncTask<String, Void, RxNorm.Rxcui>, Void, RxNorm.Rxcui>() {
-
-                                            @Override
-                                            protected RxNorm.Rxcui doInBackground(AsyncTask<String, Void, RxNorm.Rxcui>... params) {
-                                                try {
-                                                    return params[0].get(2, TimeUnit.SECONDS);
-                                                } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                                                    Log.e("", e.getLocalizedMessage(), e);
-                                                    return null;
-                                                }
-                                            }
-
-                                            @Override
-                                            protected void onPostExecute(RxNorm.Rxcui rxcui) {
-                                                if (rxcui != null)
-                                                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://rxnav.nlm.nih.gov/REST/rxcui/" + rxcui.idGroup.rxnormId[0])));
-                                            }
-                                        }.execute(fetchRxcui);
-
-                                        return;
-                                    }
-
-                                    // start synchronously!
-                                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://rxnav.nlm.nih.gov/REST/rxcui/" + rxcuiCache[position].idGroup.rxnormId[0])));
-                                }
-                            });
-
-                            return c;
-                        }
-                    });
-
-
-                }
-            }.execute(query.split(" "));
-        }
-
-        // affiche une liste prédéfinie (généralement les bookmarks)
-        if (intent.hasExtra(RXCUIS)) {
-            // TODO: afficher une liste prédéfinies de rxcuis
-            drugs.setAdapter(new ArrayAdapter<>(DrugsActivity.this,
-                    R.layout.drug_item,
-                    R.id.drug_name,
-                    intent.getStringArrayListExtra(RXCUIS)));
-        }
+    public void onNewIntent(final Intent intent) {
+        getSupportLoaderManager()
+                .restartLoader(DRUGS_LOADER, intent.getExtras(), new DrugsLoaderCallbacks())
+                .forceLoad();
     }
 
     @Override
@@ -226,23 +88,149 @@ public class DrugsActivity extends ActionBarActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_cart:
+                startActivity(new Intent(this, DrugCartActivity.class));
+                break;
             case R.id.action_search:
                 return onSearchRequested();
-            case R.id.action_cart:
-                // add to cart!
-                Set<String> rxcuids = getSharedPreferences("cart", Context.MODE_PRIVATE).getStringSet("rxcuids", new HashSet<String>());
-
-                rxcuids.add(getIntent().getData().getPathSegments().get(2));
-
-                getSharedPreferences("cart", Context.MODE_PRIVATE)
-                        .edit()
-                        .putStringSet("rxcuis", rxcuids)
-                        .apply();
-
-                startActivity(new Intent(this, DrugCartActivity.class));
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Load drugs into the drugs {@link ListFragment} from a search or a predefined set of rxcuis.
+     * <p/>
+     * It will automatically lookup the providen {@link Bundle} to perform the right operation.
+     */
+    public class DrugsLoaderCallbacks implements LoaderManager.LoaderCallbacks<List<RxNorm.Rxcui>> {
+
+        @Override
+        public Loader<List<RxNorm.Rxcui>> onCreateLoader(int id, final Bundle args) {
+            return new IOAsyncTaskLoader<List<RxNorm.Rxcui>>(DrugsActivity.this) {
+
+                @Override
+                public List<RxNorm.Rxcui> loadInBackgroundSafely() throws IOException {
+                    List<RxNorm.Rxcui> rxcuis = new ArrayList<>();
+
+                    // search from the query
+                    if (args.containsKey(SearchManager.QUERY)) {
+                        setTitle("Results for " + args.getString(SearchManager.QUERY));
+                        for (String term : args.getString(SearchManager.QUERY).split("[\\s]")) {
+                            RxNorm.SpellingSuggestions spellingSuggestions = RxNorm.newInstance(httpClient).getSpellingSuggestions(term);
+                            if (spellingSuggestions.suggestionGroup.suggestionList == null)
+                                continue; // no suggestions for this term
+                            for (String suggestedTerm : spellingSuggestions.suggestionGroup.suggestionList.suggestion)
+                                rxcuis.add(RxNorm.newInstance(httpClient).findRxcuiByString(suggestedTerm, null, true, RxNorm.NORMALIZED)); // normalized search
+                        }
+                    }
+
+                    // fetch extra rxcuis as well
+                    if (args.containsKey(RXCUIS)) {
+                        setTitle(getString(R.string.bookmarks));
+                        for (String rxcui : args.getStringArrayList(RXCUIS))
+                            rxcuis.add(RxNorm.newInstance(httpClient).findRxcuiByString(rxcui, null, true, RxNorm.EXACT_MATCH));
+                    }
+
+                    return rxcuis;
+                }
+            };
+        }
+
+        @Override
+        public void onLoadFinished(Loader<List<RxNorm.Rxcui>> loader, final List<RxNorm.Rxcui> rxcuis) {
+            // generally a network error (already logged)
+            if (rxcuis == null) {
+                Toast.makeText(DrugsActivity.this, "Error while accessing the RxNav API.",
+                        Toast.LENGTH_LONG).show();
+                finish();
+            }
+
+            if (rxcuis.isEmpty()) {
+                Toast.makeText(DrugsActivity.this, "No matches for the provided query.",
+                        Toast.LENGTH_LONG).show();
+                finish();
+            }
+
+            final ListFragment drugs = (ListFragment) getSupportFragmentManager().findFragmentById(R.id.drugs);
+
+            // setTitle("Results for " + rxcuis);
+
+            // define a custom adapter
+            drugs.setListAdapter(new ArrayAdapter<RxNorm.Rxcui>(DrugsActivity.this,
+                    R.layout.drug_item,
+                    R.id.drug_name,
+                    rxcuis) {
+
+                @Override
+                public View getView(final int position, View convertView, ViewGroup parent) {
+                    final View c = super.getView(position, convertView, parent);
+
+                    TextView drugName = (TextView) c.findViewById(R.id.drug_name);
+
+                    drugName.setText(rxcuis.get(position).idGroup.name);
+
+                    // fetch the image
+                    new AsyncTask<String, Void, RxImageAccess.ImageAccess>() {
+
+                        @Override
+                        protected RxImageAccess.ImageAccess doInBackground(String... name) {
+                            try {
+                                // TODO: use the rxcui to identify the images
+                                return RxImageAccess.newInstance(httpClient).rxbase(new BasicNameValuePair("name", name[0]));
+                            } catch (IOException e) {
+                                Log.e("", e.getMessage(), e);
+                                return null;
+                            }
+                        }
+
+                        @Override
+                        protected void onPostExecute(RxImageAccess.ImageAccess image) {
+                            if (image.replyStatus.imageCount == 0)
+                                return;
+
+                            final ImageView drugIcon = (ImageView) c.findViewById(R.id.drug_icon);
+
+                            // charge l'icône du médicament
+                            Glide.with(DrugsActivity.this)
+                                    .load(image.nlmRxImages[0].imageUrl)
+                                    .crossFade()
+                                    .fitCenter()
+                                    .centerCrop()
+                                    .into(drugIcon);
+                        }
+                    }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, rxcuis.get(position).idGroup.name);
+
+                    // todo: bookmarking live!
+                    // c.findViewById(R.id.bookmark).setOnClickListener();
+
+                    // présente le médicament au clic
+                    c.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (rxcuis.get(position).idGroup.rxnormId == null) {
+                                Log.w("", "no rxcui matching drug name " + rxcuis.get(position).idGroup.name);
+                                Toast.makeText(DrugsActivity.this, "Could not identify this drug (no matching rxcui).", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+
+                            // show the magnificent drug!
+                            startActivity(new Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse("http://rxnav.nlm.nih.gov/REST/rxcui/" + rxcuis.get(position).idGroup.rxnormId[0])));
+                        }
+                    });
+
+                    return c;
+                }
+            });
+        }
+
+        @Override
+        public void onLoaderReset(Loader<List<RxNorm.Rxcui>> loader) {
+
+        }
+
     }
 
 }

@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="ca.umontreal.iro.guidedesmedicaments.fragments.DrugFragment">
+    tools:context="ca.umontreal.iro.guidedesmedicaments.DrugFragment">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -105,14 +105,11 @@
             android:text="@string/counter_indication"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <fragment
+        <ListView
             android:id="@+id/counter_indications"
-            android:name="android.support.v4.app.ListFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/label_counter_indicator"
-            android:orientation="horizontal"
-            tools:layout="@layout/drug_item" />
+            android:layout_below="@id/label_counter_indicator" />
 
         <TextView
             android:id="@+id/label_similar_drugs"
@@ -122,20 +119,11 @@
             android:text="@string/similar_drugs"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <fragment
+        <ListView
             android:id="@+id/similar_drugs"
-            android:name="android.support.v4.app.ListFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/label_similar_drugs"
-            android:orientation="horizontal"
-            tools:layout="@layout/drug_item" />
-
-        <TextView
-            android:id="@+id/posologies"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/similar_drugs" />
+            android:layout_below="@id/label_similar_drugs" />
 
     </RelativeLayout>
 </ScrollView>

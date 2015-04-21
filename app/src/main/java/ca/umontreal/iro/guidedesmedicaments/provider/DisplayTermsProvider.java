@@ -1,4 +1,4 @@
-package ca.umontreal.iro.guidedesmedicaments.providers;
+package ca.umontreal.iro.guidedesmedicaments.provider;
 
 import android.app.SearchManager;
 import android.content.ContentProvider;
@@ -6,7 +6,6 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.provider.BaseColumns;
 import android.util.Log;
 
@@ -25,14 +24,17 @@ import ca.umontreal.iro.rxnav.RxNorm;
  * Provider for DisplayTerms from {@link RxNorm} API.
  * <p/>
  * This provider does a single API request and store all results in a {@link Trie} for fast prefix
- * search.
+ * search. All subsequent queries will not perform I/O operations.
  */
 public class DisplayTermsProvider extends ContentProvider {
 
     /**
      * Trie used for fast prefix search.
+     * <p/>
+     * Keys represent search terms and values the associated entry in the
+     * {@link ca.umontreal.iro.rxnav.RxNorm.DisplayTerms} API.
      */
-    private Trie<String, Long> termsTrie;
+    private Trie<String, String> termsTrie;
 
     @Override
     public boolean onCreate() {
@@ -50,7 +52,13 @@ public class DisplayTermsProvider extends ContentProvider {
                 RxNorm.DisplayTerms data = RxNorm.newInstance(new OkHttpClient()).getDisplayTerms();
 
                 for (int i = 0; i < data.displayTermsList.term.length; i++) {
-                    termsTrie.put(data.displayTermsList.term[i].toLowerCase(), (long) i);
+                    // register the exact match
+                    termsTrie.put(data.displayTermsList.term[i], data.displayTermsList.term[i]);
+
+                    // register all words in the Trie
+                    for (String word : data.displayTermsList.term[i].split("[-'\\s/]+")) {
+                        termsTrie.put(word.toLowerCase(), data.displayTermsList.term[i]);
+                    }
                 }
 
             } catch (IOException e) {
@@ -58,14 +66,15 @@ public class DisplayTermsProvider extends ContentProvider {
             }
         }
 
-        SortedMap<String, Long> matchingTerms = termsTrie.prefixMap(uri.getLastPathSegment().toLowerCase());
+        // lowercase match for best results
+        SortedMap<String, String> matchingTerms = termsTrie.prefixMap(uri.getLastPathSegment().toLowerCase());
 
         MatrixCursor matrixCursor = new MatrixCursor(
-                new String[]{BaseColumns._ID, SearchManager.SUGGEST_COLUMN_TEXT_1},
+                new String[]{BaseColumns._ID, SearchManager.SUGGEST_COLUMN_TEXT_1, SearchManager.SUGGEST_COLUMN_TEXT_2},
                 matchingTerms.size()); // avoid resize :P
 
-        for (Map.Entry<String, Long> e : matchingTerms.entrySet()) {
-            matrixCursor.addRow(new Object[]{e.getValue(), e.getKey()});
+        for (Map.Entry<String, String> e : matchingTerms.entrySet()) {
+            matrixCursor.addRow(new Object[]{e.hashCode(), e.getKey(), e.getValue()});
         }
 
         return matrixCursor;

@@ -66,93 +66,37 @@ public class RxClass extends RxNav {
                 .getJSONArray("rxclassMinConcept");
     }
 
-    public class ClassByRxNormDrugId implements Parcelable {
+    public class ClassByRxNormDrugId {
 
-        public class UserInput implements Parcelable {
+        public class UserInput {
 
             public String relaSource;
             public String relas;
             public String rxcui;
-
-            @Override
-            public int describeContents() {
-                return 0;
-            }
-
-            @Override
-            public void writeToParcel(Parcel dest, int flags) {
-                dest.writeString(relaSource);
-                dest.writeString(relas);
-                dest.writeString(rxcui);
-            }
         }
 
-        public class RxClassDrugInfoList implements Parcelable {
+        public class RxClassDrugInfoList {
 
-            public class RxClassDrugInfo implements Parcelable {
+            public class RxClassDrugInfo {
 
-                public class RxClassMinConceptItem implements Parcelable {
+                public class RxClassMinConceptItem {
 
                     public String classId;
                     public String className;
                     public String classType;
-
-                    @Override
-                    public int describeContents() {
-                        return 0;
-                    }
-
-                    @Override
-                    public void writeToParcel(Parcel dest, int flags) {
-                        dest.writeString(classId);
-                        dest.writeString(className);
-                        dest.writeString(classType);
-                    }
                 }
 
-                public Interaction.InteractionTypeGroup.InteractionType.MinConcept minConcept;
+                public Interaction.InteractionTypeGroup.InteractionType.MinConceptItem minConcept;
                 public RxClassMinConceptItem rxclassMinConceptItem;
                 public String rela;
-
                 public String relaSource;
-
-                @Override
-                public int describeContents() {
-                    return 0;
-                }
-
-                @Override
-                public void writeToParcel(Parcel dest, int flags) {
-
-                }
             }
 
             public RxClassDrugInfo[] rxclassDrugInfo;
-
-            @Override
-            public int describeContents() {
-                return 0;
-            }
-
-            @Override
-            public void writeToParcel(Parcel dest, int flags) {
-
-            }
         }
 
         public UserInput userInput;
         public RxClassDrugInfoList rxclassDrugInfoList;
-
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-
-        }
     }
 
     /**

@@ -3,32 +3,19 @@ package ca.umontreal.iro.guidedesmedicaments;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.database.MatrixCursor;
 import android.os.Bundle;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.SearchView;
-import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import com.squareup.okhttp.Cache;
 import com.squareup.okhttp.OkHttpClient;
 
-import org.apache.commons.collections4.Trie;
-import org.apache.commons.collections4.trie.PatriciaTrie;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-
-import ca.umontreal.iro.guidedesmedicaments.loaders.RxNavAsyncTaskLoader;
-import ca.umontreal.iro.rxnav.RxNorm;
 
 /**
  * Provide search capabilities that initiate the application flow.

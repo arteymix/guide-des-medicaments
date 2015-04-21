@@ -1,8 +1,5 @@
 package ca.umontreal.iro.rxnav;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import com.squareup.okhttp.OkHttpClient;
 
 import org.apache.http.NameValuePair;
@@ -21,7 +18,7 @@ import java.util.Map;
  * images and associated metadata for prescription oral solid dosage formulations (tablets, gel
  * caps and capsules, etc. – commonly known as pills) from a publicly available, increasingly
  * comprehensive, standardized, curated database. RxImageAccess has the following features:
- * <p/>
+ * <p>
  * <ul>
  * <li>Curated image database of over 2,300 prescription products representing over 6,000 NDCs.</li>
  * <li>RxImageAccess is a RESTful (representational state transfer) Web API.</li>
@@ -32,7 +29,7 @@ import java.util.Map;
  * <li>Output control parameters include image resolution, number of results, number of images per page, page number, and whether returned metadata are to include active ingredients, inactive ingredients, trade names, and generic names.</li>
  * <li>RxImageAccess image files are standardized in two layout formats and available in multiple resolutions to support online, mobile, and desktop application development.</li>
  * </ul>
- * <p/>
+ * <p>
  * http://rximage.nlm.nih.gov/docs/doku.php?id=start
  *
  * @author Guillaume Poirier-Morency
@@ -52,55 +49,31 @@ public class RxImageAccess extends RxNav {
 
     /**
      * RxImageAccess API returns uniform JSON responses.
-     * <p/>
+     * <p>
      * The specification can be accessed here http://rximage.nlm.nih.gov/rxImageAccess.json
-     * <p/>
+     * <p>
      * An {@link Iterator} is implemented as results are paginated.
      */
-    public class ImageAccess implements Iterator<ImageAccess>, Parcelable {
+    public class ImageAccess implements Iterator<ImageAccess> {
 
-        public class ReplyStatus implements Parcelable {
+        public class ReplyStatus {
+
             public String success;
             public int imageCount;
             public int totalImageCount;
             public String date;
             public Map<String, String> matchedTerms;
-
-            @Override
-            public int describeContents() {
-                return 0;
-            }
-
-            @Override
-            public void writeToParcel(Parcel dest, int flags) {
-                dest.writeString(success);
-                dest.writeInt(imageCount);
-                dest.writeInt(totalImageCount);
-                dest.writeString(date);
-                // todo: write the matchedTerms Map
-            }
         }
 
-        public class RxImage implements Parcelable {
+        public class RxImage {
 
-            public class Relabeler implements Parcelable {
+            public class Relabeler {
 
                 /**
                  * Named @sourceNdc9
                  */
                 public String sourceNdc9;
                 public String[] ndc9;
-
-                @Override
-                public int describeContents() {
-                    return 0;
-                }
-
-                @Override
-                public void writeToParcel(Parcel dest, int flags) {
-                    dest.writeString(sourceNdc9);
-                    dest.writeStringArray(ndc9);
-                }
             }
 
             public int id;
@@ -117,29 +90,6 @@ public class RxImageAccess extends RxNav {
             public String imageUrl;
             public int imageSize;
             public String attribution;
-
-            @Override
-            public int describeContents() {
-                return 0;
-            }
-
-            @Override
-            public void writeToParcel(Parcel dest, int flags) {
-                dest.writeInt(id);
-                dest.writeString(ndc11);
-                dest.writeInt(part);
-                dest.writeString(matchNdc);
-                dest.writeParcelableArray(relabelersNdc9, flags);
-                dest.writeString(status);
-                dest.writeInt(rxcui);
-                dest.writeString(splSetId);
-                dest.writeString(acqDate);
-                dest.writeString(name);
-                dest.writeString(labeler);
-                dest.writeString(imageUrl);
-                dest.writeInt(imageSize);
-                dest.writeString(attribution);
-            }
         }
 
         public ReplyStatus replyStatus;
@@ -172,17 +122,6 @@ public class RxImageAccess extends RxNav {
         public void remove() {
             throw new UnsupportedOperationException("this instance is immutable");
         }
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeParcelable(replyStatus, flags);
-            dest.writeParcelableArray(nlmRxImages, flags);
-        }
     }
 
     /**
@@ -206,5 +145,4 @@ public class RxImageAccess extends RxNav {
     public ImageAccess rxbase(NameValuePair... query) throws IOException {
         return request(ImageAccess.class, "rximage/1/rxbase", query);
     }
-
 }

@@ -1,11 +1,13 @@
-package ca.umontreal.iro.guidedesmedicaments.fragments;
+package ca.umontreal.iro.guidedesmedicaments;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.BaseColumns;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
@@ -15,10 +17,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,8 +45,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import ca.umontreal.iro.guidedesmedicaments.R;
-import ca.umontreal.iro.guidedesmedicaments.loaders.RxNavAsyncTaskLoader;
+import ca.umontreal.iro.guidedesmedicaments.loader.IOAsyncTaskLoader;
 import ca.umontreal.iro.rxnav.Interaction;
 import ca.umontreal.iro.rxnav.RxClass;
 import ca.umontreal.iro.rxnav.RxImageAccess;
@@ -56,8 +60,7 @@ import ca.umontreal.iro.rxnav.RxNorm;
  * The layout is embedded in a {@link android.widget.ScrollView} and will expand after the screen
  * height.
  * <p/>
- * TODO: extract and present the missing information from the RxNav API.
- * TODO: adapt the code to support drug_item layout
+ * TODO: be more uniform and require the rxcui provided by arguments
  *
  * @author Guillaume Poirier-Morency
  */
@@ -110,8 +113,8 @@ public class DrugFragment extends Fragment {
         final TextView categories = (TextView) getView().findViewById(R.id.categories);
         final TextView administrationMethod = (TextView) getView().findViewById(R.id.administration_method);
 
-        final ListFragment counterIndications = (ListFragment) getChildFragmentManager().findFragmentById(R.id.counter_indications);
-        final ListFragment similarDrugs = (ListFragment) getChildFragmentManager().findFragmentById(R.id.similar_drugs);
+        final ListView counterIndications = (ListView) getView().findViewById(R.id.counter_indications);
+        final ListView similarDrugs = (ListView) getView().findViewById(R.id.similar_drugs);
 
         CheckBox bookmark = (CheckBox) getView().findViewById(R.id.bookmark);
 
@@ -137,14 +140,24 @@ public class DrugFragment extends Fragment {
             }
         });
 
+        similarDrugs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // show the magnificent drug!
+                startActivity(new Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("http://rxnav.nlm.nih.gov/REST/rxcui/" + id)));
+            }
+        });
+
         getLoaderManager().initLoader(NAME_LOADER, null, new LoaderManager.LoaderCallbacks<RxNorm.RxConceptProperties>() {
             @Override
             public Loader<RxNorm.RxConceptProperties> onCreateLoader(int id, Bundle args) {
-                return new RxNavAsyncTaskLoader<RxNorm, RxNorm.RxConceptProperties>(getActivity(), RxNorm.newInstance(httpClient)) {
+                return new IOAsyncTaskLoader<RxNorm.RxConceptProperties>(getActivity()) {
 
                     @Override
                     public RxNorm.RxConceptProperties loadInBackgroundSafely() throws IOException {
-                        return rxNav.getRxConceptProperties(rxcui);
+                        return RxNorm.newInstance(httpClient).getRxConceptProperties(rxcui);
                     }
                 };
             }
@@ -249,40 +262,6 @@ public class DrugFragment extends Fragment {
                         drugDescription.setText(Html.fromHtml(page.optString("extract")));
                     }
                 }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, data.properties.name);
-
-                // fetch related drugs to the concept name
-                new AsyncTask<String, Void, RxNorm.Drugs>() {
-
-                    @Override
-                    protected RxNorm.Drugs doInBackground(String... params) {
-                        try {
-                            return RxNorm.newInstance(httpClient).getDrugs(params[0]);
-                        } catch (IOException e) {
-                            Log.e("", e.getLocalizedMessage(), e);
-                            return null;
-                        }
-                    }
-
-                    @Override
-                    protected void onPostExecute(RxNorm.Drugs result) {
-                        if (result == null) {
-                            Toast.makeText(getActivity(), "No related drugs were found.", Toast.LENGTH_LONG).show();
-                            return;
-                        }
-
-                        List<RxNorm.ConceptProperties> conceptProperties = new ArrayList<>();
-
-                        // extract related concepts, the API group them by tty
-                        for (RxNorm.ConceptGroup c : result.drugGroup.conceptGroup)
-                            if (c.conceptProperties != null)
-                                conceptProperties.addAll(Arrays.asList(c.conceptProperties));
-
-                        similarDrugs.setListAdapter(new ArrayAdapter<>(getActivity(),
-                                android.R.layout.simple_list_item_1,
-                                conceptProperties));
-                    }
-
-                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, data.properties.name);
             }
 
             @Override
@@ -296,12 +275,12 @@ public class DrugFragment extends Fragment {
 
             @Override
             public Loader<RxClass.ClassByRxNormDrugId> onCreateLoader(int id, final Bundle args) {
-                return new RxNavAsyncTaskLoader<RxClass, RxClass.ClassByRxNormDrugId>(getActivity(), RxClass.newInstance(httpClient)) {
+                return new IOAsyncTaskLoader<RxClass.ClassByRxNormDrugId>(getActivity()) {
 
                     @Override
                     public RxClass.ClassByRxNormDrugId loadInBackgroundSafely() throws IOException {
                         Log.d("", "requesting!");
-                        return rxNav.getClassByRxNormDrugId(rxcui, null);
+                        return RxClass.newInstance(httpClient).getClassByRxNormDrugId(rxcui, null);
                     }
                 };
             }
@@ -332,11 +311,11 @@ public class DrugFragment extends Fragment {
         getLoaderManager().initLoader(CONTRAINDICATIONS_LOADER, null, new LoaderManager.LoaderCallbacks<Interaction.DrugInteractions>() {
             @Override
             public Loader<Interaction.DrugInteractions> onCreateLoader(int id, Bundle args) {
-                return new RxNavAsyncTaskLoader<Interaction, Interaction.DrugInteractions>(getActivity(), Interaction.newInstance(httpClient)) {
+                return new IOAsyncTaskLoader<Interaction.DrugInteractions>(getActivity()) {
 
                     @Override
                     public Interaction.DrugInteractions loadInBackgroundSafely() throws IOException {
-                        return this.rxNav.findDrugInteractions(rxcui);
+                        return Interaction.newInstance(httpClient).findDrugInteractions(rxcui);
                     }
                 };
             }
@@ -348,16 +327,18 @@ public class DrugFragment extends Fragment {
                     return;
                 }
 
-                List<String> comments = new ArrayList<>();
+                List<String> descriptions = new ArrayList<>();
 
                 for (Interaction.InteractionTypeGroup interactionTypeGroup : drugInteractions.interactionTypeGroup)
                     for (Interaction.InteractionTypeGroup.InteractionType interactionType : interactionTypeGroup.interactionType)
-                        comments.add(interactionType.comment);
+                        for (Interaction.InteractionTypeGroup.InteractionType.InteractionPair interactionPair : interactionType.interactionPair)
+                            for (Interaction.InteractionTypeGroup.InteractionType.InteractionPair.InteractionConcept interactionConcept : interactionPair.interactionConcept)
+                                descriptions.add(interactionPair.description);
 
-                counterIndications.setListAdapter(new ArrayAdapter<>(
+                counterIndications.setAdapter(new ArrayAdapter<>(
                         getActivity(),
                         android.R.layout.simple_list_item_1,
-                        comments));
+                        descriptions));
             }
 
             @Override
@@ -366,6 +347,45 @@ public class DrugFragment extends Fragment {
             }
         }).forceLoad();
 
-        // TODO: similar drugs loader
+        getLoaderManager().initLoader(SIMILAR_DRUGS_LOADER, null, new LoaderManager.LoaderCallbacks<RxNorm.AllRelatedInfo>() {
+            @Override
+            public Loader<RxNorm.AllRelatedInfo> onCreateLoader(int id, Bundle args) {
+                return new IOAsyncTaskLoader<RxNorm.AllRelatedInfo>(getActivity()) {
+                    @Override
+                    public RxNorm.AllRelatedInfo loadInBackgroundSafely() throws IOException {
+                        return RxNorm.newInstance(httpClient).getAllRelatedInfo(rxcui);
+                    }
+                };
+            }
+
+            @Override
+            public void onLoadFinished(Loader<RxNorm.AllRelatedInfo> loader, RxNorm.AllRelatedInfo data) {
+                if (data.allRelatedGroup.conceptGroup == null) {
+                    Toast.makeText(getActivity(), "No related drugs were found.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                MatrixCursor matrixCursor = new MatrixCursor(new String[]{BaseColumns._ID, "name", "rxcui"});
+
+                // extract related concepts, the API group them by tty
+                // TODO: this thing does not work well (only return a single entry when there are at least 20 for aspirin)
+                for (RxNorm.ConceptGroup c : data.allRelatedGroup.conceptGroup)
+                    if (c.conceptProperties != null) // bugfix.. (the Gson mapping is probably wrong)
+                        for (RxNorm.ConceptProperties conceptProperties : c.conceptProperties)
+                            matrixCursor.addRow(new Object[]{Long.parseLong(conceptProperties.rxcui), conceptProperties.name, conceptProperties.rxcui});
+
+                similarDrugs.setAdapter(new SimpleCursorAdapter(getActivity(),
+                        android.R.layout.simple_list_item_2,
+                        matrixCursor,
+                        new String[]{"name", "rxcui"},
+                        new int[]{android.R.id.text1, android.R.id.text2},
+                        0x0));
+            }
+
+            @Override
+            public void onLoaderReset(Loader<RxNorm.AllRelatedInfo> loader) {
+
+            }
+        }).forceLoad();
     }
 }

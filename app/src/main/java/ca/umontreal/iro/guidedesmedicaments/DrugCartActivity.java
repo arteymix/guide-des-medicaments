@@ -1,10 +1,16 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
 import android.content.Context;
+import android.content.Intent;
+import android.database.MatrixCursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.BaseColumns;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -26,7 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import ca.umontreal.iro.guidedesmedicaments.fragments.DrugFragment;
+import ca.umontreal.iro.guidedesmedicaments.loader.IOAsyncTaskLoader;
 import ca.umontreal.iro.rxnav.Interaction;
 
 /**
@@ -88,6 +94,21 @@ public class DrugCartActivity extends ActionBarActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_bookmarks:
+                Intent showBookmarks = new Intent(this, DrugsActivity.class);
+
+                Set<String> bookmarks = getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
+                        .getStringSet("rxcuis", new HashSet());
+
+                if (bookmarks.isEmpty()) {
+                    Toast.makeText(this, "You do not have any bookmarks.", Toast.LENGTH_SHORT).show();
+                    break;
+                }
+
+                showBookmarks.putStringArrayListExtra(DrugsActivity.RXCUIS, new ArrayList<>(bookmarks));
+
+                startActivity(showBookmarks);
+                break;
             case R.id.action_search:
                 return onSearchRequested();
         }
@@ -109,6 +130,8 @@ public class DrugCartActivity extends ActionBarActivity {
          * This is a mandatory field to instantiate this fragment.
          */
         public static final String RXCUIS = "RXCUIS";
+
+        public static final int INTERACTION_LOADER = 0;
 
         public static DrugInteractionFragment newInstance(Set<String> rxcuis) {
             DrugInteractionFragment drugInteractionFragment = new DrugInteractionFragment();
@@ -135,29 +158,30 @@ public class DrugCartActivity extends ActionBarActivity {
             httpClient.setCache(new com.squareup.okhttp.Cache(getActivity().getCacheDir(), 10 * 1024 * 1024));
 
             final TextView nlmDisclaimer = (TextView) getView().findViewById(R.id.nlm_disclaimer);
-            final ListView interactionsList = (ListView) getView().findViewById(R.id.interactions);
+            final ListFragment interactionsList = (ListFragment) getChildFragmentManager().findFragmentById(R.id.interactions);
 
-            String[] rxcuis = getArguments().getStringArray(RXCUIS);
-
-            if (rxcuis.length == 0)
-                Toast.makeText(getActivity(), "The cart is empty, add some drugs in it first.",
-                        Toast.LENGTH_SHORT).show();
-
-            new AsyncTask<String, Void, Interaction.InteractionsFromList>() {
+            getLoaderManager().initLoader(INTERACTION_LOADER, getArguments(), new LoaderManager.LoaderCallbacks<Interaction.InteractionsFromList>() {
 
                 @Override
-                protected Interaction.InteractionsFromList doInBackground(String... rxcuis) {
-                    try {
-                        // todo: utiliser un code de couleur (gradation) pour la sévérité
-                        return Interaction.newInstance(httpClient).findInteractionsFromList(rxcuis);
-                    } catch (IOException e) {
-                        Log.e("", e.getMessage(), e);
-                        return null;
-                    }
+                public Loader<Interaction.InteractionsFromList> onCreateLoader(int id, Bundle args) {
+                    final String[] rxcuis = getArguments().getStringArray(RXCUIS);
+
+                    if (rxcuis.length == 0)
+                        Toast.makeText(getActivity(), "The cart is empty, add some drugs in it first.",
+                                Toast.LENGTH_SHORT).show();
+
+                    return new IOAsyncTaskLoader<Interaction.InteractionsFromList>(getActivity()) {
+
+                        @Override
+                        public Interaction.InteractionsFromList loadInBackgroundSafely() throws IOException {
+                            // todo: utiliser un code de couleur (gradation) pour la sévérité
+                            return Interaction.newInstance(httpClient).findInteractionsFromList(rxcuis);
+                        }
+                    };
                 }
 
                 @Override
-                protected void onPostExecute(Interaction.InteractionsFromList interactions) {
+                public void onLoadFinished(Loader<Interaction.InteractionsFromList> loader, Interaction.InteractionsFromList interactions) {
                     nlmDisclaimer.setText(interactions.nlmDisclaimer);
 
                     if (interactions.fullInteractionTypeGroup == null) {
@@ -167,13 +191,21 @@ public class DrugCartActivity extends ActionBarActivity {
                         return;
                     }
 
+                    // todo: populate the MatrixCursor
+                    MatrixCursor matrixCursor = new MatrixCursor(new String[]{BaseColumns._ID});
+
                     // TODO: assembler toutes les interactions
-                    interactionsList.setAdapter(new ArrayAdapter<>(
+                    interactionsList.setListAdapter(new ArrayAdapter<>(
                             getActivity(),
                             R.layout.interaction_item,
                             interactions.fullInteractionTypeGroup.interactionType));
                 }
-            }.execute(rxcuis);
+
+                @Override
+                public void onLoaderReset(Loader<Interaction.InteractionsFromList> loader) {
+
+                }
+            }).forceLoad();
         }
     }
 }

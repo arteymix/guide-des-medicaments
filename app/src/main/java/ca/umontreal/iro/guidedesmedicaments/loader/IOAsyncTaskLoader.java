@@ -1,4 +1,4 @@
-package ca.umontreal.iro.guidedesmedicaments.loaders;
+package ca.umontreal.iro.guidedesmedicaments.loader;
 
 import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
@@ -6,22 +6,16 @@ import android.util.Log;
 
 import java.io.IOException;
 
-import ca.umontreal.iro.rxnav.RxNav;
-
 /**
- * AsyncTaskLoader that targets a specific RxNav API and provide safe execution.
+ * AsyncTaskLoader designed to perform I/O operations safely.
  */
-public abstract class RxNavAsyncTaskLoader<A extends RxNav, T> extends AsyncTaskLoader<T> {
-
-    protected final A rxNav;
+public abstract class IOAsyncTaskLoader<T> extends AsyncTaskLoader<T> {
 
     /**
-     * @param context
-     * @param rxNavApi
+     * {@inheritDoc}
      */
-    public RxNavAsyncTaskLoader(Context context, A rxNavApi) {
+    public IOAsyncTaskLoader(Context context) {
         super(context);
-        this.rxNav = rxNavApi;
     }
 
     @Override
@@ -36,6 +30,8 @@ public abstract class RxNavAsyncTaskLoader<A extends RxNav, T> extends AsyncTask
     }
 
     /**
+     * Perform a loadInBackground safely from {@link IOException}.
+     *
      * @return
      * @throws IOException
      */

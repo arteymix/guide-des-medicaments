@@ -1,8 +1,5 @@
 package ca.umontreal.iro.rxnav;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import com.squareup.okhttp.OkHttpClient;
 
 import org.apache.commons.lang3.StringUtils;
@@ -60,36 +57,21 @@ public class RxNorm extends RxNav {
                 .getJSONArray("propConcept");
     }
 
-    public class Rxcui implements Parcelable {
+    public class Rxcui {
 
-        public class IdGroup implements Parcelable {
+        public class IdGroup {
+
             public String name;
             public String[] rxnormId;
-
-            @Override
-            public int describeContents() {
-                return 0;
-            }
-
-            @Override
-            public void writeToParcel(Parcel dest, int flags) {
-                dest.writeString(name);
-                dest.writeStringArray(rxnormId);
-            }
         }
 
         public IdGroup idGroup;
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeParcelable(idGroup, flags);
-        }
     }
+
+    public static final int
+            EXACT_MATCH = 0,
+            NORMALIZED = 1,
+            EXACT_MATCH_THEN_NORMALIZED = 2;
 
     /**
      * Search for a name in the RxNorm data set and return the RxCUIs of any concepts which have
@@ -112,11 +94,16 @@ public class RxNorm extends RxNav {
      * @throws IOException
      */
     public Rxcui findRxcuiByString(String name, String[] srclist, boolean allsrc, int search) throws IOException {
-        return request(Rxcui.class, "rxcui",
-                new BasicNameValuePair("name", name),
-                new BasicNameValuePair("srclist", StringUtils.join(srclist, " ")),
-                new BasicNameValuePair("allsrc", allsrc ? "1" : "0"),
-                new BasicNameValuePair("search", Integer.toString(search)));
+        return srclist == null ?
+                request(Rxcui.class, "rxcui",
+                        new BasicNameValuePair("name", name),
+                        new BasicNameValuePair("allsrc", allsrc ? "1" : "0"),
+                        new BasicNameValuePair("search", Integer.toString(search))) :
+                request(Rxcui.class, "rxcui",
+                        new BasicNameValuePair("name", name),
+                        new BasicNameValuePair("srclist", StringUtils.join(srclist, " ")),
+                        new BasicNameValuePair("allsrc", allsrc ? "1" : "0"),
+                        new BasicNameValuePair("search", Integer.toString(search)));
     }
 
     /**
@@ -142,6 +129,11 @@ public class RxNorm extends RxNav {
                 .getJSONArray("propConcept");
     }
 
+    public class AllRelatedInfo {
+
+        public RelatedGroup allRelatedGroup;
+    }
+
     /**
      * Get all the related RxNorm concepts for a given RxNorm identifier. This includes concepts of
      * term types "IN", "MIN", "PIN", "BN", "SBD", "SBDC", "SBDF", "SBDG", "SCD", "SCDC", "SCDF",
@@ -155,51 +147,24 @@ public class RxNorm extends RxNav {
      * @throws IOException
      * @throws JSONException
      */
-    public JSONArray getAllRelatedInfo(String rxcui) throws IOException, JSONException {
-        return get("rxcui/" + rxcui + "/allrelated")
-                .getJSONObject("allRelatedGroup")
-                .getJSONArray("conceptGroup");
+    public AllRelatedInfo getAllRelatedInfo(String rxcui) throws IOException {
+        return request(AllRelatedInfo.class, "rxcui/" + rxcui + "/allrelated");
     }
 
-    public class ApproximateGroup implements Parcelable {
+    public class ApproximateGroup {
 
-        public class Candidate implements Parcelable {
+        public class Candidate {
+
             public String rxcui;
             public String rxaui;
             public String score;
             public String rank;
-
-            @Override
-            public int describeContents() {
-                return 0;
-            }
-
-            @Override
-            public void writeToParcel(Parcel dest, int flags) {
-                dest.writeString(rxcui);
-                dest.writeString(rxaui);
-                dest.writeString(score);
-                dest.writeString(rank);
-            }
         }
 
         public String inputTerm;
         public String maxEntries;
         public String comment;
         public Candidate[] candidate;
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(inputTerm);
-            dest.writeString(maxEntries);
-            dest.writeString(comment);
-            dest.writeParcelableArray(candidate, flags);
-        }
     }
 
     /**
@@ -225,33 +190,13 @@ public class RxNorm extends RxNav {
                 new BasicNameValuePair("option", Integer.toString(option)));
     }
 
-    public class DisplayTerms implements Parcelable {
+    public class DisplayTerms {
 
-        public class DisplayTermsList implements Parcelable {
+        public class DisplayTermsList {
             public String[] term;
-
-            @Override
-            public int describeContents() {
-                return 0;
-            }
-
-            @Override
-            public void writeToParcel(Parcel dest, int flags) {
-                dest.writeStringArray(term);
-            }
         }
 
         public DisplayTermsList displayTermsList;
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeParcelable(displayTermsList, flags);
-        }
     }
 
     /**
@@ -265,7 +210,8 @@ public class RxNorm extends RxNav {
         return request(DisplayTerms.class, "displaynames");
     }
 
-    public class ConceptProperties implements Parcelable {
+    public class ConceptProperties {
+
         public String rxcui;
         public String name;
         public String synonym;
@@ -273,73 +219,23 @@ public class RxNorm extends RxNav {
         public String language;
         public String suppress;
         public String umlscui;
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(rxcui);
-            dest.writeString(name);
-            dest.writeString(synonym);
-            dest.writeString(tty);
-            dest.writeString(language);
-            dest.writeString(suppress);
-            dest.writeString(umlscui);
-        }
     }
 
-    public class ConceptGroup implements Parcelable {
+    public class ConceptGroup {
 
         public String tty;
-
         public ConceptProperties[] conceptProperties;
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(tty);
-            dest.writeParcelableArray(conceptProperties, flags);
-        }
-
     }
 
-    public class Drugs implements Parcelable {
+    public class Drugs {
 
-        public class DrugGroup implements Parcelable {
+        public class DrugGroup {
 
             public String name;
             public ConceptGroup[] conceptGroup;
-
-            @Override
-            public int describeContents() {
-                return 0;
-            }
-
-            @Override
-            public void writeToParcel(Parcel dest, int flags) {
-                dest.writeString(name);
-                dest.writeParcelableArray(conceptGroup, flags);
-            }
         }
 
         public DrugGroup drugGroup;
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeParcelable(drugGroup, flags);
-        }
     }
 
     /**
@@ -357,23 +253,11 @@ public class RxNorm extends RxNav {
         return request(Drugs.class, "drugs", new BasicNameValuePair("name", name));
     }
 
-    public class RelatedGroup implements Parcelable {
+    public class RelatedGroup {
 
         public String rxcui;
         public String[] termType;
         public ConceptGroup[] conceptGroup;
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(rxcui);
-            dest.writeStringArray(termType);
-            dest.writeParcelableArray(conceptGroup, flags);
-        }
     }
 
     /**
@@ -389,19 +273,9 @@ public class RxNorm extends RxNav {
         return request(RelatedGroup.class, "rxcui/" + rxcui + "/allrelated");
     }
 
-    public class RxConceptProperties implements Parcelable {
+    public class RxConceptProperties {
 
         public ConceptProperties properties;
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeParcelable(properties, flags);
-        }
     }
 
     /**
@@ -415,51 +289,20 @@ public class RxNorm extends RxNav {
         return request(RxConceptProperties.class, "rxcui/" + rxcui + "/properties");
     }
 
-    public class SpellingSuggestions implements Parcelable {
+    public class SpellingSuggestions {
 
-        public class SuggestionGroup implements Parcelable {
+        public class SuggestionGroup {
 
-            public class SuggestionList implements Parcelable {
+            public class SuggestionList {
 
                 public String[] suggestion;
-
-                @Override
-                public int describeContents() {
-                    return 0;
-                }
-
-                @Override
-                public void writeToParcel(Parcel dest, int flags) {
-                    dest.writeStringArray(suggestion);
-                }
             }
 
             public String name;
             public SuggestionList suggestionList;
-
-            @Override
-            public int describeContents() {
-                return 0;
-            }
-
-            @Override
-            public void writeToParcel(Parcel dest, int flags) {
-                dest.writeString(name);
-                dest.writeParcelable(suggestionList, flags);
-            }
         }
 
         public SuggestionGroup suggestionGroup;
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeParcelable(suggestionGroup, flags);
-        }
     }
 
     /**
@@ -475,34 +318,14 @@ public class RxNorm extends RxNav {
         return request(SpellingSuggestions.class, "spellingsuggestions", new BasicNameValuePair("name", name));
     }
 
-    public class TermTypes implements Parcelable {
+    public class TermTypes {
 
-        public class TermTypeList implements Parcelable {
+        public class TermTypeList {
 
             public String[] termType;
-
-            @Override
-            public int describeContents() {
-                return 0;
-            }
-
-            @Override
-            public void writeToParcel(Parcel dest, int flags) {
-                dest.writeStringArray(termType);
-            }
         }
 
         public TermTypeList termTypeList;
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeParcelable(termTypeList, flags);
-        }
     }
 
     /**

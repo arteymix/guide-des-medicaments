@@ -3,38 +3,42 @@ package ca.umontreal.iro.rxnav;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.squareup.okhttp.CacheControl;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
+import org.apache.http.HttpMessage;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.protocol.HTTP;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.IOException;
 import java.net.URL;
+import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 /**
  * RxNav is a browser for several drug information sources, including RxNorm, RxTerms and NDF-RT.
- * <p/>
+ * <p>
  * RxNav finds drugs in RxNorm from the names and codes in its constituent vocabularies. RxNav
  * displays lnks from clinical drugs, both branded and generic, to their active ingredients, drug
  * components and related brand names. RxNav also provides lists of NDC codes and links to package
  * inserts in DailyMed. The RxTerms record for a given drug can be accessed through RxNav, as well
  * as clinical information from NDF-RT, including pharmacologic classes, mechanisms of action and
  * physiologic effects.
- * <p/>
+ * <p>
  * Only the JSON RxNav API is provided. If you like XML, you probably like hardcoding requests
  * anyway, so do not use this SDK.
- * <p/>
+ * <p>
  * The documentation provided is not guaranteed to be up-to-date with what's available on RxNav
  * official website (http://rxnav.nlm.nih.gov/) so only use it for informational purpose.
- * <p/>
+ * <p>
  * If you find a bug, fill an issue right now! (I will fix it, I promise)
  *
  * @author Guillaume Poirier-Morency
@@ -89,7 +93,7 @@ public class RxNav {
 
     /**
      * Request RxNav API and extract the JSON in the providen class using {@link Gson}.
-     * <p/>
+     * <p>
      * As recommended by the 'Terms Of Service', all requests are cached for a period of 24 hours
      * assuming that {@link java.net.ResponseCache} has been set correctly.
      *
@@ -100,7 +104,9 @@ public class RxNav {
      * @throws IOException always expect some I/O failure
      */
     protected <T> T request(Class<T> classOfT, String path, NameValuePair... query) throws IOException {
-        URL url = new URL(scheme, host, port, basePath + path + suffix + "?" + URLEncodedUtils.format(Arrays.asList(query), "UTF-8"));
+        URL url = query.length > 0 ?
+                new URL(scheme, host, port, basePath + path + suffix + "?" + URLEncodedUtils.format(Arrays.asList(query), HTTP.UTF_8)) :
+                new URL(scheme, host, port, basePath + path + suffix);
 
         // accepting staled response for up to 24 hours
         CacheControl cacheControl = new CacheControl.Builder()
@@ -126,10 +132,10 @@ public class RxNav {
 
     /**
      * Execute a HTTP request on RxNav endpoint using {@link java.net.HttpURLConnection}.
-     * <p/>
+     * <p>
      * RxNav generally returns a load of useless meta-data and it is expected to be extracted by the
      * caller.
-     * <p/>
+     * <p>
      * As recommended by the 'Terms Of Service', all requests are cached for a period of 24 hours
      * assuming that {@link java.net.ResponseCache} has been set correctly.
      *
@@ -142,7 +148,9 @@ public class RxNav {
      */
     @Deprecated
     protected JSONObject get(String path, NameValuePair... query) throws IOException, JSONException {
-        URL url = new URL(scheme, host, port, basePath + path + suffix + "?" + URLEncodedUtils.format(Arrays.asList(query), "UTF-8"));
+        URL url = query.length > 0 ?
+                new URL(scheme, host, port, basePath + path + suffix + "?" + URLEncodedUtils.format(Arrays.asList(query), HTTP.UTF_8)) :
+                new URL(scheme, host, port, basePath + path + suffix);
 
         // accepting staled response for up to 24 hours
         CacheControl cacheControl = new CacheControl.Builder()

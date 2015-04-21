@@ -30,7 +30,7 @@ public class Interaction extends RxNav {
 
         public class InteractionType {
 
-            public class MinConcept {
+            public class MinConceptItem {
                 public String rxcui;
                 public String name;
                 public String tty;
@@ -39,12 +39,6 @@ public class Interaction extends RxNav {
             public class InteractionPair {
 
                 public class InteractionConcept {
-
-                    public class MinConceptItem {
-                        public String rxcui;
-                        public String name;
-                        public String tty;
-                    }
 
                     public class SourceConceptItem {
                         public String id;
@@ -61,43 +55,24 @@ public class Interaction extends RxNav {
             }
 
             public String comment;
+            public MinConceptItem minConceptItem;
+            public InteractionPair[] interactionPair;
         }
 
         public String sourceDisclaimer;
         public InteractionType[] interactionType;
     }
 
-    public class DrugInteractions implements Parcelable {
+    public class DrugInteractions {
 
-        public class UserInput implements Parcelable {
+        public class UserInput {
             public String[] sources;
             public String rxcui;
-
-            @Override
-            public int describeContents() {
-                return 0;
-            }
-
-            @Override
-            public void writeToParcel(Parcel dest, int flags) {
-                dest.writeStringArray(sources);
-                dest.writeString(rxcui);
-            }
         }
 
         public String nlmDisclaimer;
         public UserInput userInput;
         public InteractionTypeGroup[] interactionTypeGroup;
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-
-        }
     }
 
     /**
