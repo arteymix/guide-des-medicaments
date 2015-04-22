@@ -121,7 +121,7 @@ public class DrugCartActivity extends ActionBarActivity {
      *
      * @author Guillaume Poirier-Morency
      */
-    public static class DrugInteractionFragment extends android.support.v4.app.Fragment {
+    public static class DrugInteractionFragment extends android.support.v4.app.Fragment implements LoaderManager.LoaderCallbacks<Interaction.InteractionsFromList> {
 
         /**
          * Key in the arguments bundle that contains the rxcuis in the {@link Interaction} API
@@ -144,6 +144,8 @@ public class DrugCartActivity extends ActionBarActivity {
             return drugInteractionFragment;
         }
 
+        private OkHttpClient httpClient;
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             return inflater.inflate(R.layout.interaction_fragment, container, false);
@@ -153,59 +155,60 @@ public class DrugCartActivity extends ActionBarActivity {
         public void onActivityCreated(Bundle savedInstance) {
             super.onActivityCreated(savedInstance);
 
-            final OkHttpClient httpClient = new OkHttpClient();
-
+            // initialize the HTTp client and setup the cache
+            httpClient = new OkHttpClient();
             httpClient.setCache(new com.squareup.okhttp.Cache(getActivity().getCacheDir(), 10 * 1024 * 1024));
 
+            getActivity().getSupportLoaderManager()
+                    .initLoader(INTERACTION_LOADER, getArguments(), this)
+                    .forceLoad();
+        }
+
+        @Override
+        public Loader<Interaction.InteractionsFromList> onCreateLoader(int id, Bundle args) {
+            final String[] rxcuis = getArguments().getStringArray(RXCUIS);
+
+            if (rxcuis.length == 0)
+                Toast.makeText(getActivity(), "The cart is empty, add some drugs in it first.",
+                        Toast.LENGTH_SHORT).show();
+
+            return new IOAsyncTaskLoader<Interaction.InteractionsFromList>(getActivity()) {
+
+                @Override
+                public Interaction.InteractionsFromList loadInBackgroundSafely() throws IOException {
+                    // todo: utiliser un code de couleur (gradation) pour la sévérité
+                    return Interaction.newInstance(httpClient).findInteractionsFromList(rxcuis);
+                }
+            };
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Interaction.InteractionsFromList> loader, Interaction.InteractionsFromList interactions) {
             final TextView nlmDisclaimer = (TextView) getView().findViewById(R.id.nlm_disclaimer);
             final ListFragment interactionsList = (ListFragment) getChildFragmentManager().findFragmentById(R.id.interactions);
 
-            getLoaderManager().initLoader(INTERACTION_LOADER, getArguments(), new LoaderManager.LoaderCallbacks<Interaction.InteractionsFromList>() {
+            nlmDisclaimer.setText(interactions.nlmDisclaimer);
 
-                @Override
-                public Loader<Interaction.InteractionsFromList> onCreateLoader(int id, Bundle args) {
-                    final String[] rxcuis = getArguments().getStringArray(RXCUIS);
+            if (interactions.fullInteractionTypeGroup == null) {
+                // todo: avertir  l'usager qu'aucune interactions a été trouvée
+                Toast.makeText(getActivity(), "No drug interactions found.",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-                    if (rxcuis.length == 0)
-                        Toast.makeText(getActivity(), "The cart is empty, add some drugs in it first.",
-                                Toast.LENGTH_SHORT).show();
+            // todo: populate the MatrixCursor
+            MatrixCursor matrixCursor = new MatrixCursor(new String[]{BaseColumns._ID});
 
-                    return new IOAsyncTaskLoader<Interaction.InteractionsFromList>(getActivity()) {
+            // TODO: assembler toutes les interactions
+            interactionsList.setListAdapter(new ArrayAdapter<>(
+                    getActivity(),
+                    R.layout.interaction_item,
+                    interactions.fullInteractionTypeGroup.interactionType));
+        }
 
-                        @Override
-                        public Interaction.InteractionsFromList loadInBackgroundSafely() throws IOException {
-                            // todo: utiliser un code de couleur (gradation) pour la sévérité
-                            return Interaction.newInstance(httpClient).findInteractionsFromList(rxcuis);
-                        }
-                    };
-                }
+        @Override
+        public void onLoaderReset(Loader<Interaction.InteractionsFromList> loader) {
 
-                @Override
-                public void onLoadFinished(Loader<Interaction.InteractionsFromList> loader, Interaction.InteractionsFromList interactions) {
-                    nlmDisclaimer.setText(interactions.nlmDisclaimer);
-
-                    if (interactions.fullInteractionTypeGroup == null) {
-                        // todo: avertir  l'usager qu'aucune interactions a été trouvée
-                        Toast.makeText(getActivity(), "No drug interactions found.",
-                                Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    // todo: populate the MatrixCursor
-                    MatrixCursor matrixCursor = new MatrixCursor(new String[]{BaseColumns._ID});
-
-                    // TODO: assembler toutes les interactions
-                    interactionsList.setListAdapter(new ArrayAdapter<>(
-                            getActivity(),
-                            R.layout.interaction_item,
-                            interactions.fullInteractionTypeGroup.interactionType));
-                }
-
-                @Override
-                public void onLoaderReset(Loader<Interaction.InteractionsFromList> loader) {
-
-                }
-            }).forceLoad();
         }
     }
 }

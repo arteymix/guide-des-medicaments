@@ -105,11 +105,12 @@
             android:text="@string/counter_indication"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <ListView
+        <com.linearlistview.LinearListView
             android:id="@+id/counter_indications"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/label_counter_indicator" />
+            android:layout_below="@id/label_counter_indicator"
+            android:orientation="vertical" />
 
         <TextView
             android:id="@+id/label_similar_drugs"
@@ -119,11 +120,12 @@
             android:text="@string/similar_drugs"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <ListView
+        <com.linearlistview.LinearListView
             android:id="@+id/similar_drugs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/label_similar_drugs" />
+            android:layout_below="@id/label_similar_drugs"
+            android:orientation="vertical" />
 
     </RelativeLayout>
 </ScrollView>

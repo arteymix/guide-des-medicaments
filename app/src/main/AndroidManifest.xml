@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ca.umontreal.iro.guidedesmedicaments">
+    package="ca.umontreal.iro.guidedesmedicaments" >
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -8,26 +8,25 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
-        android:supportsRtl="true">
-
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AppCompat.Light.DarkActionBar" >
         <activity
             android:name=".MainActivity"
-            android:label="@string/title_activity_main">
+            android:label="@string/title_activity_main" >
             <meta-data
                 android:name="android.app.default_searchable"
                 android:value=".DrugsActivity" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".DrugsActivity"
             android:label="@string/title_activity_drugs"
-            android:launchMode="singleTop">
-
+            android:launchMode="singleTop" >
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
@@ -36,18 +35,16 @@
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
         </activity>
-
         <activity
             android:name=".DrugCartActivity"
-            android:label="@string/title_activity_panier">
+            android:label="@string/title_activity_panier" >
             <meta-data
                 android:name="android.app.default_searchable"
                 android:value=".DrugsActivity" />
         </activity>
-
         <activity
             android:name=".DrugActivity"
-            android:label="@string/title_activity_drug">
+            android:label="@string/title_activity_drug" >
             <meta-data
                 android:name="android.app.default_searchable"
                 android:value=".DrugsActivity" />
@@ -63,7 +60,6 @@
                     android:pathPrefix="/REST/rxcui/"
                     android:scheme="http" />
             </intent-filter>
-
         </activity>
 
         <provider

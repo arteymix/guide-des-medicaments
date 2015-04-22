@@ -28,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.linearlistview.LinearListView;
 import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.squareup.okhttp.OkHttpClient;
 
@@ -53,13 +54,13 @@ import ca.umontreal.iro.rxnav.RxNorm;
 
 /**
  * Fragment presenting a drug concept.
- * <p/>
+ * <p>
  * If this is not embedded in the the {@link ca.umontreal.iro.guidedesmedicaments.DrugActivity}, the
  * "rxcui" key has to be set in the fragment arguments.
- * <p/>
+ * <p>
  * The layout is embedded in a {@link android.widget.ScrollView} and will expand after the screen
  * height.
- * <p/>
+ * <p>
  * TODO: be more uniform and require the rxcui provided by arguments
  *
  * @author Guillaume Poirier-Morency
@@ -113,8 +114,8 @@ public class DrugFragment extends Fragment {
         final TextView categories = (TextView) getView().findViewById(R.id.categories);
         final TextView administrationMethod = (TextView) getView().findViewById(R.id.administration_method);
 
-        final ListView counterIndications = (ListView) getView().findViewById(R.id.counter_indications);
-        final ListView similarDrugs = (ListView) getView().findViewById(R.id.similar_drugs);
+        final LinearListView counterIndications = (LinearListView) getView().findViewById(R.id.counter_indications);
+        final LinearListView similarDrugs = (LinearListView) getView().findViewById(R.id.similar_drugs);
 
         CheckBox bookmark = (CheckBox) getView().findViewById(R.id.bookmark);
 
@@ -140,9 +141,9 @@ public class DrugFragment extends Fragment {
             }
         });
 
-        similarDrugs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        similarDrugs.setOnItemClickListener(new LinearListView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(LinearListView linearListView, View view, int i, long id) {
                 // show the magnificent drug!
                 startActivity(new Intent(
                         Intent.ACTION_VIEW,
