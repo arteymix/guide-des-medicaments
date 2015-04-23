@@ -161,12 +161,13 @@ public class DrugFragment extends Fragment {
 
             @Override
             public void onLoadFinished(Loader<RxNorm.RxConceptProperties> loader, RxNorm.RxConceptProperties data) {
-                if (loader.isAbandoned()) {
+                if (data == null) {
                     // les données ne peuvent pas être récupérées
-                    Toast.makeText(getActivity(), "Could not fetch drug details.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), "Error fetching drug details.", Toast.LENGTH_LONG).show();
                     getActivity().finish();
                     return;
                 }
+
                 getActivity().setTitle(data.properties.name);
                 drugName.setText(data.properties.name);
 
@@ -329,7 +330,7 @@ public class DrugFragment extends Fragment {
                 for (Interaction.InteractionTypeGroup interactionTypeGroup : drugInteractions.interactionTypeGroup)
                     for (Interaction.InteractionTypeGroup.InteractionType interactionType : interactionTypeGroup.interactionType)
                         for (Interaction.InteractionTypeGroup.InteractionType.InteractionPair interactionPair : interactionType.interactionPair) {
-                            descriptions.addRow(new Object[] {
+                            descriptions.addRow(new Object[]{
                                     Long.parseLong(interactionPair.interactionConcept[1].minConceptItem.rxcui),
                                     interactionPair.interactionConcept[1].minConceptItem.name, // related concept in interaction
                                     interactionPair.description}); // description of the interaction

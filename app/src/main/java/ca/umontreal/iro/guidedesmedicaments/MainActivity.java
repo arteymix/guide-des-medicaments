@@ -76,6 +76,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_delete_all:
+                // todo: delete all for bookmarks and cart separately
                 return getSharedPreferences("cart", Context.MODE_PRIVATE)
                         .edit()
                         .remove("rxcuis")
