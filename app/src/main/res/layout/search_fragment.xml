@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:layout_gravity="center_vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin">
 
     <SearchView
         android:id="@+id/search_drug"
@@ -13,30 +16,34 @@
         android:queryHint="@string/search_a_drug"
         android:orientation="vertical">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Search by" />
+
         <RadioGroup
             android:id="@+id/search_type"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <RadioButton
+                android:id="@+id/search_type_in"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Drug" />
+                android:text="Drug (ingredient)"
+                android:checked="true"/>
 
             <RadioButton
+                android:id="@+id/search_type_pin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Ingredient" />
+                android:text="Precise ingredient" />
 
             <RadioButton
+                android:id="@+id/search_type_bn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Brand" />
-
-            <RadioButton
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Category" />
+                android:text="Brand name" />
         </RadioGroup>
     </SearchView>
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ca.umontreal.iro.guidedesmedicaments" >
+    package="ca.umontreal.iro.guidedesmedicaments">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -9,10 +9,10 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.DarkActionBar" >
+        android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
         <activity
             android:name=".MainActivity"
-            android:label="@string/title_activity_main" >
+            android:label="@string/title_activity_main">
             <meta-data
                 android:name="android.app.default_searchable"
                 android:value=".DrugsActivity" />
@@ -26,10 +26,15 @@
         <activity
             android:name=".DrugsActivity"
             android:label="@string/title_activity_drugs"
-            android:launchMode="singleTop" >
+            android:launchMode="singleTop"
+            android:parentActivityName=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
 
             <meta-data
                 android:name="android.app.searchable"
@@ -37,10 +42,15 @@
         </activity>
         <activity
             android:name=".DrugActivity"
-            android:label="@string/title_activity_drug" >
+            android:label="@string/title_activity_drug"
+            android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.app.default_searchable"
                 android:value=".DrugsActivity" />
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

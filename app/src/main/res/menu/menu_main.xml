@@ -9,6 +9,11 @@
         android:visible="false"
         yourapp:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_delete_all"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="Delete all drugs"
+        yourapp:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_search"
         android:icon="@android:drawable/ic_menu_search"
         android:title="@android:string/search_go"

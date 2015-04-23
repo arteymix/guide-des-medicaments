@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RadioGroup;
 import android.widget.SearchView;
 
 /**
@@ -32,5 +33,14 @@ public class SearchFragment extends Fragment {
 
         SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
         sv.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
+
+        RadioGroup searchType = (RadioGroup) getView().findViewById(R.id.search_type);
+
+        searchType.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                // todo: do something with the search type
+            }
+        });
     }
 }

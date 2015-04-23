@@ -57,33 +57,29 @@ public class CartFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        final Set<String> rxcuis = getActivity().getSharedPreferences("cart", Context.MODE_PRIVATE)
-                .getStringSet("rxcuis", new HashSet<String>());
-
-        Log.i("", "rxcuis dans le panier " + rxcuis);
+        final ArrayList<String> rxcuis = new ArrayList<>(getActivity()
+                .getSharedPreferences("cart", Context.MODE_PRIVATE)
+                .getStringSet("rxcuis", new HashSet<String>()));
 
         // Set up the ViewPager with the sections adapter.
-        ViewPager pager = (ViewPager) getView().findViewById(R.id.pager);
-
-        final List<String> cart = new ArrayList<String>();
-
-        // first page contains the interactions
-        cart.add(null);
-
-        cart.addAll(rxcuis);
+        final ViewPager pager = (ViewPager) getView().findViewById(R.id.pager);
 
         pager.setAdapter(new FragmentStatePagerAdapter(getActivity().getSupportFragmentManager()) {
 
             @Override
             public Fragment getItem(int position) {
-                return (position == 0) ?
-                        DrugInteractionFragment.newInstance(rxcuis) :
-                        DrugFragment.newInstance(cart.get(position % cart.size()));
+                if (position == 0)
+                    return DrugsFragment.newInstance(new ArrayList<String>(rxcuis));
+
+                if (position == 1)
+                    return DrugInteractionFragment.newInstance(rxcuis);
+
+                return DrugFragment.newInstance(rxcuis.get((position - 2)));
             }
 
             @Override
             public int getCount() {
-                return cart.size();
+                return rxcuis.size() + 2;
             }
         });
     }
@@ -105,11 +101,11 @@ public class CartFragment extends Fragment {
 
         public static final int INTERACTION_LOADER = 7;
 
-        public static DrugInteractionFragment newInstance(Set<String> rxcuis) {
+        public static DrugInteractionFragment newInstance(ArrayList<String> rxcuis) {
             DrugInteractionFragment drugInteractionFragment = new DrugInteractionFragment();
 
             Bundle bundle = new Bundle();
-            bundle.putStringArray(RXCUIS, rxcuis.toArray(new String[rxcuis.size()]));
+            bundle.putStringArrayList(RXCUIS, rxcuis);
 
             drugInteractionFragment.setArguments(bundle);
 
@@ -138,18 +134,21 @@ public class CartFragment extends Fragment {
 
         @Override
         public Loader<Interaction.InteractionsFromList> onCreateLoader(int id, Bundle args) {
-            final String[] rxcuis = getArguments().getStringArray(RXCUIS);
+            final ArrayList<String> rxcuis = getArguments().getStringArrayList(RXCUIS);
 
-            if (rxcuis.length == 0)
-                Toast.makeText(getActivity(), "The cart is empty, add some drugs in it first.",
-                        Toast.LENGTH_SHORT).show();
+            if (rxcuis.isEmpty())
+                Toast.makeText(getActivity(),
+                        "The cart is empty, add some drugs in it first.",
+                        Toast.LENGTH_SHORT)
+                        .show();
 
             return new IOAsyncTaskLoader<Interaction.InteractionsFromList>(getActivity()) {
 
                 @Override
                 public Interaction.InteractionsFromList loadInBackgroundSafely() throws IOException {
                     // todo: utiliser un code de couleur (gradation) pour la sévérité
-                    return Interaction.newInstance(httpClient).findInteractionsFromList(rxcuis);
+                    return Interaction.newInstance(httpClient)
+                            .findInteractionsFromList(rxcuis.toArray(new String[rxcuis.size()]));
                 }
             };
         }

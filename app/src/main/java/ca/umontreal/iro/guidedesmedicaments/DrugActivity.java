@@ -28,6 +28,9 @@ public class DrugActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drug);
 
+        // show up navigation
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         // /REST/rxuid/{rxuid}/...
         Log.i("", "loading drug with rxuid " + getIntent().getData().getPathSegments().get(2));
     }

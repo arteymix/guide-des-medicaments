@@ -57,6 +57,39 @@ public class RxNorm extends RxNav {
                 .getJSONArray("propConcept");
     }
 
+    public class RxcuiById {
+
+        public class IdGroup {
+
+            public String idType;
+            public String id;
+            public String[] rxnormId;
+        }
+
+        public IdGroup idGroup;
+    }
+
+    /**
+     * Search for an identifier from another vocabulary and return the RxCUIs of any concepts which
+     * have an RxNorm term as a synonym or have that identifier as an attribute. See the /idtypes
+     * example for the valid types.
+     *
+     * @param idtype the identifier type. Valid types are listed in the table below:
+     * @param id     the identifier
+     * @param allsrc an optional field indicating whether all RxCUIs are to be returned. If set to
+     *               1, all non-suppressed RxCUIs will be returned, including those which contain no
+     *               terms from the RxNorm vocabulary. If set to 0 (the default), only RxCUIs which
+     *               contain a non-suppressed RxNorm vocabulary term will be returned.
+     * @return
+     * @throws IOException
+     */
+    public RxcuiById findRxcuiById(String idtype, String id, boolean allsrc) throws IOException {
+        return request(RxcuiById.class, "rxcui",
+                new BasicNameValuePair("idtype", idtype),
+                new BasicNameValuePair("id", id),
+                new BasicNameValuePair("allsrc", allsrc ? "1" : "0"));
+    }
+
     public class Rxcui {
 
         public class IdGroup {

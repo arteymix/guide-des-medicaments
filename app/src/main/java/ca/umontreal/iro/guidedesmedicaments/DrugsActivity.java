@@ -21,6 +21,9 @@ public class DrugsActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drugs);
+
+        // show up navigation
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     @Override

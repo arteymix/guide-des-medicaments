@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.MatrixCursor;
 import android.os.Bundle;
 import android.provider.BaseColumns;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
@@ -73,6 +74,12 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_delete_all:
+                return getSharedPreferences("cart", Context.MODE_PRIVATE)
+                        .edit()
+                        .remove("rxcuis")
+                        .commit();
+
             case R.id.action_search:
                 return onSearchRequested();
         }
@@ -108,6 +115,14 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                 return true;
 
             case R.id.action_cart:
+                Set<String> cart = getSharedPreferences("cart", Context.MODE_PRIVATE)
+                        .getStringSet("rxcuis", new HashSet());
+
+                if (cart.isEmpty()) {
+                    Toast.makeText(this, "You do not have any item in the cart.", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+
                 getSupportFragmentManager()
                         .beginTransaction()
                         .replace(R.id.main_content, CartFragment.newInstance())

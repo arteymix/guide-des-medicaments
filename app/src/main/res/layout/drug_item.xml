@@ -10,9 +10,7 @@
         android:id="@+id/drug_icon"
         android:layout_width="92dp"
         android:layout_height="92dp"
-        android:contentDescription="@string/drug_icon_description"
-        android:paddingEnd="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin" />
+        android:contentDescription="@string/drug_icon_description" />
 
     <TextView
         android:id="@+id/drug_name"
@@ -41,24 +39,13 @@
         android:layout_toStartOf="@id/cart" />
 
     <TextView
-        android:id="@+id/categories"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/drug_name"
-        android:layout_toEndOf="@id/drug_icon"
-        android:layout_toRightOf="@id/drug_icon"
-        android:maxLines="1"
-        android:text="@string/aspirin_categories"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <TextView
         android:id="@+id/drug_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/categories"
+        android:layout_below="@id/bookmark"
         android:layout_toEndOf="@id/drug_icon"
         android:layout_toRightOf="@id/drug_icon"
-        android:maxLines="2"
+        android:maxLines="3"
         android:text="@string/aspirin_description"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 

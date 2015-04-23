@@ -1,6 +1,7 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
 import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -8,10 +9,13 @@ import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,12 +23,19 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.squareup.okhttp.OkHttpClient;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.mediawiki.api.json.Api;
+import org.mediawiki.api.json.ApiException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import ca.umontreal.iro.guidedesmedicaments.loader.IOAsyncTaskLoader;
 import ca.umontreal.iro.rxnav.RxImageAccess;
@@ -33,6 +44,8 @@ import ca.umontreal.iro.rxnav.RxNorm;
 
 /**
  * Fragment presenting a list of drugs.
+ *
+ * @author Guillaume Poirier-Morency
  */
 public class DrugsFragment extends ListFragment implements LoaderManager.LoaderCallbacks<List<RxNorm.Rxcui>> {
 
@@ -46,6 +59,11 @@ public class DrugsFragment extends ListFragment implements LoaderManager.LoaderC
      * Intent key to present a list of concepts from their rxcui identifier.
      */
     public static final String RXCUIS = "rxcuis";
+
+    /**
+     * Intent key to filter results by a tty.
+     */
+    public static final String TTY = "tty";
 
     /**
      * Factory for the DrugsFragment created out of a list of rxcuis identifiers.
@@ -65,7 +83,6 @@ public class DrugsFragment extends ListFragment implements LoaderManager.LoaderC
 
         return drugsFragment;
     }
-
 
     /**
      * HTTP client reused over requests.
@@ -110,8 +127,10 @@ public class DrugsFragment extends ListFragment implements LoaderManager.LoaderC
 
                 // fetch extra rxcuis as well
                 if (args.containsKey(RXCUIS)) {
-                    for (String rxcui : args.getStringArrayList(RXCUIS))
-                        rxcuis.add(RxNorm.newInstance(httpClient).findRxcuiByString(rxcui, null, true, RxNorm.EXACT_MATCH));
+                    for (String rxcui : args.getStringArrayList(RXCUIS)) {
+                        String name = RxNorm.newInstance(httpClient).getRxConceptProperties(rxcui).properties.name;
+                        rxcuis.add(RxNorm.newInstance(httpClient).findRxcuiByString(name, null, true, RxNorm.EXACT_MATCH));
+                    }
                 }
 
                 return rxcuis;
@@ -146,9 +165,95 @@ public class DrugsFragment extends ListFragment implements LoaderManager.LoaderC
             public View getView(final int position, View convertView, ViewGroup parent) {
                 final View c = super.getView(position, convertView, parent);
 
-                TextView drugName = (TextView) c.findViewById(R.id.drug_name);
+                final RxNorm.Rxcui rxcui = rxcuis.get(position);
 
-                drugName.setText(rxcuis.get(position).idGroup.name);
+                TextView drugName = (TextView) c.findViewById(R.id.drug_name);
+                final TextView drugDescription = (TextView) c.findViewById(R.id.drug_description);
+                CheckBox bookmark = (CheckBox) c.findViewById(R.id.bookmark);
+                CheckBox cart = (CheckBox) c.findViewById(R.id.cart);
+
+                drugName.setText(rxcui.idGroup.name);
+
+                if (rxcui.idGroup.rxnormId == null)
+                    return c; // .. sadly ;(
+
+                bookmark.setChecked(getActivity().getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
+                        .getStringSet("rxcuis", new HashSet<String>())
+                        .contains(rxcui.idGroup.rxnormId));
+
+                bookmark.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        Set<String> bookmarks = getActivity().getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
+                                .getStringSet("rxcuis", new HashSet<String>());
+
+                        if (isChecked)
+                            bookmarks.add(rxcui.idGroup.rxnormId[0]);
+                        else
+                            bookmarks.remove(rxcui.idGroup.rxnormId[0]);
+
+                        getActivity().getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
+                                .edit()
+                                .putStringSet("rxcuis", bookmarks)
+                                .apply();
+                    }
+                });
+
+                cart.setChecked(getActivity().getSharedPreferences("cart", Context.MODE_PRIVATE)
+                        .getStringSet("rxcuis", new HashSet<String>())
+                        .contains(rxcui.idGroup.rxnormId[0]));
+
+                cart.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        Set<String> cart = getActivity().getSharedPreferences("cart", Context.MODE_PRIVATE)
+                                .getStringSet("rxcuis", new HashSet<String>());
+
+                        if (isChecked)
+                            cart.add(rxcui.idGroup.rxnormId[0]);
+                        else
+                            cart.remove(rxcui.idGroup.rxnormId[0]);
+
+                        getActivity().getSharedPreferences("cart", Context.MODE_PRIVATE)
+                                .edit()
+                                .putStringSet("rxcuis", cart)
+                                .apply();
+                    }
+                });
+
+                // fetch description & additionnal information from Wikipedia
+                new AsyncTask<String, Void, JSONObject>() {
+
+                    @Override
+                    protected JSONObject doInBackground(String... drugNames) {
+                        try {
+                            JSONObject pages = new Api("en.wikipedia.org")
+                                    .action("query")
+                                    .param("prop", "extracts")
+                                    .param("titles", StringUtils.join(drugNames, "|"))
+                                    .param("redirects", "")
+                                    .get()
+                                    .asObject()
+                                    .getJSONObject("query")
+                                    .getJSONObject("pages");
+
+                            return pages.getJSONObject(pages.keys().next());
+                        } catch (ApiException | JSONException e) {
+                            Log.e("", e.getLocalizedMessage(), e);
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    protected void onPostExecute(final JSONObject page) {
+                        if (page == null) {
+                            drugDescription.setText("No description were found.");
+                            return;
+                        }
+
+                        drugDescription.setText(Html.fromHtml(page.optString("extract")));
+                    }
+                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, rxcui.idGroup.name);
 
                 // fetch the image
                 new AsyncTask<String, Void, RxImageAccess.ImageAccess>() {
