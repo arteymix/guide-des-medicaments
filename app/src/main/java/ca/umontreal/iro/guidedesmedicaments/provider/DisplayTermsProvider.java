@@ -25,6 +25,8 @@ import ca.umontreal.iro.rxnav.RxNorm;
  * <p/>
  * This provider does a single API request and store all results in a {@link Trie} for fast prefix
  * search. All subsequent queries will not perform I/O operations.
+ * <p/>
+ * TODO: provide icons for suggestions using http://developer.android.com/reference/android/app/SearchManager.html#SUGGEST_COLUMN_ICON_1
  */
 public class DisplayTermsProvider extends ContentProvider {
 
@@ -70,11 +72,11 @@ public class DisplayTermsProvider extends ContentProvider {
         SortedMap<String, String> matchingTerms = termsTrie.prefixMap(uri.getLastPathSegment().toLowerCase());
 
         MatrixCursor matrixCursor = new MatrixCursor(
-                new String[]{BaseColumns._ID, SearchManager.SUGGEST_COLUMN_TEXT_1, SearchManager.SUGGEST_COLUMN_TEXT_2},
+                new String[]{BaseColumns._ID, SearchManager.SUGGEST_COLUMN_TEXT_1, SearchManager.SUGGEST_COLUMN_TEXT_2, SearchManager.SUGGEST_COLUMN_QUERY},
                 matchingTerms.size()); // avoid resize :P
 
         for (Map.Entry<String, String> e : matchingTerms.entrySet()) {
-            matrixCursor.addRow(new Object[]{e.hashCode(), e.getKey(), e.getValue()});
+            matrixCursor.addRow(new Object[]{e.hashCode(), e.getKey(), e.getValue(), e.getKey()});
         }
 
         return matrixCursor;

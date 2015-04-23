@@ -3,7 +3,7 @@
     android:orientation="vertical"
     android:layout_gravity="center_vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <SearchView
         android:id="@+id/search_drug"
@@ -16,14 +16,12 @@
         <RadioGroup
             android:id="@+id/search_type"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:entries="@array/types">
+            android:layout_height="wrap_content">
 
             <RadioButton
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Drug"
-                android:checked="true" />
+                android:text="Drug" />
 
             <RadioButton
                 android:layout_width="match_parent"

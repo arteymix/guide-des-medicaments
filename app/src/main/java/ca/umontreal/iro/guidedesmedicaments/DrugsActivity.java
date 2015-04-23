@@ -1,5 +1,6 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
+import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -25,6 +26,9 @@ public class DrugsActivity extends ActionBarActivity {
     @Override
     public void onNewIntent(final Intent intent) {
         DrugsFragment drugsFragment = (DrugsFragment) getSupportFragmentManager().findFragmentById(R.id.drugs);
+
+        if (getIntent().hasExtra(SearchManager.QUERY))
+            setTitle("Results for " + getIntent().getStringExtra(SearchManager.QUERY));
 
         // reload the presented drugs in the fragment
         getSupportLoaderManager()

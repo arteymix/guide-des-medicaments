@@ -98,6 +98,7 @@ public class DrugsFragment extends ListFragment implements LoaderManager.LoaderC
 
                 // search from the query
                 if (args.containsKey(SearchManager.QUERY)) {
+                    Log.i("", "Searching for " + args.getString(SearchManager.QUERY));
                     for (String term : args.getString(SearchManager.QUERY).split("[\\s]")) {
                         RxNorm.SpellingSuggestions spellingSuggestions = RxNorm.newInstance(httpClient).getSpellingSuggestions(term);
                         if (spellingSuggestions.suggestionGroup.suggestionList == null)
