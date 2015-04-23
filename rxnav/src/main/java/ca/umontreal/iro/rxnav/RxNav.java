@@ -3,13 +3,13 @@ package ca.umontreal.iro.rxnav;
 import android.util.Log;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.squareup.okhttp.CacheControl;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
-import org.apache.http.HttpMessage;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.collections4.Predicate;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.protocol.HTTP;
@@ -19,8 +19,8 @@ import org.json.JSONTokener;
 
 import java.io.IOException;
 import java.net.URL;
-import java.text.DateFormat;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -92,21 +92,30 @@ public class RxNav {
     }
 
     /**
-     * Request RxNav API and extract the JSON in the providen class using {@link Gson}.
+     * Request RxNav API and extract the JSON in the provided class using {@link Gson}.
      * <p>
      * As recommended by the 'Terms Of Service', all requests are cached for a period of 24 hours
      * assuming that {@link java.net.ResponseCache} has been set correctly.
      *
      * @param classOfT class populated by {@link Gson}
      * @param path     requested path automatically prefixed by "/REST/" and suffixed by ".json"
-     * @param query    HTTP query used to parametrize the request
+     * @param query    HTTP query used to parametrize the request, any null-valued
+     *                 {@link NameValuePair} will be omitted for the sake of implementation
      * @return an opened connection to the API that should be closed by the caller
      * @throws IOException always expect some I/O failure
      */
     protected <T> T request(Class<T> classOfT, String path, NameValuePair... query) throws IOException {
-        URL url = query.length > 0 ?
-                new URL(scheme, host, port, basePath + path + suffix + "?" + URLEncodedUtils.format(Arrays.asList(query), HTTP.UTF_8)) :
-                new URL(scheme, host, port, basePath + path + suffix);
+        List<NameValuePair> filteredQuery = ListUtils.predicatedList(Arrays.asList(query), new Predicate<NameValuePair>() {
+
+            @Override
+            public boolean evaluate(NameValuePair object) {
+                return object.getValue() != null;
+            }
+        });
+
+        URL url = filteredQuery.isEmpty() ?
+                new URL(scheme, host, port, basePath + path + suffix) :
+                new URL(scheme, host, port, basePath + path + suffix + "?" + URLEncodedUtils.format(filteredQuery, HTTP.UTF_8));
 
         // accepting staled response for up to 24 hours
         CacheControl cacheControl = new CacheControl.Builder()

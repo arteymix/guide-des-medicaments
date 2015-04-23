@@ -105,8 +105,17 @@ public class DrugsFragment extends ListFragment implements LoaderManager.LoaderC
                 .forceLoad();
     }
 
+    public void onActivityCreated(Bundle savedInstance) {
+        super.onActivityCreated(savedInstance);
+
+        setEmptyText("No matches for the provided query.");
+    }
+
     @Override
     public Loader<List<RxNorm.Rxcui>> onCreateLoader(int id, final Bundle args) {
+        if (args.containsKey(SearchManager.QUERY))
+            getActivity().setTitle("Results for " + args.getString(SearchManager.QUERY));
+
         return new IOAsyncTaskLoader<List<RxNorm.Rxcui>>(getActivity()) {
 
             @Override
@@ -144,16 +153,8 @@ public class DrugsFragment extends ListFragment implements LoaderManager.LoaderC
         if (rxcuis == null) {
             Toast.makeText(getActivity(), "Error while accessing the RxNav API.",
                     Toast.LENGTH_LONG).show();
-            getActivity().finish();
+            return;
         }
-
-        if (rxcuis.isEmpty()) {
-            Toast.makeText(getActivity(), "No matches for the provided query.",
-                    Toast.LENGTH_LONG).show();
-            getActivity().finish();
-        }
-
-        // setTitle("Results for " + rxcuis);
 
         // define a custom adapter
         setListAdapter(new ArrayAdapter<RxNorm.Rxcui>(getActivity(),

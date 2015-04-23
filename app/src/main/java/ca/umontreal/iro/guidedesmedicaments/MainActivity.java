@@ -10,6 +10,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.RadioGroup;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
@@ -18,8 +19,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Navigate through the {@link SearchFragment}, {@link DrugsFragment} and {@link DrugCartActivity}
- * on the tip of the finger!
+ * Navigate through the {@link SearchFragment}, {@link DrugsFragment} and {@link CartFragment} on
+ * the tip of the finger!
  * <p/>
  * The layout contains a {@link android.support.v4.app.Fragment} that is swapped on purpose for the
  * view we are interested in.
@@ -102,11 +103,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                 Set<String> bookmarks = getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
                         .getStringSet("rxcuis", new HashSet());
 
-                if (bookmarks.isEmpty()) {
-                    Toast.makeText(this, "You do not have any bookmarks.", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
-
                 getSupportFragmentManager()
                         .beginTransaction()
                         .replace(R.id.main_content, DrugsFragment.newInstance(new ArrayList<>(bookmarks)))
@@ -115,14 +111,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                 return true;
 
             case R.id.action_cart:
-                Set<String> cart = getSharedPreferences("cart", Context.MODE_PRIVATE)
-                        .getStringSet("rxcuis", new HashSet());
-
-                if (cart.isEmpty()) {
-                    Toast.makeText(this, "You do not have any item in the cart.", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
-
                 getSupportFragmentManager()
                         .beginTransaction()
                         .replace(R.id.main_content, CartFragment.newInstance())

@@ -11,26 +11,17 @@
     tools:context="ca.umontreal.iro.guidedesmedicaments.DrugCartActivity$DrugInteractionFragment">
 
     <TextView
-        android:id="@+id/interactions_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/interactions"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <TextView
         android:id="@+id/nlm_disclaimer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="test" />
+        android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <fragment
         android:id="@+id/interactions"
         android:name="android.support.v4.app.ListFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/interactions_title"
         android:layout_above="@id/nlm_disclaimer"
         tools:layout="@layout/interaction_item" />
 

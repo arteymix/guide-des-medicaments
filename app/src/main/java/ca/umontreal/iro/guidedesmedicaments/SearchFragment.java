@@ -4,18 +4,39 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SearchView;
+import android.widget.TextView;
+
+import com.squareup.okhttp.OkHttpClient;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.IOException;
+import java.util.UUID;
+
+import ca.umontreal.iro.guidedesmedicaments.loader.IOAsyncTaskLoader;
+import ca.umontreal.iro.rxnav.RxNorm;
 
 /**
  * Fragment providing a simple search interface.
+ * <p/>
+ * TODO: fetch the termtypes to fill the {@link RadioGroup}
  *
  * @author Guillaume Poirier-Morency
  */
-public class SearchFragment extends Fragment {
+public class SearchFragment extends Fragment implements LoaderManager.LoaderCallbacks<RxNorm.RxNormVersion> {
+
+    /**
+     * Loader for the RxNorm version.
+     */
+    public static final int RXNORM_VERSION_LOADER = UUID.randomUUID().hashCode();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -39,8 +60,35 @@ public class SearchFragment extends Fragment {
         searchType.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                // todo: do something with the search type
+                // updates the search hint so that we do not need a label for the radio group
+                RadioButton checkedButton = (RadioButton) getView().findViewById(checkedId);
+                sv.setQueryHint("Search a " + StringUtils.lowerCase(checkedButton.getText().toString()) + "…");
             }
         });
+
+        getActivity().getSupportLoaderManager()
+                .initLoader(RXNORM_VERSION_LOADER, null, this)
+                .forceLoad();
+    }
+
+    @Override
+    public Loader<RxNorm.RxNormVersion> onCreateLoader(int id, Bundle args) {
+        return new IOAsyncTaskLoader<RxNorm.RxNormVersion>(getActivity()) {
+            @Override
+            public RxNorm.RxNormVersion loadInBackgroundSafely() throws IOException {
+                return RxNorm.newInstance(new OkHttpClient()).getRxNormVersion();
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader<RxNorm.RxNormVersion> loader, RxNorm.RxNormVersion data) {
+        TextView rxNormVersion = (TextView) getView().findViewById(R.id.rxnorm_version);
+        rxNormVersion.setText("Latest data available since " + data.version + ".");
+    }
+
+    @Override
+    public void onLoaderReset(Loader<RxNorm.RxNormVersion> loader) {
+
     }
 }

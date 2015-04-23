@@ -14,34 +14,30 @@
         android:layout_height="wrap_content"
         android:iconifiedByDefault="false"
         android:queryHint="@string/search_a_drug"
-        android:orientation="vertical">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Search by" />
+        android:orientation="vertical">>
 
         <RadioGroup
             android:id="@+id/search_type"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="45dp"> <!-- aligned with search_drug input field -->
 
             <RadioButton
                 android:id="@+id/search_type_in"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Drug (ingredient)"
-                android:checked="true"/>
+                android:text="Drug"
+                android:checked="true" />
 
             <RadioButton
                 android:id="@+id/search_type_pin"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Precise ingredient" />
 
             <RadioButton
                 android:id="@+id/search_type_bn"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Brand name" />
         </RadioGroup>
@@ -52,5 +48,10 @@
         android:layout_height="wrap_content"
         android:text="@string/rxnav_disclaimer"
         android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/rxnorm_version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

@@ -68,8 +68,9 @@ public class CartFragment extends Fragment {
 
             @Override
             public Fragment getItem(int position) {
-                if (position == 0)
-                    return DrugsFragment.newInstance(new ArrayList<String>(rxcuis));
+                if (position == 0) {
+                    return DrugsFragment.newInstance(new ArrayList<>(rxcuis));
+                }
 
                 if (position == 1)
                     return DrugInteractionFragment.newInstance(rxcuis);
@@ -119,13 +120,20 @@ public class CartFragment extends Fragment {
             return inflater.inflate(R.layout.interaction_fragment, container, false);
         }
 
-        @Override
-        public void onActivityCreated(Bundle savedInstance) {
-            super.onActivityCreated(savedInstance);
+        public void onCreate(Bundle savedInstance) {
+            super.onCreate(savedInstance);
 
             // initialize the HTTp client and setup the cache
             httpClient = new OkHttpClient();
             httpClient.setCache(new com.squareup.okhttp.Cache(getActivity().getCacheDir(), 10 * 1024 * 1024));
+        }
+
+        @Override
+        public void onActivityCreated(Bundle savedInstance) {
+            super.onActivityCreated(savedInstance);
+
+            final ListFragment interactionsList = (ListFragment) getChildFragmentManager().findFragmentById(R.id.interactions);
+            interactionsList.setEmptyText("No interaction found.");
 
             getActivity().getSupportLoaderManager()
                     .initLoader(INTERACTION_LOADER, getArguments(), this)
@@ -133,19 +141,13 @@ public class CartFragment extends Fragment {
         }
 
         @Override
-        public Loader<Interaction.InteractionsFromList> onCreateLoader(int id, Bundle args) {
-            final ArrayList<String> rxcuis = getArguments().getStringArrayList(RXCUIS);
-
-            if (rxcuis.isEmpty())
-                Toast.makeText(getActivity(),
-                        "The cart is empty, add some drugs in it first.",
-                        Toast.LENGTH_SHORT)
-                        .show();
-
+        public Loader<Interaction.InteractionsFromList> onCreateLoader(int id, final Bundle args) {
             return new IOAsyncTaskLoader<Interaction.InteractionsFromList>(getActivity()) {
 
                 @Override
                 public Interaction.InteractionsFromList loadInBackgroundSafely() throws IOException {
+                    final ArrayList<String> rxcuis = args.getStringArrayList(RXCUIS);
+
                     // todo: utiliser un code de couleur (gradation) pour la sévérité
                     return Interaction.newInstance(httpClient)
                             .findInteractionsFromList(rxcuis.toArray(new String[rxcuis.size()]));
@@ -161,9 +163,12 @@ public class CartFragment extends Fragment {
             nlmDisclaimer.setText(interactions.nlmDisclaimer);
 
             if (interactions.fullInteractionTypeGroup == null) {
-                // todo: avertir  l'usager qu'aucune interactions a été trouvée
-                Toast.makeText(getActivity(), "No drug interactions found.",
-                        Toast.LENGTH_SHORT).show();
+                // put an empty adapter
+                interactionsList.setListAdapter(new ArrayAdapter<>(
+                        getActivity(),
+                        R.layout.interaction_item,
+                        new Object[0]));
+
                 return;
             }
 

@@ -1,8 +1,5 @@
 package ca.umontreal.iro.rxnav;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import com.squareup.okhttp.OkHttpClient;
 
 import org.apache.commons.lang3.StringUtils;

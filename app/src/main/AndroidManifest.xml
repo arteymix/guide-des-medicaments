@@ -10,6 +10,8 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
+
+        <!-- propose search, bookmarks and cart fragments -->
         <activity
             android:name=".MainActivity"
             android:label="@string/title_activity_main">
@@ -23,6 +25,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- present RxNav concepts resulting from a search -->
         <activity
             android:name=".DrugsActivity"
             android:label="@string/title_activity_drugs"
@@ -40,6 +44,8 @@
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
         </activity>
+
+        <!-- presents a RxNav concept -->
         <activity
             android:name=".DrugActivity"
             android:label="@string/title_activity_drug"
@@ -65,6 +71,17 @@
             </intent-filter>
         </activity>
 
+        <!-- spelling suggestions from RxNorm.getSpellingSuggestions API -->
+        <service
+            android:label="@string/app_name"
+            android:name=".service.SpellingSuggestionsService"
+            android:permission="android.permission.BIND_TEXT_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.textservice.SpellCheckerService" />
+            </intent-filter>
+        </service>
+
+        <!-- provides display terms for auto-completion -->
         <provider
             android:name=".provider.DisplayTermsProvider"
             android:authorities="ca.umontreal.iro.guidedesmedicaments.provider.DisplayTermsProvider" />

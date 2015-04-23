@@ -3,9 +3,14 @@ package ca.umontreal.iro.guidedesmedicaments;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import java.util.List;
+
+import ca.umontreal.iro.rxnav.RxNorm;
 
 /**
  * Present drugs issued from a search or a list of rxcuis like bookmarks.

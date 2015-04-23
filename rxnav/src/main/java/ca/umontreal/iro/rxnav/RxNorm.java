@@ -11,11 +11,11 @@ import java.io.IOException;
 
 /**
  * The RxNorm API is a web service for accessing the current RxNorm data set.
- * <p/>
+ * <p>
  * With one exception, no license is needed to use the RxNorm API. This is because the data returned
  * from the API is from the RxNorm vocabulary, a non-proprietary vocabulary developed by the
  * National Library of Medicine.
- * <p/>
+ * <p>
  * http://rxnav.nlm.nih.gov/RxNormAPIs.html
  *
  * @author Guillaume Poirier-Morency
@@ -33,10 +33,10 @@ public class RxNorm extends RxNav {
     /**
      * Determine if a property exists for a concept and (optionally) matches the specified property
      * value. Returns the RxCUI if the property name matches.
-     * <p/>
+     * <p>
      * http://rxnav.nlm.nih.gov/RxNormAPIs.html#uLink=RxNorm_REST_filterByProperty
      *
-     * @param rxcui
+     * @param rxcui      the RxNorm concept unique identifier
      * @param propName   the property name. See /propnames for the list of valid property names
      * @param propValues (optional) the property value. If not specified, the RxCui is returned if
      *                   the property exists for the concept.
@@ -141,10 +141,10 @@ public class RxNorm extends RxNav {
 
     /**
      * Return the properties for a specified concept.
-     * <p/>
+     * <p>
      * http://rxnav.nlm.nih.gov/RxNormAPIs.html#uLink=RxNorm_REST_getAllProperties
      *
-     * @param rxcui
+     * @param rxcui the RxNorm concept unique identifier
      * @param prop  the property categories for the properties to be returned. This field is
      *              required. See the /propCategories example for the valid property categories.
      * @return
@@ -172,10 +172,10 @@ public class RxNorm extends RxNav {
      * term types "IN", "MIN", "PIN", "BN", "SBD", "SBDC", "SBDF", "SBDG", "SCD", "SCDC", "SCDF",
      * "SCDG", "DF", "DFG", "BPCK" and "GPCK". See default paths for the paths traveled to get
      * concepts for each term type.
-     * <p/>
+     * <p>
      * http://rxnav.nlm.nih.gov/RxNormAPIs.html#uLink=RxNorm_REST_getAllRelatedInfo
      *
-     * @param rxcui
+     * @param rxcui the RxNorm concept unique identifier
      * @return
      * @throws IOException
      * @throws JSONException
@@ -203,7 +203,7 @@ public class RxNorm extends RxNav {
     /**
      * Do an approximate match search to determine the strings in the data set that most closely
      * match the search string. The approximate match algorithm is discussed in detail here.
-     * <p/>
+     * <p>
      * The returned comment field contains messages about the processing of the operation.
      *
      * @param term       the search string
@@ -275,7 +275,7 @@ public class RxNorm extends RxNav {
      * Get the drug products associated with a specified name. The name can be an ingredient, brand
      * name, clinical dose form, branded dose form, clinical drug component, or branded drug
      * component.
-     * <p/>
+     * <p>
      * http://rxnav.nlm.nih.gov/RxNormAPIs.html#uLink=RxNorm_REST_getDrugs
      *
      * @param name an ingredient, brand, clinical dose form, branded dose form, clinical drug
@@ -286,6 +286,88 @@ public class RxNorm extends RxNav {
         return request(Drugs.class, "drugs", new BasicNameValuePair("name", name));
     }
 
+    public class NDCs {
+
+        public class NDCGroup {
+
+            public class NDCList {
+
+                public String[] ndc;
+            }
+
+            public NDCList ndcList;
+        }
+
+        public NDCGroup ndcGroup;
+    }
+
+    /**
+     * Get the National Drug Codes (NDCs) for the RxNorm concept. The NDCs are returned in the CMS
+     * 11-digit NDC derivative form.
+     *
+     * @param rxcui the RxNorm concept unique identifier
+     * @return
+     * @throws IOException
+     */
+    public NDCs getNDCs(String rxcui) throws IOException {
+        return request(NDCs.class, "rxcui/" + rxcui + "/ndcs");
+    }
+
+    public class ProprietaryInformation {
+
+        public class ProprietaryGroup {
+
+            public class SourceList {
+
+                public String[] sourceName;
+            }
+
+            public String rxcui;
+
+            public SourceList sourceList;
+
+        }
+
+        /**
+         * TODO: test this bindings, it's only accessible behind UTS proxy
+         */
+        public class ProprietaryInfo {
+
+            public String rxcui;
+            public String name;
+            public String type;
+            public String id;
+            public String source;
+        }
+
+        public ProprietaryGroup proprietaryGroup;
+
+        public ProprietaryInfo proprietaryInfo;
+    }
+
+    /**
+     * Get the concept information associated with the concept for the specified sources. The user
+     * must have a valid UMLS license and be able to access the UTS authority service to obtain
+     * proxy tickets to use this function.
+     *
+     * @param rxcui
+     * @param srclist list of source vocabularies to use. If not specified, information from all
+     *                sources is retrieved. See the /sourcetypes example for the valid source
+     *                vocabularies.
+     * @param ticket  a proxy ticket obtained from the UTS authority service. This field must be
+     *                specified.
+     * @param rxaui   the RxNorm atomic identifier. This parameter is optional. If specified, only the
+     *                information pertaining to this identifier will be returned.
+     * @return
+     * @throws IOException
+     */
+    public ProprietaryInformation getProprietaryInformation(String rxcui, String[] srclist, String ticket, String rxaui) throws IOException {
+        return request(ProprietaryInformation.class, "rxcui/" + rxcui + "/proprietary",
+                new BasicNameValuePair("srclist", StringUtils.join(srclist, " ")),
+                new BasicNameValuePair("ticket", ticket),
+                new BasicNameValuePair("rxaui", rxaui));
+    }
+
     public class RelatedGroup {
 
         public String rxcui;
@@ -293,17 +375,23 @@ public class RxNorm extends RxNav {
         public ConceptGroup[] conceptGroup;
     }
 
+    public class RelatedByType {
+
+        public RelatedGroup relatedGroup;
+    }
+
     /**
      * Get the related RxNorm identifiers of an RxNorm concept specified by one or more term types.
      * See default paths for the paths traveled to get concepts for each term type.
      *
-     * @param rxcui
+     * @param rxcui the RxNorm concept unique identifier
      * @param tty   a list of one or more RxNorm term types. This field is required. See the
      *              /termtypes example for the valid term types.
      * @return
      */
-    public RelatedGroup getRelatedByType(String rxcui, String... tty) throws IOException {
-        return request(RelatedGroup.class, "rxcui/" + rxcui + "/allrelated");
+    public RelatedByType getRelatedByType(String rxcui, String... tty) throws IOException {
+        return request(RelatedByType.class, "rxcui/" + rxcui + "/related",
+                new BasicNameValuePair("tty", StringUtils.join(tty, " ")));
     }
 
     public class RxConceptProperties {
@@ -314,7 +402,7 @@ public class RxNorm extends RxNav {
     /**
      * Get the RxNorm concept properties.
      *
-     * @param rxcui
+     * @param rxcui the RxNorm concept unique identifier
      * @return
      * @throws IOException
      */
@@ -336,6 +424,21 @@ public class RxNorm extends RxNav {
         }
 
         public SuggestionGroup suggestionGroup;
+    }
+
+    public class RxNormVersion {
+
+        public String version;
+    }
+
+    /**
+     * Get the version of the RxNorm data set.
+     *
+     * @return
+     * @throws IOException
+     */
+    public RxNormVersion getRxNormVersion() throws IOException {
+        return request(RxNormVersion.class, "version");
     }
 
     /**
