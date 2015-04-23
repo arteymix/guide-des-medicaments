@@ -1,26 +1,27 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
-import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.database.MatrixCursor;
 import android.os.Bundle;
+import android.provider.BaseColumns;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.SearchView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
-
-import com.squareup.okhttp.Cache;
-import com.squareup.okhttp.OkHttpClient;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Provide search capabilities that initiate the application flow.
+ * Navigate through the {@link SearchFragment}, {@link DrugsFragment} and {@link DrugCartActivity}
+ * on the tip of the finger!
+ * <p/>
+ * The layout contains a {@link android.support.v4.app.Fragment} that is swapped on purpose for the
+ * view we are interested in.
  * <p/>
  * TODO: prefetch rxcuis for suggestions
  *
@@ -36,33 +37,31 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.main_content, new SearchFragment())
+                .commit();
+
         // Set up the action bar to show a dropdown list.
         final ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
+        MatrixCursor actionCursor = new MatrixCursor(new String[]{BaseColumns._ID, "title"});
+
+        actionCursor.addRow(new Object[]{R.id.action_search, getString(R.string.search_a_drug)});
+        actionCursor.addRow(new Object[]{R.id.action_bookmarks, getString(R.string.bookmarks)});
+        actionCursor.addRow(new Object[]{R.id.action_cart, getString(R.string.cart)});
+
         // Set up the dropdown list navigation in the action bar.
         actionBar.setListNavigationCallbacks(
                 // Specify a SpinnerAdapter to populate the dropdown list.
-                new ArrayAdapter<>(
+                new SimpleCursorAdapter(
                         actionBar.getThemedContext(),
                         android.R.layout.simple_list_item_1,
-                        android.R.id.text1,
-                        new String[]{
-                                "New search",
-                                getString(R.string.bookmarks),
-                                getString(R.string.cart)
-                        }),
-                this);
-
-        final OkHttpClient httpClient = new OkHttpClient();
-
-        httpClient.setCache(new Cache(getCacheDir(), 10 * 1024 * 1024));
-
-        final SearchView sv = (SearchView) findViewById(R.id.search_drug);
-
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        sv.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+                        actionCursor,
+                        new String[]{"title"},
+                        new int[]{android.R.id.text1}, 0x0), this);
     }
 
     @Override
@@ -74,32 +73,48 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_bookmarks:
-                Intent showBookmarks = new Intent(this, DrugsActivity.class);
-
-                Set<String> bookmarks = getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
-                        .getStringSet("rxcuis", new HashSet());
-
-                if (bookmarks.isEmpty()) {
-                    Toast.makeText(this, "You do not have any bookmarks.", Toast.LENGTH_SHORT).show();
-                    break;
-                }
-
-                showBookmarks.putStringArrayListExtra(DrugsActivity.RXCUIS, new ArrayList<>(bookmarks));
-
-                startActivity(showBookmarks);
-                break;
             case R.id.action_search:
                 return onSearchRequested();
-            case R.id.action_cart:
-                startActivity(new Intent(this, DrugCartActivity.class));
         }
+
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     public boolean onNavigationItemSelected(int i, long l) {
-        // todo: change the presented fragment
+        switch ((int) l) {
+            case R.id.action_search:
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.main_content, new SearchFragment())
+                        .commit();
+
+                return true;
+
+            case R.id.action_bookmarks:
+                Set<String> bookmarks = getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
+                        .getStringSet("rxcuis", new HashSet());
+
+                if (bookmarks.isEmpty()) {
+                    Toast.makeText(this, "You do not have any bookmarks.", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.main_content, DrugsFragment.newInstance(new ArrayList<>(bookmarks)))
+                        .commit();
+
+                return true;
+
+            case R.id.action_cart:
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.main_content, CartFragment.newInstance())
+                        .commit();
+
+                return true;
+        }
         return false;
     }
 }

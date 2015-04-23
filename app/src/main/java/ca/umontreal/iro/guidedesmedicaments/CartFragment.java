@@ -1,9 +1,7 @@
 package ca.umontreal.iro.guidedesmedicaments;
 
 import android.content.Context;
-import android.content.Intent;
 import android.database.MatrixCursor;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.BaseColumns;
 import android.support.v4.app.Fragment;
@@ -12,15 +10,11 @@ import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,30 +30,40 @@ import ca.umontreal.iro.guidedesmedicaments.loader.IOAsyncTaskLoader;
 import ca.umontreal.iro.rxnav.Interaction;
 
 /**
- * Present the drug cart and its content using a {@link android.support.v4.view.ViewPager}.
- * <p/>
- * The first page presents a summary of all drug carts and subsequent pages (swipe right) present
- * each cart individually.
+ * Fragment presenting a drugs interactions and individual drugs in the cart.
  *
  * @author Guillaume Poirier-Morency
- * @author Patrice Dumontier-Houle
- * @author Charles Deharnais
- * @author Aldo Lamarre
  */
-public class DrugCartActivity extends ActionBarActivity {
+public class CartFragment extends Fragment {
+
+    /**
+     * Factory
+     *
+     * @return
+     */
+    public static CartFragment newInstance() {
+        return new CartFragment();
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_drug_cart);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.cart_fragment, container, false);
+    }
 
-        final Set<String> rxcuis = getSharedPreferences("cart", Context.MODE_PRIVATE)
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        final Set<String> rxcuis = getActivity().getSharedPreferences("cart", Context.MODE_PRIVATE)
                 .getStringSet("rxcuis", new HashSet<String>());
 
         Log.i("", "rxcuis dans le panier " + rxcuis);
 
         // Set up the ViewPager with the sections adapter.
-        ViewPager pager = (ViewPager) findViewById(R.id.pager);
+        ViewPager pager = (ViewPager) getView().findViewById(R.id.pager);
 
         final List<String> cart = new ArrayList<String>();
 
@@ -68,7 +72,7 @@ public class DrugCartActivity extends ActionBarActivity {
 
         cart.addAll(rxcuis);
 
-        pager.setAdapter(new FragmentStatePagerAdapter(getSupportFragmentManager()) {
+        pager.setAdapter(new FragmentStatePagerAdapter(getActivity().getSupportFragmentManager()) {
 
             @Override
             public Fragment getItem(int position) {
@@ -82,38 +86,6 @@ public class DrugCartActivity extends ActionBarActivity {
                 return cart.size();
             }
         });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_cart, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_bookmarks:
-                Intent showBookmarks = new Intent(this, DrugsActivity.class);
-
-                Set<String> bookmarks = getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
-                        .getStringSet("rxcuis", new HashSet());
-
-                if (bookmarks.isEmpty()) {
-                    Toast.makeText(this, "You do not have any bookmarks.", Toast.LENGTH_SHORT).show();
-                    break;
-                }
-
-                showBookmarks.putStringArrayListExtra(DrugsActivity.RXCUIS, new ArrayList<>(bookmarks));
-
-                startActivity(showBookmarks);
-                break;
-            case R.id.action_search:
-                return onSearchRequested();
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     /**
@@ -131,7 +103,7 @@ public class DrugCartActivity extends ActionBarActivity {
          */
         public static final String RXCUIS = "RXCUIS";
 
-        public static final int INTERACTION_LOADER = 0;
+        public static final int INTERACTION_LOADER = 7;
 
         public static DrugInteractionFragment newInstance(Set<String> rxcuis) {
             DrugInteractionFragment drugInteractionFragment = new DrugInteractionFragment();

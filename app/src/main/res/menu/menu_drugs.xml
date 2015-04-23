@@ -3,11 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="ca.umontreal.iro.guidedesmedicaments.DrugsActivity">
     <item
-        android:id="@+id/action_cart"
-        android:title="@string/cart"
-        android:icon="@drawable/ic_fa_shopping_cart"
-        app:showAsAction="ifRoom" />
-    <item
         android:id="@+id/action_search"
         android:icon="@android:drawable/ic_menu_search"
         android:title="@android:string/search_go"

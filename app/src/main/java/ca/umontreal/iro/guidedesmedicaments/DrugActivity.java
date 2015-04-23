@@ -56,7 +56,8 @@ public class DrugActivity extends ActionBarActivity {
                         .putStringSet("rxcuis", rxcuis)
                         .apply();
 
-                startActivity(new Intent(this, DrugCartActivity.class));
+                // todo: move to MainActivity in the back stack
+                startActivity(new Intent(this, MainActivity.class));
         }
 
         return super.onOptionsItemSelected(item);

@@ -36,13 +36,6 @@
                 android:resource="@xml/searchable" />
         </activity>
         <activity
-            android:name=".DrugCartActivity"
-            android:label="@string/title_activity_panier" >
-            <meta-data
-                android:name="android.app.default_searchable"
-                android:value=".DrugsActivity" />
-        </activity>
-        <activity
             android:name=".DrugActivity"
             android:label="@string/title_activity_drug" >
             <meta-data

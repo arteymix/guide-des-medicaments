@@ -9,7 +9,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.BaseColumns;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.text.Html;
@@ -17,12 +16,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,7 +38,6 @@ import org.mediawiki.api.json.ApiException;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,13 +50,13 @@ import ca.umontreal.iro.rxnav.RxNorm;
 
 /**
  * Fragment presenting a drug concept.
- * <p>
+ * <p/>
  * If this is not embedded in the the {@link ca.umontreal.iro.guidedesmedicaments.DrugActivity}, the
  * "rxcui" key has to be set in the fragment arguments.
- * <p>
+ * <p/>
  * The layout is embedded in a {@link android.widget.ScrollView} and will expand after the screen
  * height.
- * <p>
+ * <p/>
  * TODO: be more uniform and require the rxcui provided by arguments
  *
  * @author Guillaume Poirier-Morency
@@ -74,9 +70,9 @@ public class DrugFragment extends Fragment {
             NAME_LOADER = 0,
             DESCRIPTION_LOADER = 1,
             IMAGE_LOADER = 2,
-            CLASS_LOADER = 5,
-            SIMILAR_DRUGS_LOADER = 6,
-            CONTRAINDICATIONS_LOADER = 7;
+            CLASS_LOADER = 3,
+            SIMILAR_DRUGS_LOADER = 4,
+            CONTRAINDICATIONS_LOADER = 5;
 
     public static DrugFragment newInstance(String rxcui) {
         Bundle bundle = new Bundle();
@@ -328,18 +324,24 @@ public class DrugFragment extends Fragment {
                     return;
                 }
 
-                List<String> descriptions = new ArrayList<>();
+                MatrixCursor descriptions = new MatrixCursor(new String[]{BaseColumns._ID, "name", "description"});
 
                 for (Interaction.InteractionTypeGroup interactionTypeGroup : drugInteractions.interactionTypeGroup)
                     for (Interaction.InteractionTypeGroup.InteractionType interactionType : interactionTypeGroup.interactionType)
-                        for (Interaction.InteractionTypeGroup.InteractionType.InteractionPair interactionPair : interactionType.interactionPair)
-                            for (Interaction.InteractionTypeGroup.InteractionType.InteractionPair.InteractionConcept interactionConcept : interactionPair.interactionConcept)
-                                descriptions.add(interactionPair.description);
+                        for (Interaction.InteractionTypeGroup.InteractionType.InteractionPair interactionPair : interactionType.interactionPair) {
+                            descriptions.addRow(new Object[] {
+                                    Long.parseLong(interactionPair.interactionConcept[1].minConceptItem.rxcui),
+                                    interactionPair.interactionConcept[1].minConceptItem.name, // related concept in interaction
+                                    interactionPair.description}); // description of the interaction
+                        }
 
-                counterIndications.setAdapter(new ArrayAdapter<>(
+                counterIndications.setAdapter(new SimpleCursorAdapter(
                         getActivity(),
-                        android.R.layout.simple_list_item_1,
-                        descriptions));
+                        android.R.layout.simple_list_item_2,
+                        descriptions,
+                        new String[]{"name", "description"},
+                        new int[]{android.R.id.text1, android.R.id.text2},
+                        0x0));
             }
 
             @Override
