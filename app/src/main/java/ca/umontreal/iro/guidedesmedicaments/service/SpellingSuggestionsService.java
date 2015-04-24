@@ -20,7 +20,9 @@ import ca.umontreal.iro.rxnav.RxNorm;
 public class SpellingSuggestionsService extends SpellCheckerService {
 
     /**
+     * Session providing suggestions from RxNorm API.
      *
+     * The session will instanciate a {@link OkHttpClient} to perform request.
      */
     public class SpellingSuggestionsSession extends Session {
 

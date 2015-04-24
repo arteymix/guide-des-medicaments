@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -173,13 +174,27 @@ public class CartFragment extends Fragment {
             }
 
             // todo: populate the MatrixCursor
-            MatrixCursor matrixCursor = new MatrixCursor(new String[]{BaseColumns._ID});
+            MatrixCursor matrixCursor = new MatrixCursor(new String[]{BaseColumns._ID, "drug_1_name", "drug_2_name", "description", "severity"});
+
+            int i = 0;
+            for (Interaction.InteractionsFromList.FullInteractionTypeGroup fullInteractionTypeGroup : interactions.fullInteractionTypeGroup) {
+                for (Interaction.InteractionsFromList.FullInteractionTypeGroup.FullInteractionType fullInteractionType : fullInteractionTypeGroup.fullInteractionType)
+                    for (Interaction.InteractionPair interactionPair : fullInteractionType.interactionPair)
+                        matrixCursor.addRow(new Object[]{
+                                i++,
+                                interactionPair.interactionConcept[0].minConceptItem.name,
+                                interactionPair.interactionConcept[1].minConceptItem.name,
+                                interactionPair.description,
+                                interactionPair.severity
+                        });
+            }
 
             // TODO: assembler toutes les interactions
-            interactionsList.setListAdapter(new ArrayAdapter<>(
-                    getActivity(),
-                    R.layout.interaction_item,
-                    interactions.fullInteractionTypeGroup.interactionType));
+            interactionsList.setListAdapter(new SimpleCursorAdapter(getActivity(),
+                    R.layout.interaction_item, matrixCursor,
+                    new String[]{"drug_1_name", "drug_2_name", "description", "severity"},
+                    new int[]{R.id.drug_1_name, R.id.drug_2_name, R.id.description, R.id.severity},
+                    0x0));
         }
 
         @Override

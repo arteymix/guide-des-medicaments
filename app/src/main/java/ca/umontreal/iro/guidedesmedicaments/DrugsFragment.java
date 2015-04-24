@@ -180,7 +180,7 @@ public class DrugsFragment extends ListFragment implements LoaderManager.LoaderC
 
                 bookmark.setChecked(getActivity().getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
                         .getStringSet("rxcuis", new HashSet<String>())
-                        .contains(rxcui.idGroup.rxnormId));
+                        .contains(rxcui.idGroup.rxnormId[0]));
 
                 bookmark.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override

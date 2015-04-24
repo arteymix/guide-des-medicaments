@@ -91,6 +91,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
 
     @Override
     public boolean onNavigationItemSelected(int i, long l) {
+        // todo: reuse instances
         switch ((int) l) {
             case R.id.action_search:
                 getSupportFragmentManager()

@@ -327,9 +327,9 @@ public class DrugFragment extends Fragment {
 
                 MatrixCursor descriptions = new MatrixCursor(new String[]{BaseColumns._ID, "name", "description"});
 
-                for (Interaction.InteractionTypeGroup interactionTypeGroup : drugInteractions.interactionTypeGroup)
-                    for (Interaction.InteractionTypeGroup.InteractionType interactionType : interactionTypeGroup.interactionType)
-                        for (Interaction.InteractionTypeGroup.InteractionType.InteractionPair interactionPair : interactionType.interactionPair) {
+                for (Interaction.DrugInteractions.InteractionTypeGroup interactionTypeGroup : drugInteractions.interactionTypeGroup)
+                    for (Interaction.DrugInteractions.InteractionTypeGroup.InteractionType interactionType : interactionTypeGroup.interactionType)
+                        for (Interaction.InteractionPair interactionPair : interactionType.interactionPair) {
                             descriptions.addRow(new Object[]{
                                     Long.parseLong(interactionPair.interactionConcept[1].minConceptItem.rxcui),
                                     interactionPair.interactionConcept[1].minConceptItem.name, // related concept in interaction

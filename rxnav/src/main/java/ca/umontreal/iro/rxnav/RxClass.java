@@ -76,6 +76,12 @@ public class RxClass extends RxNav {
 
             public class RxClassDrugInfo {
 
+                public class MinConceptItem {
+                    public String rxcui;
+                    public String name;
+                    public String tty;
+                }
+
                 public class RxClassMinConceptItem {
 
                     public String classId;
@@ -83,7 +89,7 @@ public class RxClass extends RxNav {
                     public String classType;
                 }
 
-                public Interaction.InteractionTypeGroup.InteractionType.MinConceptItem minConcept;
+                public MinConceptItem minConcept;
                 public RxClassMinConceptItem rxclassMinConceptItem;
                 public String rela;
                 public String relaSource;

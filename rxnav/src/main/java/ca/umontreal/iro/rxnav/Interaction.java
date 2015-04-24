@@ -23,9 +23,9 @@ public class Interaction extends RxNav {
         super(httpClient);
     }
 
-    public class InteractionTypeGroup {
+    public class InteractionPair {
 
-        public class InteractionType {
+        public class InteractionConcept {
 
             public class MinConceptItem {
                 public String rxcui;
@@ -33,31 +33,19 @@ public class Interaction extends RxNav {
                 public String tty;
             }
 
-            public class InteractionPair {
-
-                public class InteractionConcept {
-
-                    public class SourceConceptItem {
-                        public String id;
-                        public String name;
-                        public String url;
-                    }
-
-                    public MinConceptItem minConceptItem;
-                    public SourceConceptItem sourceConceptItem;
-                }
-
-                public InteractionConcept[] interactionConcept;
-                public String description;
+            public class SourceConceptItem {
+                public String id;
+                public String name;
+                public String url;
             }
 
-            public String comment;
             public MinConceptItem minConceptItem;
-            public InteractionPair[] interactionPair;
+            public SourceConceptItem sourceConceptItem;
         }
 
-        public String sourceDisclaimer;
-        public InteractionType[] interactionType;
+        public InteractionConcept[] interactionConcept;
+        public String severity;
+        public String description;
     }
 
     public class DrugInteractions {
@@ -65,6 +53,26 @@ public class Interaction extends RxNav {
         public class UserInput {
             public String[] sources;
             public String rxcui;
+        }
+
+        public class InteractionTypeGroup {
+
+            public class InteractionType {
+
+                public class MinConceptItem {
+                    public String rxcui;
+                    public String name;
+                    public String tty;
+                }
+
+                public String comment;
+                public MinConceptItem minConceptItem;
+                public InteractionPair[] interactionPair;
+            }
+
+            public String sourceDisclaimer;
+            public String sourceName;
+            public InteractionType[] interactionType;
         }
 
         public String nlmDisclaimer;
@@ -95,9 +103,29 @@ public class Interaction extends RxNav {
             public String[] rxcuis;
         }
 
+        public class FullInteractionTypeGroup {
+
+            public class FullInteractionType {
+
+                public class MinConcept {
+                    public String rxcui;
+                    public String name;
+                    public String tty;
+                }
+
+                public String comment;
+                public MinConcept[] minConcept;
+                public InteractionPair[] interactionPair;
+            }
+
+            public String sourceDisclaimer;
+            public String sourceName;
+            public FullInteractionType[] fullInteractionType;
+        }
+
         public String nlmDisclaimer;
         public UserInput userInput;
-        public InteractionTypeGroup fullInteractionTypeGroup;
+        public FullInteractionTypeGroup[] fullInteractionTypeGroup;
     }
 
     /**
