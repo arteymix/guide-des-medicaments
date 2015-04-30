@@ -1,13 +1,21 @@
 % Guide des médicaments -- Rapport final
-
-
-Rapport final!
+% Aldo Lamarre; Patrice Dumontier-Houle; Charles Desharnais; Guillaume Poirier-Morency
+% 30 avril 2012
 
 # Usager cible
 
 Initialement, le projet ciblait le personnel de la santé (infirmières,
 médecins, pharmaciens...) afin de servir de « Guide des médicaments » en
 version électronique.
+
+Suite à quelques complications, les usagers cibles sont devenus les gens
+normaux de la population, c'est-à-dire n'importe quelle personne qui souhaite
+faire  usage d'un médicament en raison d'un problème quelconque.  La plupart
+des usagers potentiels ont peu de connaissances en informatique. Ils n'ont pas
+non-plus la mémoire nécessaire pour se rappeler  de médicaments précédemment
+consultés lorsqu'ils naviguent; un usager normal va probablement consulter les
+mêmes informations sur le même médicament plus d'une fois. L'usager n'a pas non
+plus de connaissances sur les médicaments potentiellement contrindiqués.
 
 
 ## Cas typique
@@ -36,6 +44,23 @@ Cherche à obtenir
 
 
 # Analyse des besoinsa
+
+Le besoin principal des usagers est de pouvoir obtenir de l'information sur un
+médicament à partir d'une information de départ pas nécessairement précise.
+
+En fonction de l'analyse des usagers, des besoins plus spécifiques ont été
+identifiés:
+
+ - Offrir  plusieurs types de recherches (par nom, par ingrédient...) afin de
+   maximiser les chances qu'un usager puisse retrouver le médicament souhaité.
+
+ - Offrir un moyen de sauvegarde. Un usager n'a pas une mémoire à court terme
+   lui permettant de se rappeler d'informations lues antérieurement sur un
+   médicament. Il doit donc y avoir une liste de favoris, contenant les
+   médicaments régulièrement consultés.
+
+ - Offrir un panier, afin de permettre à l'usager de pouvoir se faire une liste
+   temporaire de médicaments et voir les paires de médicaments contrindiqués.
 
 L'analyse décrit un cas typique d'utilisation de l'application
 « Guide des médicaments » et énumère les besoins en interface usager.
