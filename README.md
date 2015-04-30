@@ -37,3 +37,12 @@ Iconographie
 En plus des icônes de base, l'application utilise des icônes provenant de la collection
 [Font Awesome](http://fortawesome.github.io/Font-Awesome/) et d'une intégration pour Android par
 [svenkapudija](https://github.com/svenkapudija/Android-Action-Bar-Icons)
+
+Références
+----------
+
+Comparaison et évaluation des API de terminologie: RxNav, UMLSKS et LexBIG. Le document contient
+un schéma relationnel qui explique les relations entre les concepts dans les systèmes de terminologie
+comme RxNav.
+
+[Comparing and evaluating terminology services application programming interfaces: RxNav, UMLSKS and LexBIG](http://mor.nlm.nih.gov/pubs/pdf/2010-jamia-jp.pdf)

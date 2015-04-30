@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.squareup.okhttp.Dispatcher;
 import com.squareup.okhttp.OkHttpClient;
 
 import org.apache.commons.lang3.StringUtils;
@@ -50,15 +51,14 @@ import ca.umontreal.iro.rxnav.RxNorm;
 public class DrugsFragment extends ListFragment implements LoaderManager.LoaderCallbacks<List<RxNorm.Rxcui>> {
 
     /**
-     * Unique identifier for the {@link Loader} that loads drugs information into the
-     * {@link ListFragment}.
-     */
-    public static final int DRUGS_LOADER = 6;
-
-    /**
      * Intent key to present a list of concepts from their rxcui identifier.
      */
     public static final String RXCUIS = "rxcuis";
+
+    /**
+     * Intent key for the empty text in the embedded {@link DrugsFragment}.
+     */
+    public static String EMPTY_TEXT = "empty_text";
 
     /**
      * Intent key to filter results by a tty.
@@ -73,11 +73,12 @@ public class DrugsFragment extends ListFragment implements LoaderManager.LoaderC
      * @param rxcuis
      * @return
      */
-    public static DrugsFragment newInstance(ArrayList<String> rxcuis) {
+    public static DrugsFragment newInstance(ArrayList<String> rxcuis, String emptyText) {
         DrugsFragment drugsFragment = new DrugsFragment();
         Bundle bundle = new Bundle();
 
         bundle.putStringArrayList(RXCUIS, rxcuis);
+        bundle.putString(EMPTY_TEXT, emptyText);
 
         drugsFragment.setArguments(bundle);
 
@@ -95,20 +96,21 @@ public class DrugsFragment extends ListFragment implements LoaderManager.LoaderC
         // initialize the client for reuse over intents
         httpClient = new OkHttpClient();
         httpClient.setCache(new com.squareup.okhttp.Cache(getActivity().getCacheDir(), 10 * 1024 * 1024));
-
-        // todo: use only getArguments...
-        Bundle arguments = getArguments() == null ?
-                getActivity().getIntent().getExtras() : getArguments();
-
-        getActivity().getSupportLoaderManager()
-                .initLoader(DRUGS_LOADER, arguments, this)
-                .forceLoad();
     }
 
     public void onActivityCreated(Bundle savedInstance) {
         super.onActivityCreated(savedInstance);
 
-        setEmptyText("No matches for the provided query.");
+        // todo: use only getArguments...
+        Bundle arguments = getArguments() == null ?
+                getActivity().getIntent().getExtras() : getArguments();
+
+        if (arguments.containsKey(EMPTY_TEXT))
+            setEmptyText(arguments.getString(EMPTY_TEXT));
+
+        getActivity().getSupportLoaderManager()
+                .initLoader(R.id.drugs_loader, arguments, this)
+                .forceLoad();
     }
 
     @Override
@@ -178,8 +180,8 @@ public class DrugsFragment extends ListFragment implements LoaderManager.LoaderC
                 if (rxcui.idGroup.rxnormId == null)
                     return c; // .. sadly ;(
 
-                bookmark.setChecked(getActivity().getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
-                        .getStringSet("rxcuis", new HashSet<String>())
+                bookmark.setChecked(getActivity().getSharedPreferences(MainActivity.BOOKMARKS, Context.MODE_PRIVATE)
+                        .getStringSet(MainActivity.RXCUIS, new HashSet<String>())
                         .contains(rxcui.idGroup.rxnormId[0]));
 
                 bookmark.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -200,24 +202,26 @@ public class DrugsFragment extends ListFragment implements LoaderManager.LoaderC
                     }
                 });
 
-                cart.setChecked(getActivity().getSharedPreferences("cart", Context.MODE_PRIVATE)
-                        .getStringSet("rxcuis", new HashSet<String>())
+                cart.setChecked(getActivity().getSharedPreferences(MainActivity.CART, Context.MODE_PRIVATE)
+                        .getStringSet(MainActivity.RXCUIS, new HashSet<String>())
                         .contains(rxcui.idGroup.rxnormId[0]));
 
                 cart.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        Set<String> cart = getActivity().getSharedPreferences("cart", Context.MODE_PRIVATE)
-                                .getStringSet("rxcuis", new HashSet<String>());
+                        Set<String> cart = getActivity()
+                                .getSharedPreferences(MainActivity.CART, Context.MODE_PRIVATE)
+                                .getStringSet(MainActivity.RXCUIS, new HashSet<String>());
 
                         if (isChecked)
                             cart.add(rxcui.idGroup.rxnormId[0]);
                         else
                             cart.remove(rxcui.idGroup.rxnormId[0]);
 
-                        getActivity().getSharedPreferences("cart", Context.MODE_PRIVATE)
+                        getActivity()
+                                .getSharedPreferences(MainActivity.CART, Context.MODE_PRIVATE)
                                 .edit()
-                                .putStringSet("rxcuis", cart)
+                                .putStringSet(MainActivity.RXCUIS, cart)
                                 .apply();
                     }
                 });
@@ -285,7 +289,7 @@ public class DrugsFragment extends ListFragment implements LoaderManager.LoaderC
                                 .centerCrop()
                                 .into(drugIcon);
                     }
-                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, rxcuis.get(position).idGroup.name);
+                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, rxcui.idGroup.name);
 
                 // todo: bookmarking live!
                 // c.findViewById(R.id.bookmark).setOnClickListener();
@@ -294,8 +298,8 @@ public class DrugsFragment extends ListFragment implements LoaderManager.LoaderC
                 c.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (rxcuis.get(position).idGroup.rxnormId == null) {
-                            Log.w("", "no rxcui matching drug name " + rxcuis.get(position).idGroup.name);
+                        if (rxcui.idGroup.rxnormId == null) {
+                            Log.w("", "no rxcui matching drug name " + rxcui.idGroup.name);
                             Toast.makeText(getActivity(), "Could not identify this drug (no matching rxcui).", Toast.LENGTH_SHORT).show();
                             return;
                         }
@@ -303,7 +307,7 @@ public class DrugsFragment extends ListFragment implements LoaderManager.LoaderC
                         // show the magnificent drug!
                         startActivity(new Intent(
                                 Intent.ACTION_VIEW,
-                                Uri.parse("http://rxnav.nlm.nih.gov/REST/rxcui/" + rxcuis.get(position).idGroup.rxnormId[0])));
+                                Uri.parse("http://rxnav.nlm.nih.gov/REST/rxcui/" + rxcui.idGroup.rxnormId[0])));
                     }
                 });
 
@@ -314,6 +318,7 @@ public class DrugsFragment extends ListFragment implements LoaderManager.LoaderC
 
     @Override
     public void onLoaderReset(Loader<List<RxNorm.Rxcui>> loader) {
-
+        // show progression
+        setListAdapter(null);
     }
 }

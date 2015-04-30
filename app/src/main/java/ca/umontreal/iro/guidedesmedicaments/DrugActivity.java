@@ -49,18 +49,22 @@ public class DrugActivity extends ActionBarActivity {
                 return onSearchRequested();
             case R.id.action_cart:
                 // add to cart!
-                Set<String> rxcuis = getSharedPreferences("cart", Context.MODE_PRIVATE)
-                        .getStringSet("rxcuis", new HashSet<String>());
+                Set<String> rxcuis = getSharedPreferences(MainActivity.CART, Context.MODE_PRIVATE)
+                        .getStringSet(MainActivity.RXCUIS, new HashSet<String>());
 
                 rxcuis.add(getIntent().getData().getPathSegments().get(2));
 
-                getSharedPreferences("cart", Context.MODE_PRIVATE)
+                getSharedPreferences(MainActivity.CART, Context.MODE_PRIVATE)
                         .edit()
-                        .putStringSet("rxcuis", rxcuis)
+                        .putStringSet(MainActivity.RXCUIS, rxcuis)
                         .apply();
 
+                Intent showCart = new Intent(this, MainActivity.class);
+
+                showCart.putExtra(MainActivity.ACTION, R.id.action_cart);
+
                 // todo: move to MainActivity in the back stack
-                startActivity(new Intent(this, MainActivity.class));
+                startActivity(showCart);
         }
 
         return super.onOptionsItemSelected(item);

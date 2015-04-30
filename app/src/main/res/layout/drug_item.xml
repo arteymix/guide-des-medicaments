@@ -10,6 +10,8 @@
         android:id="@+id/drug_icon"
         android:layout_width="92dp"
         android:layout_height="92dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginEnd="5dp"
         android:contentDescription="@string/drug_icon_description" />
 
     <TextView

@@ -4,6 +4,8 @@ import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
 import android.util.Log;
 
+import com.squareup.okhttp.Request;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,4 +42,11 @@ public abstract class IOAsyncTaskLoader<T> extends AsyncTaskLoader<T> {
      * @throws IOException
      */
     public abstract T loadInBackgroundSafely() throws IOException;
+
+    @Override
+    public void onCanceled(T data) {
+        super.onCanceled(data);
+
+
+    }
 }

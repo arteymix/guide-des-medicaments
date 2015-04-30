@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="id" name="rxnorm_version_loader" />
+    <item type="id" name="name_loader" />
+    <item type="id" name="description_loader" />
+    <item type="id" name="administration_method_loader" />
+    <item type="id" name="image_loader" />
+    <item type="id" name="class_loader" />
+    <item type="id" name="similar_drugs_loader" />
+    <item type="id" name="contraindications_loader" />
+    <item type="id" name="drugs_loader" />
+</resources>

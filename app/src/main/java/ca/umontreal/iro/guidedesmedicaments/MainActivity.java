@@ -2,17 +2,23 @@ package ca.umontreal.iro.guidedesmedicaments;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.MatrixCursor;
 import android.os.Bundle;
 import android.provider.BaseColumns;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.Loader;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterViewFlipper;
 import android.widget.RadioGroup;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,38 +38,70 @@ import java.util.Set;
  * @author Charles Deharnais
  * @author Aldo Lamarre
  */
-public class MainActivity extends ActionBarActivity implements ActionBar.OnNavigationListener {
+public class MainActivity extends ActionBarActivity implements ActionBar.TabListener {
+
+    /**
+     * Keys for shared preferences.
+     */
+    public static final String
+            BOOKMARKS = "bookmarks",
+            CART = "cart";
+
+    /**
+     * Fragment to display.
+     */
+    public static final String ACTION = "action";
+
+    /**
+     * Key used in cart and bookmarks shared preferences to hold the rxcuis identifiers of the
+     * marked concepts.
+     */
+    public static final String RXCUIS = "rxcuis";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.main_content, new SearchFragment())
-                .commit();
-
         // Set up the action bar to show a dropdown list.
         final ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayShowTitleEnabled(false);
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-        MatrixCursor actionCursor = new MatrixCursor(new String[]{BaseColumns._ID, "title"});
+        final ActionBar.Tab searchTab = actionBar.newTab()
+                .setText(getString(android.R.string.search_go))
+                .setTabListener(this);
 
-        actionCursor.addRow(new Object[]{R.id.action_search, getString(R.string.search_a_drug)});
-        actionCursor.addRow(new Object[]{R.id.action_bookmarks, getString(R.string.bookmarks)});
-        actionCursor.addRow(new Object[]{R.id.action_cart, getString(R.string.cart)});
+        final ActionBar.Tab bookmarksTab = actionBar.newTab()
+                .setText(getString(R.string.bookmarks))
+                .setTabListener(this);
 
-        // Set up the dropdown list navigation in the action bar.
-        actionBar.setListNavigationCallbacks(
-                // Specify a SpinnerAdapter to populate the dropdown list.
-                new SimpleCursorAdapter(
-                        actionBar.getThemedContext(),
-                        android.R.layout.simple_list_item_1,
-                        actionCursor,
-                        new String[]{"title"},
-                        new int[]{android.R.id.text1}, 0x0), this);
+        final ActionBar.Tab cartTab = actionBar.newTab()
+                .setText(getString(R.string.cart))
+                .setTabListener(this);
+
+        actionBar.addTab(searchTab);
+        actionBar.addTab(bookmarksTab);
+        actionBar.addTab(cartTab);
+
+        switch (getIntent().getIntExtra(ACTION, R.id.action_search)) {
+            case R.id.action_search:
+                actionBar.selectTab(searchTab);
+                break;
+
+            case R.id.action_bookmarks:
+                getSupportLoaderManager().destroyLoader(R.id.rxnorm_version_loader);
+                actionBar.selectTab(bookmarksTab);
+                break;
+
+            case R.id.action_cart:
+                getSupportLoaderManager().destroyLoader(R.id.rxnorm_version_loader);
+                actionBar.selectTab(cartTab);
+                break;
+
+            default:
+                // raise a goddamn exception!
+                finishActivity(RESULT_CANCELED);
+        }
     }
 
     @Override
@@ -76,11 +114,19 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_delete_all:
-                // todo: delete all for bookmarks and cart separately
-                return getSharedPreferences("cart", Context.MODE_PRIVATE)
-                        .edit()
-                        .remove("rxcuis")
-                        .commit();
+                if (getSupportActionBar().getSelectedNavigationIndex() == 1)
+                    return getSharedPreferences(BOOKMARKS, Context.MODE_PRIVATE)
+                            .edit()
+                            .remove(RXCUIS)
+                            .commit();
+
+                if (getSupportActionBar().getSelectedNavigationIndex() == 2)
+                    return getSharedPreferences(CART, Context.MODE_PRIVATE)
+                            .edit()
+                            .remove(RXCUIS)
+                            .commit();
+
+                break;
 
             case R.id.action_search:
                 return onSearchRequested();
@@ -90,36 +136,38 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     }
 
     @Override
-    public boolean onNavigationItemSelected(int i, long l) {
-        // todo: reuse instances
-        switch ((int) l) {
-            case R.id.action_search:
-                getSupportFragmentManager()
-                        .beginTransaction()
+    public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+        switch (tab.getPosition()) {
+            case 0:
+                fragmentTransaction
                         .replace(R.id.main_content, new SearchFragment())
-                        .commit();
+                        .setTransition(FragmentTransaction.TRANSIT_ENTER_MASK);
+                break;
 
-                return true;
+            case 1:
+                Set<String> bookmarks = getSharedPreferences(BOOKMARKS, Context.MODE_PRIVATE)
+                        .getStringSet(RXCUIS, new HashSet());
 
-            case R.id.action_bookmarks:
-                Set<String> bookmarks = getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
-                        .getStringSet("rxcuis", new HashSet());
+                fragmentTransaction
+                        .replace(R.id.main_content, DrugsFragment.newInstance(new ArrayList<>(bookmarks), "No drugs in bookmarks."))
+                        .setTransition(FragmentTransaction.TRANSIT_ENTER_MASK);
+                break;
 
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.main_content, DrugsFragment.newInstance(new ArrayList<>(bookmarks)))
-                        .commit();
-
-                return true;
-
-            case R.id.action_cart:
-                getSupportFragmentManager()
-                        .beginTransaction()
+            case 2:
+                fragmentTransaction
                         .replace(R.id.main_content, CartFragment.newInstance())
-                        .commit();
-
-                return true;
+                        .setTransition(FragmentTransaction.TRANSIT_ENTER_MASK);
+                break;
         }
-        return false;
+    }
+
+    @Override
+    public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+
+    }
+
+    @Override
+    public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+
     }
 }

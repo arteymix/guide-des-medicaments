@@ -29,18 +29,25 @@ public class DrugsActivity extends ActionBarActivity {
 
         // show up navigation
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        final DrugsFragment drugsFragment = (DrugsFragment) getSupportFragmentManager().findFragmentById(R.id.drugs);
+
+        drugsFragment.setEmptyText("No drug matches your request.");
     }
 
     @Override
     public void onNewIntent(final Intent intent) {
-        DrugsFragment drugsFragment = (DrugsFragment) getSupportFragmentManager().findFragmentById(R.id.drugs);
+        final DrugsFragment drugsFragment = (DrugsFragment) getSupportFragmentManager().findFragmentById(R.id.drugs);
 
-        if (getIntent().hasExtra(SearchManager.QUERY))
+        if (getIntent().hasExtra(Intent.EXTRA_TITLE))
+            setTitle(getIntent().getStringExtra(Intent.EXTRA_TITLE));
+
+        else if (getIntent().hasExtra(SearchManager.QUERY))
             setTitle("Results for " + getIntent().getStringExtra(SearchManager.QUERY));
 
         // reload the presented drugs in the fragment
         getSupportLoaderManager()
-                .restartLoader(DrugsFragment.DRUGS_LOADER, intent.getExtras(), drugsFragment)
+                .restartLoader(R.id.drugs_loader, intent.getExtras(), drugsFragment)
                 .forceLoad();
     }
 

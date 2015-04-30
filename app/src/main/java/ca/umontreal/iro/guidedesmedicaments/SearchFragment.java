@@ -27,16 +27,12 @@ import ca.umontreal.iro.rxnav.RxNorm;
 /**
  * Fragment providing a simple search interface.
  * <p/>
- * TODO: fetch the termtypes to fill the {@link RadioGroup}
+ * todo: fetch the termtypes to fill the {@link RadioGroup}
+ * todo: fetch the latest disclaimer from the API
  *
  * @author Guillaume Poirier-Morency
  */
 public class SearchFragment extends Fragment implements LoaderManager.LoaderCallbacks<RxNorm.RxNormVersion> {
-
-    /**
-     * Loader for the RxNorm version.
-     */
-    public static final int RXNORM_VERSION_LOADER = UUID.randomUUID().hashCode();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -67,7 +63,7 @@ public class SearchFragment extends Fragment implements LoaderManager.LoaderCall
         });
 
         getActivity().getSupportLoaderManager()
-                .initLoader(RXNORM_VERSION_LOADER, null, this)
+                .initLoader(R.id.rxnorm_version_loader, null, this)
                 .forceLoad();
     }
 

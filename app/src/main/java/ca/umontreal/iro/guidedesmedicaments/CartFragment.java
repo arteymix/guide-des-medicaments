@@ -58,10 +58,6 @@ public class CartFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        final ArrayList<String> rxcuis = new ArrayList<>(getActivity()
-                .getSharedPreferences("cart", Context.MODE_PRIVATE)
-                .getStringSet("rxcuis", new HashSet<String>()));
-
         // Set up the ViewPager with the sections adapter.
         final ViewPager pager = (ViewPager) getView().findViewById(R.id.pager);
 
@@ -69,8 +65,12 @@ public class CartFragment extends Fragment {
 
             @Override
             public Fragment getItem(int position) {
+                final ArrayList<String> rxcuis = new ArrayList<>(getActivity()
+                        .getSharedPreferences(MainActivity.CART, Context.MODE_PRIVATE)
+                        .getStringSet(MainActivity.RXCUIS, new HashSet<String>()));
+
                 if (position == 0) {
-                    return DrugsFragment.newInstance(new ArrayList<>(rxcuis));
+                    return DrugsFragment.newInstance(rxcuis, "Your cart is empty.");
                 }
 
                 if (position == 1)
@@ -81,7 +81,9 @@ public class CartFragment extends Fragment {
 
             @Override
             public int getCount() {
-                return rxcuis.size() + 2;
+                return getActivity()
+                        .getSharedPreferences(MainActivity.CART, Context.MODE_PRIVATE)
+                        .getStringSet(MainActivity.RXCUIS, new HashSet<String>()).size() + 2;
             }
         });
     }
@@ -185,7 +187,7 @@ public class CartFragment extends Fragment {
                                 interactionPair.interactionConcept[0].minConceptItem.name,
                                 interactionPair.interactionConcept[1].minConceptItem.name,
                                 interactionPair.description,
-                                interactionPair.severity
+                                "Severity: " + interactionPair.severity
                         });
             }
 

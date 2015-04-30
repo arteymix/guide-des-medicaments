@@ -30,7 +30,9 @@
             android:layout_toEndOf="@id/drug_icon"
             android:layout_toRightOf="@id/drug_icon"
             android:text="@string/aspirin_name"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
         <CheckBox
             android:id="@+id/bookmark"
@@ -42,28 +44,39 @@
             android:layout_alignParentRight="true" />
 
         <TextView
-            android:id="@+id/generic_name"
+            android:id="@+id/term_type"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@id/drug_name"
             android:layout_alignStart="@id/drug_name"
-            android:layout_below="@id/bookmark"
-            android:text="@string/aspirin_generic_name" />
+            android:layout_below="@id/drug_name"
+            android:text="Term type" />
+
 
         <TextView
             android:id="@+id/categories"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/drug_icon"
-            android:text="@string/aspirin_name"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:layout_alignLeft="@id/drug_name"
+            android:layout_alignStart="@id/drug_name"
+            android:text="@string/aspirin_categories"
+            android:layout_below="@id/term_type"
+            android:maxLines="2"
+            android:ellipsize="end" />
 
         <com.ms.square.android.expandabletextview.ExpandableTextView
             android:id="@+id/drug_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/categories"
+            android:layout_below="@id/drug_icon"
             android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/drug_description_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/description"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
 
             <TextView
                 android:id="@id/expandable_text"
@@ -82,26 +95,26 @@
         </com.ms.square.android.expandabletextview.ExpandableTextView>
 
         <TextView
-            android:id="@+id/maternity_index"
+            android:id="@+id/dose_forms_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/drug_description"
-            android:text="@string/maternity_index" />
+            android:gravity="right"
+            android:text="@string/dose_forms"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
-            android:id="@+id/administration_method"
+            android:id="@+id/dose_forms"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignTop="@id/maternity_index"
-            android:text="@string/administration_method" />
+            android:layout_below="@id/dose_forms_label"
+            android:text="@string/aspirin_drug_form" />
 
         <TextView
             android:id="@+id/label_counter_indicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/administration_method"
+            android:layout_below="@id/dose_forms"
             android:text="@string/counter_indication"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
