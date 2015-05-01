@@ -18,32 +18,7 @@ mêmes informations sur le même médicament plus d'une fois. L'usager n'a pas n
 plus de connaissances sur les médicaments potentiellement contrindiqués.
 
 
-## Cas typique
-
-L'infirmière analyse un patient, construit un diagnostic et trouve un
-médicament applicable.
-
-1. Diagnostic
-
- - le patient a besoin d'un tel médicament
- - catégorie de médicament (class pour l'api)
- - médicament en particulier (avec expérience)
-
-2. Recherche
-
-L'infirmière effectue une recherche pour identifier un médicament ou une
-catégorie.
-
-Cherche à obtenir
-
- - le nom du médicament
- - la catégorie
- - la posologie
- - méthode d'administration (sous-cutané, injection IV, oral, _anal_)
- - la couleur et la forme du médicament
-
-
-# Analyse des besoinsa
+# Analyse des besoins
 
 Le besoin principal des usagers est de pouvoir obtenir de l'information sur un
 médicament à partir d'une information de départ pas nécessairement précise.
@@ -62,55 +37,12 @@ identifiés:
  - Offrir un panier, afin de permettre à l'usager de pouvoir se faire une liste
    temporaire de médicaments et voir les paires de médicaments contrindiqués.
 
-L'analyse décrit un cas typique d'utilisation de l'application
-« Guide des médicaments » et énumère les besoins en interface usager.
 
-Le choix se fait à travers une liste de médicaments.
+# Spécification techniques
 
- - allergies
- - contre-indications
- - type d'administation
- - indice maternité
- - forme et couleur
-    - voir la terminologie pour les formes
- - catégories
-    - plusieurs catégories par médicament
+# Choix de conception
 
-4. Affichage du médicament
-
- - nom du médicament
- - catégories
- - forme et couleur
- - type d'administation
- - indice maternité
- - contre-indications
- - posologie
- - description complète
-    - voir plus
- - médicaments génériques et similaires
-
-# Autres idées
-
- - image du médicament
- - comparaison de plusieurs médicaments
- - panier de médicament
-    - vérifie dans une recherche les médicaments en conflit
-    - permet de
-    - paniers sauvegardés
-
-# Besoins en interface usager
-
- - interface de recherche (base de l'application)
-    - dernières recherches de médicament
-    - liste des paniers
- - liste de médicaments
-    - par catégorie (class)
-    - par recherche
- - information d'un médicament
- - panier
-    - consulter chaque information en glissant latéralement
-
-# Consultation de Santé Canada...
+## Consultation de Santé Canada...
 
 On cherche à obtenir de l'information pour développer notre application à
 partir des données de Santé Canada.
@@ -119,27 +51,76 @@ Après quelques transferts..
 
  - (613) 941-0839 (Myriam)
 
-# Spécification techniques
-
-# Choix de conception
-
 # Choix techniques
+
+L'application qui a été développé
+
+ - beaucoup de requête HTTP
+ -
+
+Plusieurs librairies ont été utilisées afin de faciliter le développement du
+projet.
+
+ - Glide
+ - Gson
+ - OkHttp
+
+
+## Glide
+
+[Glide](https://github.com/bumptech/glide) permet d'intégrer des images de
+manière efficace dans une application Android.
+
+```java
+Glide.with(this)
+    .load(images.nlmRxImages[0].imageUrl)
+    .into(drugIcon);
+```
+
+Elle est utilisé pour charger les images des comprimés associées aux
+médicaments. RxNav offre un API pour récupérer des images
+[RxImageAccess](http://rximage.nlm.nih.gov/).
+
+
+## Gson
+
+[Gson](https://github.com/google/gson) est une librairie qui permet d'utiliser
+des objects JSON par des classes Java. Il suffit de déclarer une classe qui
+représente l'objet fournit par l'API et Gson s'occupe d'en populer une
+instance.
+
+L'avantage principal est qu'il n'est plus nécessaire de parcourir la structure
+à travers l'API traditionnel avec des `getJSONArray` et `getJSONObject`.
+
+
+## OkHttp
+
+OkHttp est un client HTTP efficace et résilient.
+
+ - cache
+ - compression gzip transparente
+ - renvoit les requêtes échouée
+
+L'application utilise une combinaison de fragments et d'activités. Toute la
+navigation de l'activité principale se fait à l'aide de fragment.
+
+
+## Fragments
+
+Les fragments ont l'avantage d'être léger et réutilisable. Le fragment qui
+présente un médicament, par exemple, est réutilisé dans l'activité qui présente
+un médicament et dans le panier.
+
+La plateforme offre aussi un fragment `ListFragment` pour présenter une liste
+de vues équivalent au `ListView`. Il offre deux fonctionnalités intéressante
+qui font en sorte qu'il constitue une excellent choix pour présenter des listes
+de médicaments:
+
+ - barre de progression lorsque l'adapteur est `null`
+ - affiche un message lorsque l'adapteur est vide
+
 
 # Tests usagers & feedback
 
 
 # Perspectives d'avenir et rétrospective
-
-
-
-Choix techniques
-----------------
-
-
-
-
-
-
-
-
-
