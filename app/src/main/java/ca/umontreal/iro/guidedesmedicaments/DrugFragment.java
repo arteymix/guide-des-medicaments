@@ -65,9 +65,27 @@ import ca.umontreal.iro.rxnav.RxNorm;
  */
 public class DrugFragment extends Fragment {
 
-    public static DrugFragment newInstance(String rxcui) {
+    /**
+     * Identifier of the drug to present in the fragment.
+     */
+    public static final String RXCUI = "rxcui";
+
+    /**
+     * Use the drug name as the current activity title.
+     * <p/>
+     * Set this argument key if and you want the current activity title to be replaced by the drug
+     * name. This is convenient if the activity is essentially presenting the drug like the
+     * {@link DrugActivity}.
+     * <p/>
+     * The default behiaviour is to replace the title.
+     */
+    public static final String USE_DRUG_NAME_AS_TITLE = "use_drug_name_as_title";
+
+    public static DrugFragment newInstance(String rxcui, boolean useDrugNameAsTitle) {
         Bundle bundle = new Bundle();
-        bundle.putString("rxcui", rxcui);
+
+        bundle.putString(RXCUI, rxcui);
+        bundle.putBoolean(USE_DRUG_NAME_AS_TITLE, useDrugNameAsTitle);
 
         DrugFragment drugFragment = new DrugFragment();
         drugFragment.setArguments(bundle);
@@ -93,7 +111,7 @@ public class DrugFragment extends Fragment {
 
         final String rxcui = getArguments() == null ?
                 getActivity().getIntent().getData().getPathSegments().get(2) :
-                getArguments().getString("rxcui");
+                getArguments().getString(RXCUI);
 
         final TextView drugName = (TextView) getView().findViewById(R.id.drug_name);
         final ExpandableTextView drugDescription = (ExpandableTextView) getView().findViewById(R.id.drug_description);
@@ -105,24 +123,25 @@ public class DrugFragment extends Fragment {
 
         CheckBox bookmark = (CheckBox) getView().findViewById(R.id.bookmark);
 
-        bookmark.setChecked(getActivity().getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
-                .getStringSet("rxcuis", new HashSet<String>())
+        bookmark.setChecked(getActivity().getSharedPreferences(MainActivity.BOOKMARKS, Context.MODE_PRIVATE)
+                .getStringSet(MainActivity.RXCUIS, new HashSet<String>())
                 .contains(rxcui));
 
         bookmark.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Set<String> rxcuis = getActivity().getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
-                        .getStringSet("rxcuis", new HashSet<String>());
+                Set<String> rxcuis = getActivity()
+                        .getSharedPreferences(MainActivity.BOOKMARKS, Context.MODE_PRIVATE)
+                        .getStringSet(MainActivity.RXCUIS, new HashSet<String>());
 
                 if (isChecked)
                     rxcuis.add(rxcui);
                 else
                     rxcuis.remove(rxcui);
 
-                getActivity().getSharedPreferences("bookmarks", Context.MODE_PRIVATE)
+                getActivity().getSharedPreferences(MainActivity.BOOKMARKS, Context.MODE_PRIVATE)
                         .edit()
-                        .putStringSet("rxcuis", rxcuis)
+                        .putStringSet(MainActivity.RXCUIS, rxcuis)
                         .apply();
             }
         });
@@ -170,7 +189,9 @@ public class DrugFragment extends Fragment {
 
                 final TextView termType = (TextView) getView().findViewById(R.id.term_type);
 
-                getActivity().setTitle(data.properties.name);
+                if (getArguments() == null || getArguments().getBoolean(USE_DRUG_NAME_AS_TITLE, true))
+                    getActivity().setTitle(data.properties.name);
+
                 drugName.setText(data.properties.name);
                 termType.setText(data.properties.tty);
 

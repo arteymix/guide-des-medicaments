@@ -76,7 +76,7 @@ public class CartFragment extends Fragment {
                 if (position == 1)
                     return DrugInteractionFragment.newInstance(rxcuis);
 
-                return DrugFragment.newInstance(rxcuis.get((position - 2)));
+                return DrugFragment.newInstance(rxcuis.get((position - 2)), false);
             }
 
             @Override
