@@ -2,20 +2,43 @@
 % Aldo Lamarre; Patrice Dumontier-Houle; Charles Desharnais; Guillaume Poirier-Morency
 % 30 avril 2012
 
+Ceci est le rapport final du projet « Guide des médicaments ». Il couvre les
+thèmes suivants:
+
+ - usager cible
+ - analyse des besoins
+ - spécification technique
+ - choix de conceptions
+ - choix techniques
+ - tests usagers et _feedback_
+ - conclusion
+
+Le code source du projet est entièrement disponible sur GitHub
+[arteymix/guide-des-medicaments](https://github.com/arteymix/guide-des-medicaments).
+
+L'application consomme les données fournis par l'API
+[RxNav](http://rxnav.nlm.nih.gov) qui regroupe une grande quantité de données
+pharmacologiques.
+
+
 # Usager cible
 
 Initialement, le projet ciblait le personnel de la santé (infirmières,
 médecins, pharmaciens...) afin de servir de « Guide des médicaments » en
 version électronique.
 
-Suite à quelques complications, les usagers cibles sont devenus les gens
-normaux de la population, c'est-à-dire n'importe quelle personne qui souhaite
-faire  usage d'un médicament en raison d'un problème quelconque.  La plupart
-des usagers potentiels ont peu de connaissances en informatique. Ils n'ont pas
-non-plus la mémoire nécessaire pour se rappeler  de médicaments précédemment
-consultés lorsqu'ils naviguent; un usager normal va probablement consulter les
-mêmes informations sur le même médicament plus d'une fois. L'usager n'a pas non
-plus de connaissances sur les médicaments potentiellement contrindiqués.
+Nous avons donc consulté Santé Canada pour obtenir de l'information sur ce qui
+était disponible au Canada en terme de service de données.
+
+Suite à quelques complications (indisponibilité des données), les usagers
+cibles sont devenus les gens normaux de la population, c'est-à-dire n'importe
+quelle personne qui souhaite faire  usage d'un médicament en raison d'un
+problème quelconque.  La plupart des usagers potentiels ont peu de
+connaissances en informatique. Ils n'ont pas non-plus la mémoire nécessaire
+pour se rappeler  de médicaments précédemment consultés lorsqu'ils naviguent;
+un usager normal va probablement consulter les mêmes informations sur le même
+médicament plus d'une fois. L'usager n'a pas non plus de connaissances sur les
+médicaments potentiellement contrindiqués.
 
 
 # Analyse des besoins
@@ -40,23 +63,117 @@ identifiés:
 
 # Spécification techniques
 
+La spécification technique décrit les cas d'utilisations possibles de
+l'application.
+
+## Rechercher un médicament
+
+La recherche de médicament doit pouvoir se faire par médicament, ingrédient
+actif et marque.
+
+Les résultats sont présentés dans une liste de médicaments.
+
+
+## Consulter un médicament
+
+L'usager doit pouvoir consulter l'information propre à un médicament, soit
+
+ - nom
+ - description
+ - contre-indications
+ - médicaments similaires
+
+![Présentation d'un médicament](drug.png)
+
+
+## Ajouter un médicament aux favoris
+
+Une action doit permettre à l'usager d'ajouter ou d'enlever un médiacament des
+favoris.
+
+Deux vues permettent d'effectuer cette action:
+
+ - le fragment qui présente un médicament
+ - le `drug_item` qui affiche un médicament dans une liste
+
+
+## Ajouter un médicament au panier
+
+Une action au sein d'un médicament doit permettre à l'usager d'ajouter ce
+médicament à son panier de médicaments.
+
+L'implémentation est exactement identique à celle des favoris.
+
+
+## Consulter les favoris
+
+L'application doit présenter la liste des médicaments que l'usager a marqué
+comme favoris.
+
+![Favoris](bookmarks.png)
+
+
+## Supprimer le contenu des favoris
+
+Les médicaments marqués comme favoris doivent pouvoir être retirés en une seule
+étape.
+
+
+## Consulter le panier
+
+Le panier de médicaments doit pouvoir afficher la liste des médicaments qu'il
+contient, les intéractions entre ces médiacments et chaque médicament
+individuellement.
+
+![Panier de médicaments](cart.png)
+
+
+## Supprimer le contenu du panier
+
+L'usager doit pouvoir supprimer l'entièreté du panier afin d'éviter qu'il aille
+à enlever tous les médicaments un par un.
+
+
 # Choix de conception
 
-## Consultation de Santé Canada...
+La navigation principale doit se faire en une seule activité. L'usager doit
+pouvoir préserver ses résultats de recherche, l'état de ses favoris et de son
+panier. De plus, cette navigation doit se faire aisément.
 
-On cherche à obtenir de l'information pour développer notre application à
-partir des données de Santé Canada.
+Nous avons donc choisis de faire une navigation par _tabs_, ce qui permet
+à l'usager de naviguer efficacement en une seule étape à partir de l'activité
+principale et de préserver la navigation au sein de l'activité principale. Ceci
+constitue une métaphore de dossier organisés dans un classeur qu'un peut
+facilement accéder à l'aide d'onglets.
 
-Après quelques transferts..
+![Navigation à partir de l'activité principale](main-activity.png)
 
- - (613) 941-0839 (Myriam)
+Pour identifier facilement les actions possibles, l'application utilise une
+l'iconographie.
+
+ - loupe pour la recherche
+ - étoile pour les favoris
+ - panier pour ajouter un médicament au panier
+
+L'application doit être facile à utiliser, alors nous avons mis beaucoup
+d'effort à la concevoir avec un maximum d'intégration avec les pratiques de la
+plate-forme Android. Nous avons, par exemple, intégré la recherche en _overlay_
+afin de pouvoir lancer une recherche depuis n'importe quelle activité. Utiliser
+les bonnes pratiques promues par la plateforme constitue une heuristique
+d'utilisabilité très intéressante, car elle nous évite de réfléchir à ces
+conceptions originales et facilite l'apprentissage de l'usager.
+
+Une fonctionnalité que nous aurions aimé intégré est la corrections
+automatiques. L'API nous offre des suggestions d'orthographes et la plateforme
+nous permet de définir des _providers_ de suggestions.
+
 
 # Choix techniques
 
-L'application qui a été développé
-
- - beaucoup de requête HTTP
- -
+L'application qui a été développé effectue beaucoup de requête HTTP. Elle sera
+donc fortement soumise à de la latence et des problèmes de réseaux. Les choix
+techniques qui sont décrit dans cette section cherchent à résoudre ces
+problèmes.
 
 Plusieurs librairies ont été utilisées afin de faciliter le développement du
 projet.
@@ -120,7 +237,77 @@ de médicaments:
  - affiche un message lorsque l'adapteur est vide
 
 
+## Persistence
+
+Le stockage des préférences et du panier se fait par les préférences partagées.
+Dans le cadre de notre application, nos besoins en persistence sont tellement
+simple qu'il ne vaut pas la peine d'utiliser une base de donnée relationelle.
+
+Il nous suffit de stocker un ensemble d'identifiants (rxcuis) pour pouvoir
+mémoriser quels médicaments l'usager a ajouter à son panier ou à ses favoris.
+
+## Recherche
+
+Les suggestions de recherche sont fournis à l'aide d'un `ContentProvider`. Il
+s'agit d'une classe abstraite à partir de laquelle on doit implanter les
+méthodes de recherches, d'insertion, de mise à jour et de suppression de
+données depuis un _provider_.
+
+Les `ContentProvider` sont enregistré dans le manifeste et peuvent par la suite
+être utilisés par les activités installée sur le téléphone de l'usager.
+
+Nous avons donc implanté un `ContentProvider` pour récupérer des suggestions de
+recherche depuis l'API de RxNav. La plateforme s'occupe d'intégrer les
+résultats automatiquement si les bonnes colonnes sont spécifiées dans le
+curseur.
+
+
 # Tests usagers & feedback
+
+Patrice s'est occupé de faire un test usager et a relevé les problèmes
+suivants:
+
+Où est rendu le radio-button pour les catégories??? C'est la meilleure
+alternative au fait qu'on ne peut pas chercher par maladie... Les médicaments
+contre-indiqués devraient être mis plus en avantage dans une description
+(mettre en gras rouge au pire)
+
+ - La recherche par Brand name est totalement useless (les noms des médicaments
+   et les brand ne sont pas assez distingables)
+ - Faciliter l'opération de recherche (ajouter un bouton "Search", l'icône de
+   loupe n'interagit pas)
+ - Le radio-button "precise ingredient" devrait plutôt être "active ingredient"
+   (le mot "precise" fait peur)
 
 
 # Perspectives d'avenir et rétrospective
+
+Le projet a beaucoup de possibilité d'avenir si on décidait de continuer à le
+développer.
+
+Une version optimisée pour tablette pourrait servir en milieu de travail pour
+des pharmaciens afin de consulter les format disponibles pour certains
+médicaments.
+
+Une intégration avec des services d'achat en ligne pourrait permettre de
+référer des sites pour vendre des médicaments et potentiellement monétiser
+l'application.
+
+Une grande partie de la classification des médicament se fait par classes
+(catégories), alors il serait vraiment bien de pouvoir permettre
+à l'utilisateur de parcourir cette structure. Il serait alors possible de
+pouvoirs effectuer des actions du genre:
+
+ - trouver des analgésiques
+ - trouver les médicaments dans la même classe du médicament consulté
+ - améliorer les résultats de recherche en suggérant des classes en plus des
+   médicaments
+
+Le projet aurait beaucoup bénéficié d'une bonne connaissance des technologies
+disponibles avant sa réalisation. Par exemple, si nous aurions su utilise Gson,
+nous aurions pu développer les accès aux résultats de l'API en beaucoup moins
+de temps et avec beaucoup plus de flexibilité.
+
+Le projet s'est somme toute bien réalisé et nous sommes assez fier du résultat
+final.
+
