@@ -79,6 +79,9 @@ public class SearchFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public void onLoadFinished(Loader<RxNorm.RxNormVersion> loader, RxNorm.RxNormVersion data) {
+        // todo: this is a ugly fix since the MainActivity can switch tab and thus the presented fragment
+        if (getView() == null)
+            return;
         TextView rxNormVersion = (TextView) getView().findViewById(R.id.rxnorm_version);
         rxNormVersion.setText("Latest data available since " + data.version + ".");
     }

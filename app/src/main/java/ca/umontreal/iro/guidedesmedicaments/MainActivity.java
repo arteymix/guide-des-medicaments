@@ -89,12 +89,10 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
                 break;
 
             case R.id.action_bookmarks:
-                getSupportLoaderManager().destroyLoader(R.id.rxnorm_version_loader);
                 actionBar.selectTab(bookmarksTab);
                 break;
 
             case R.id.action_cart:
-                getSupportLoaderManager().destroyLoader(R.id.rxnorm_version_loader);
                 actionBar.selectTab(cartTab);
                 break;
 
@@ -137,6 +135,14 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
     @Override
     public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+        // todo: destroy any running loaders?
+        if (getSupportLoaderManager().hasRunningLoaders()) {
+            Toast.makeText(this,
+                    "Operation in progress, cannot switch tab right now.",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         switch (tab.getPosition()) {
             case 0:
                 fragmentTransaction
