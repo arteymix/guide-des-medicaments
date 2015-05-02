@@ -64,15 +64,26 @@ identifiés:
 
 # Spécification techniques
 
-La spécification technique décrit les cas d'utilisations possibles de
-l'application.
+La spécification technique décrit en détails les cas d'utilisations possibles
+de l'application:
+
+ - rechercher un médicament
+ - consulter un médicament
+ - ajouter un médicament aux favoris
+ - ajouter un médicament au panier
+ - vider les favoris
+ - vider le panier
+ - consulter les favoris
+ - consulter le panier
+
 
 ## Rechercher un médicament
 
 La recherche de médicament doit pouvoir se faire par médicament, ingrédient
 actif et marque.
 
-Les résultats sont présentés dans une liste de médicaments.
+Les résultats sont présentés dans une liste de médicaments, triés par
+pertinence.
 
 
 ## Consulter un médicament
@@ -97,12 +108,12 @@ affichées dans l'application.
 ## Ajouter un médicament aux favoris
 
 Une action doit permettre à l'usager d'ajouter ou d'enlever un médiacament des
-favoris.
+favoris en cochant une étoile dans l'interface.
 
 Deux vues permettent d'effectuer cette action:
 
- - le fragment qui présente un médicament
- - le `drug_item` qui affiche un médicament dans une liste
+ - le fragment `drug_fragment` qui présente un médicament
+ - la vue `drug_item` qui affiche un médicament dans une liste
 
 
 ## Ajouter un médicament au panier
@@ -110,7 +121,13 @@ Deux vues permettent d'effectuer cette action:
 Une action au sein d'un médicament doit permettre à l'usager d'ajouter ce
 médicament à son panier de médicaments.
 
-L'implémentation est exactement identique à celle des favoris.
+Pour la vue `drug_item`, l'implémentation est exactement identique à celle des
+favoris.
+
+Pour le fragment, une action est présente dans le `ActionBar` permettant
+d'ajouter et de se rendre directement au panier afin de constater les
+changements. L'idée est que l'usager qui ajoute un médicament à son panier
+depuis une action du menu voudra consulter le consulter par la suite.
 
 
 ## Consulter les favoris
@@ -128,7 +145,11 @@ est décrite dans les choix techniques.
 ## Supprimer le contenu des favoris
 
 Les médicaments marqués comme favoris doivent pouvoir être retirés en une seule
-étape.
+étape. L'usager doit être notifié et le contenu du panier doit être vidé.
+
+L'application qui a été remise ne supporte pas encore l'actualisation du panier
+après la suppression des médicaments qu'il contient. Il faudrait implanter la
+fonctionnalité avec le `LoaderManager`.
 
 
 ## Consulter le panier
@@ -144,6 +165,8 @@ individuellement.
 
 L'usager doit pouvoir supprimer l'entièreté du panier afin d'éviter qu'il aille
 à enlever tous les médicaments un par un.
+
+Similairement au panier, le contenu des favoris n'est pas mis à jour.
 
 
 # Choix de conception
@@ -257,6 +280,14 @@ simple qu'il ne vaut pas la peine d'utiliser une base de donnée relationelle.
 
 Il nous suffit de stocker un ensemble d'identifiants (rxcuis) pour pouvoir
 mémoriser quels médicaments l'usager a ajouter à son panier ou à ses favoris.
+
+Le stockage hors-ligne est partiellement fonctionnel est sert principalement
+à réduire le nombre de requête HTTP qui sont effectuées auprès de l'API. Nous
+utilisons de la cache HTTP pour stocker les réponses de l'API et offrir un
+stockage transparent. C'est très avantageux, car l'application peut être
+développé comme si on faisait des requêtes régulières tandis que les résultats
+sont récupérés depuis le répertoire de cache du téléphone.
+
 
 ## Recherche
 
