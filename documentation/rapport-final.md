@@ -18,7 +18,8 @@ Le code source du projet est entièrement disponible sur GitHub
 
 L'application consomme les données fournis par l'API
 [RxNav](http://rxnav.nlm.nih.gov) qui regroupe une grande quantité de données
-pharmacologiques.
+pharmacologiques. Il est important d'avoir accès à Internet lorsque
+l'application est utilisé afin d'éviter certains comportements indéfinis.
 
 
 # Usager cible
