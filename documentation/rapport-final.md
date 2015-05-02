@@ -84,6 +84,13 @@ L'usager doit pouvoir consulter l'information propre à un médicament, soit
  - contre-indications
  - médicaments similaires
 
+La description du médicament est récupérée sur Wikipédia, car RxNav fournit de
+l'information exclusivement terminologique.
+
+RxNav fournit un API pour consulter les intéractions entre les médicaments, ce
+qui ne correspond pas exactement à toutes les contre-indications qui sont
+affichées dans l'application.
+
 ![Présentation d'un médicament](drug.png)
 
 
@@ -110,6 +117,10 @@ L'implémentation est exactement identique à celle des favoris.
 
 L'application doit présenter la liste des médicaments que l'usager a marqué
 comme favoris.
+
+L'interface qui liste les médicaments d'un recherche est réutilisé pour
+présenter les favoris. Il s'agit en fait d'un `ListFragment` dont l'utilisation
+est décrite dans les choix techniques.
 
 ![Favoris](bookmarks.png)
 
@@ -265,20 +276,53 @@ curseur.
 
 # Tests usagers & feedback
 
-Patrice s'est occupé de faire un test usager et a relevé les problèmes
-suivants:
+Trois tests usagers ont été effectués à différentes étapes du développement.
+Ils ont permis d'identifier des problèmes d'utilisabilité assez rapidement et
+nous ont guidés dans la conception.
 
-Où est rendu le radio-button pour les catégories??? C'est la meilleure
-alternative au fait qu'on ne peut pas chercher par maladie... Les médicaments
-contre-indiqués devraient être mis plus en avantage dans une description
-(mettre en gras rouge au pire)
 
- - La recherche par Brand name est totalement useless (les noms des médicaments
-   et les brand ne sont pas assez distingables)
+## Test usager initial (prototype)
+
+Les tests usagers préliminaires des prototypes ont identifiés quelques
+problèmes:
+
+ - l'activité principale devrait permettre de naviguer directement entre la
+   recherche, les favoris et le panier
+ - le checkbox du panier devrait être affiché directement sur le médicament,
+   pas dans l'`ActionBar`
+ -
+
+La plupart des changements ont été intégré, d'où les différences entre les deux
+prototypes mis en annexe.
+
+Avoir l'action « ajouter au panier » directement dans l'`ActionBar` est
+pratique, car on peut aller directement au panier après y avoir ajouté le
+médicament affiché. Le checkbox a été rajouté à la vue `drug_item` qui présente
+un médicament dans une liste.
+
+
+## Deuxième test usager (pré-remise)
+
+Patrice s'est occupé de faire un test usager avec le prototype qui a été
+présenté en classe et a relevé les problèmes suivants:
+
+ - Les médicaments contre-indiqués devraient être mis plus en avantage dans une
+   description (mettre en gras rouge au pire)
+ - La recherche par Brand name est totalement _useless_ (les noms des
+   médicaments et les brand ne sont pas assez distingables)
  - Faciliter l'opération de recherche (ajouter un bouton "Search", l'icône de
    loupe n'interagit pas)
- - Le radio-button "precise ingredient" devrait plutôt être "active ingredient"
-   (le mot "precise" fait peur)
+ - Le radio-button _precise ingredient_ devrait plutôt être _active ingredient_
+   (le mot _precise_ fait peur)
+
+La navigation par _spinner_ a été remplacé par des _tabs_ afin de réduire le
+nombre de clics pour accéder aux fragments.
+
+
+## Test usager final
+
+Guillaume a effectué un test usager avec les modifications qui ont été
+apportées et qui a mené à l'application remise.
 
 
 # Perspectives d'avenir et rétrospective
@@ -290,9 +334,15 @@ Une version optimisée pour tablette pourrait servir en milieu de travail pour
 des pharmaciens afin de consulter les format disponibles pour certains
 médicaments.
 
+ - inventaire par médicament
+ - possibilité de construire un lot de médicament pour commander auprès d'un
+   distributeur (panier sur stéroïdes)
+
 Une intégration avec des services d'achat en ligne pourrait permettre de
 référer des sites pour vendre des médicaments et potentiellement monétiser
 l'application.
+
+ - trouver les distributeurs qui fournissent le médicament
 
 Une grande partie de la classification des médicament se fait par classes
 (catégories), alors il serait vraiment bien de pouvoir permettre
