@@ -50,15 +50,13 @@ médicament à partir d'une information de départ pas nécessairement précise.
 En fonction de l'analyse des usagers, des besoins plus spécifiques ont été
 identifiés:
 
- - Offrir  plusieurs types de recherches (par nom, par ingrédient...) afin de
+ - offrir  plusieurs types de recherches (par nom, par ingrédient...) afin de
    maximiser les chances qu'un usager puisse retrouver le médicament souhaité.
-
- - Offrir un moyen de sauvegarde. Un usager n'a pas une mémoire à court terme
+ - offrir un moyen de sauvegarde. Un usager n'a pas une mémoire à court terme
    lui permettant de se rappeler d'informations lues antérieurement sur un
    médicament. Il doit donc y avoir une liste de favoris, contenant les
    médicaments régulièrement consultés.
-
- - Offrir un panier, afin de permettre à l'usager de pouvoir se faire une liste
+ - offrir un panier, afin de permettre à l'usager de pouvoir se faire une liste
    temporaire de médicaments et voir les paires de médicaments contrindiqués.
 
 
@@ -321,7 +319,6 @@ problèmes:
    recherche, les favoris et le panier
  - le checkbox du panier devrait être affiché directement sur le médicament,
    pas dans l'`ActionBar`
- -
 
 La plupart des changements ont été intégré, d'où les différences entre les deux
 prototypes mis en annexe.
@@ -353,7 +350,46 @@ nombre de clics pour accéder aux fragments.
 ## Test usager final
 
 Guillaume a effectué un test usager avec les modifications qui ont été
-apportées et qui a mené à l'application remise.
+apportées pour la remise finale.
+
+Le test comportait un séance d'apprentissage suivit de quelques taches que
+l'usager devait accomplir. L'usager était invité à commenter son expérience au
+fur et à mesure de la réalisation des manipulations.
+
+Une vidéo accompagne le test usager final: []().
+
+### Taches à réaliser
+
+> Ouvrir l'application, elle porte le nom de « Drugs' guide »
+
+> Trouver « Ziac », un diurétique en effectuant une recherche à partir de
+  l'interface principale
+
+> À partir de l'interface du médicament « Ziac », accéder à l'ingrédient
+  « Hydrochlorotiazide » et l'ajouter aux favoris
+
+> Trouver le médicament « Luxiq », un glucocorticoide et consulter sa
+  description complète
+
+> Ajouter « Luxiq » au panier de médicaments
+
+> Consulter « Ambenonium à partir des contre-indications de « Luxiq » et
+  l'ajouter au panier
+
+> Consulter le panier de médicaments, « Luxiq » et « Ambenonium » devraient s'y
+  trouver
+
+> Consulter les intéractions dans le panier de médicaments
+
+> Consulter les favoris, « Hydrochlorotiazide » devrait s'y trouver
+
+> Faire planter l'application, par tous les moyens à votre disposition
+
+De manière générale, les problèmes suivants ont été observés:
+
+ - une utilisation trop intensive des _tabs_ sur l'activité principale cause un
+   plantage
+ - la navigation dans les résultats de recherche n'est pas assez fluide
 
 
 # Perspectives d'avenir et rétrospective
