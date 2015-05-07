@@ -356,7 +356,7 @@ Le test comportait un séance d'apprentissage suivit de quelques taches que
 l'usager devait accomplir. L'usager était invité à commenter son expérience au
 fur et à mesure de la réalisation des manipulations.
 
-Une vidéo accompagne le test usager final: []().
+Une vidéo accompagne le test usager final: [vidéo du test usager sur YouTube](http://youtu.be/YPQcW_SxQVs).
 
 ### Taches à réaliser
 
@@ -365,31 +365,67 @@ Une vidéo accompagne le test usager final: []().
 > Trouver « Ziac », un diurétique en effectuant une recherche à partir de
   l'interface principale
 
+L'usager tente de cliquer sur le premier résultat de recherche alors qu'il
+n'est pas tout à fait chargé.
+
 > À partir de l'interface du médicament « Ziac », accéder à l'ingrédient
   « Hydrochlorotiazide » et l'ajouter aux favoris
+
+L'usager cherche longtemps à travers les contre-indications alors que le
+résultat se trouve plus bas dans les médicaments similaires.
+
+On remarque que la navigation dans un grand `ScrollView` est un peu frustrante
+si le contenu est très grand.
+
+L'usager trouve rapidement comment ajouter un médicament aux favoris grace à la
+l'icône de l'étoile.
 
 > Trouver le médicament « Luxiq », un glucocorticoide et consulter sa
   description complète
 
+Il est facile de voir que le symbole de triangle inversé signifie que le texte
+peut être agrandi.
+
 > Ajouter « Luxiq » au panier de médicaments
+
+Il y a eu un petit bug lors de l'ajout du médicament au panier, car la dernière
+version n'était pas installée sur le téléphone. Il y a une petite pause le
+temps de tout remettre en place.
+
+Finalement, l'usager est en mesure d'ajouter le médicament à son panier!
 
 > Consulter « Ambenonium à partir des contre-indications de « Luxiq » et
   l'ajouter au panier
 
+Ambenonium a été trouvé rapidement à partir des contre-indications et on peut
+procéder directement à la consultation du panier de médicaments.
+
 > Consulter le panier de médicaments, « Luxiq » et « Ambenonium » devraient s'y
   trouver
 
+Une fois ajouté au panier, l'usager consulte directement le panier, alors tout
+se passe très bien.
+
 > Consulter les intéractions dans le panier de médicaments
+
+Il a fallu donner un indice à l'usager afin qu'il puisse trouver les
+contre-indications au sein du panier. Il n'y a rien dans l'interface qui puisse
+suggérer une navigation latérale et il était considéré d'ajouter un indicateur
+dans une version future.
 
 > Consulter les favoris, « Hydrochlorotiazide » devrait s'y trouver
 
+Les favoris ne sont pas très évident et il serait peut-être bien d'utiliser de
+l'iconographie sur les tabs de l'`ActionBar`.
+
 > Faire planter l'application, par tous les moyens à votre disposition
+
+Malheureusement, l'usager n'a pas réussi à faire planter l'application.
 
 De manière générale, les problèmes suivants ont été observés:
 
- - une utilisation trop intensive des _tabs_ sur l'activité principale cause un
-   plantage
- - la navigation dans les résultats de recherche n'est pas assez fluide
+ - la navigation dans les résultats de recherche n'est pas assez fluide, ce qui
+   est principalement dû au coût pour charger chaque entrée de la liste.
 
 
 # Perspectives d'avenir et rétrospective
